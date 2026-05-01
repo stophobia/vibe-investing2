@@ -1,0 +1,95 @@
+cff-version: 1.2.0
+title: >-
+  Distribution Asymmetry of Centralized Exchange Airdrops and the
+  BNB Chain Ecosystem
+message: >-
+  If you use this software, paper, or dataset, please cite it
+  using the metadata from this file.
+type: software
+authors:
+  - given-names: HoKwang
+    family-names: Kim
+    name-particle: Dennis
+    email: gameworker@gmail.com
+    orcid: 'https://orcid.org/0009-0002-0962-2175'
+    affiliation: Betalabs Inc.
+identifiers:
+  - type: url
+    value: 'https://github.com/gameworkerkim/distribution-asymmetry-cex-airdrops'
+    description: GitHub repository
+  - type: other
+    value: 'SSRN 6632838'
+    description: Companion paper SSRN identifier (72-Hour Shock)
+repository-code: 'https://github.com/gameworkerkim/distribution-asymmetry-cex-airdrops'
+abstract: >-
+  This paper develops a formal mathematical model demonstrating that
+  centralized exchange (CEX) airdrop distribution mechanisms with
+  distribution ratios alpha in [0.05, 0.08] produce systematic
+  foundation cost C ~ 30% FDV against holder gain ~ 7.5% FDV,
+  yielding asymmetry ratio R ~ 4.18 and value destruction D ~ 23% FDV.
+  Seven theorems integrate to prove break-even impossibility and
+  establish immediate sell-off as the dominant Nash equilibrium.
+  Empirical analysis across N=21 tokens verifies the qualitative
+  direction of the distribution mechanism effect via bootstrap 95%
+  confidence intervals. The Hyperliquid HYPE counterfactual case
+  (zero CEX distribution, +925-1054% over 1+ years) provides
+  asymmetric evidence against the Memecoin selection bias hypothesis.
+  A partial decoupling pattern is observed at the BNB Chain macro
+  level: while the Megadrop category market cap declined approximately
+  75% (Q1 to Q3 2025), BNB Chain trading volume grew +171.4%, DeFi
+  TVL +47.2%, and BNB market capitalization gained approximately
+  $104B.
+keywords:
+  - cryptocurrency
+  - airdrop
+  - centralized exchange
+  - tokenomics
+  - distribution mechanism
+  - BNB Chain
+  - market microstructure
+  - empirical finance
+  - decoupling
+  - Nash equilibrium
+license: MIT
+license-url: 'https://opensource.org/licenses/MIT'
+date-released: '2026-05-01'
+version: '1.2.0'
+references:
+  - type: article
+    authors:
+      - family-names: Kim
+        given-names: HoKwang
+        name-particle: Dennis
+    title: 'The 72-Hour Shock: Token Unlock Price Impact'
+    year: 2026
+    journal: 'SSRN Electronic Journal'
+    doi: '10.2139/ssrn.6632838'
+    url: 'https://ssrn.com/abstract=6632838'
+  - type: article
+    authors:
+      - family-names: Engle
+        given-names: Robert F.
+      - family-names: Granger
+        given-names: Clive W. J.
+    title: 'Co-integration and Error Correction: Representation, Estimation, and Testing'
+    year: 1987
+    journal: Econometrica
+    volume: '55'
+    issue: '2'
+    start: 251
+    end: 276
+  - type: article
+    authors:
+      - family-names: Gatev
+        given-names: Evan
+      - family-names: Goetzmann
+        given-names: William N.
+      - family-names: Rouwenhorst
+        given-names: K. Geert
+    title: 'Pairs Trading: Performance of a Relative-Value Arbitrage Rule'
+    year: 2006
+    journal: 'Review of Financial Studies'
+    volume: '19'
+    issue: '3'
+    start: 797
+    end: 827
