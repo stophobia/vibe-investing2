@@ -1,0 +1,6 @@
+quarter,fees_usd,fees_qoq_pct,daily_tx_avg,daily_tx_qoq_pct,daily_active_wallets,daily_active_qoq_pct,defi_tvl_usd,defi_tvl_qoq_pct,gas_price_gwei,interpretation,source
+2025Q1,70500000,NULL,4900000,NULL,1200000,NULL,5300000000,NULL,1.00,baseline,Messari_Q1_2025
+2025Q2,44100000,-37.50,9900000,101.90,1600000,33.20,6000000000,14.00,0.10,intentional_gas_reduction_via_Lorentz_hardfork,Messari_Q2_2025_State_of_BNB
+2025Q3,60800000,37.87,13300000,34.30,2300000,43.75,7800000000,30.00,0.10,user_expansion_acceleration_TVL_3rd_place,Messari_Q3_2025_State_of_BNB
+2025Q4_estimated,75000000,23.36,14500000,9.02,2600000,13.04,8500000000,8.97,0.10,continued_growth,projected_estimate
+NOTE,0,0,0,0,0,0,0,0,0,DESCRIPTION,SOURCE_NEEDED
