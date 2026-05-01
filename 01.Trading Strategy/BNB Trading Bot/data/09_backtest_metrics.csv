@@ -1,0 +1,4 @@
+name,total_return_%,cagr_%,ann_vol_%,sharpe,max_dd_%,win_rate_%,n_days
+Strategy(ETH-MA-Cross BNB),123.21,23.07,37.77,0.738,-38.44,52.24,1412
+BNB Buy&Hold,211.85,34.18,53.24,0.818,-55.49,52.76,1412
+ETH Buy&Hold,127.3,23.65,67.88,0.649,-63.88,49.93,1412

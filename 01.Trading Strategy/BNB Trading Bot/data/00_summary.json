@@ -1,0 +1,23 @@
+{
+  "data_source": "CoinMetrics",
+  "period": "2022-05-01 ~ 2026-04-30",
+  "n_observations": 1460,
+  "pearson_full_period": 0.7283,
+  "spearman_full_period": 0.7256,
+  "rolling_30d_corr_mean": 0.7327,
+  "best_lead_lag_days": 0,
+  "best_lead_lag_corr": 0.7283,
+  "eth_to_bnb_granger_lag1_p": 0.2546,
+  "eth_trend_up_to_down_count": 14,
+  "eth_trend_down_to_up_count": 15,
+  "bnb_follow_up_to_down_median_days": 11.0,
+  "bnb_follow_down_to_up_median_days": 6.0,
+  "beta_eth_positive_days": 0.4315,
+  "beta_eth_negative_days": 0.7027,
+  "beta_asymmetry_diff": -0.2712,
+  "beta_asymmetry_p": 0.0,
+  "pre_2024_corr": 0.7314,
+  "post_2024_corr": 0.7314,
+  "pre_2024_beta": 0.6431,
+  "post_2024_beta": 0.5343
+}
