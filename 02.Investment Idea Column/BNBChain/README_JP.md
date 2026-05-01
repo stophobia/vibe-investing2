@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Data: CC BY 4.0](https://img.shields.io/badge/Data-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
-> **多言語README**: [English](./README.md) · [한국어](./README_KR.md) · [中文](./README_CN.md)
+> **多言語README**: [English](./readme.md) · [한국어](./README_KR.md) · [中文](./README_CN.md)
 
 ---
 
