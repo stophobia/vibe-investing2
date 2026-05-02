@@ -7,7 +7,7 @@ AI 기반 시장 분석 칼럼, 퀀트 트레이딩 전략, AI 투자 도구 큐
 - 작성자: 김호광 (Dennis Kim)
 - 라이선스: MIT
 - 업데이트 주기: 주 1-2회
-- English README: [README_EN.md](README_EN.md)
+- English README: [README_EN.md](Readme%20en.MD)
 
 ---
 
