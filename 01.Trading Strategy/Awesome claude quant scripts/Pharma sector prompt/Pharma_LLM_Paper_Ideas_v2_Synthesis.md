@@ -17,9 +17,9 @@
 
 | 발견 | 내 v1 | 신규 분석 | 의미 |
 |------|-------|-----------|------|
-| **Web search → alpha** | "ChatGPT/Gemini stale data, Claude/DeepSeek는 Q1 반영" | "데이터 적시성 격차 = 알파의 필요조건" | ✅ 두 LLM이 독립적으로 동일 결론 → 강한 신뢰성 |
-| **Score Inflation** | "ChatGPT 90점대 클러스터링, Gemini 이중 성격" | "잘못된 확신 신호, 정규화 필수" | ✅ 두 LLM 합의 → reproducibility 강함 |
-| **Language Switching (DeepSeek 영어)** | "도메인-언어 정렬 문제" | "HFT 학습 데이터 + 도메인-언어 alignment 부산물" | ✅ 두 LLM 합의 + 추가 가설 (HFT 데이터) |
+| **Web search → alpha** | "ChatGPT/Gemini stale data, Claude/DeepSeek는 Q1 반영" | "데이터 적시성 격차 = 알파의 필요조건" | 두 LLM이 독립적으로 동일 결론 → 강한 신뢰성 |
+| **Score Inflation** | "ChatGPT 90점대 클러스터링, Gemini 이중 성격" | "잘못된 확신 신호, 정규화 필수" | 두 LLM 합의 → reproducibility 강함 |
+| **Language Switching (DeepSeek 영어)** | "도메인-언어 정렬 문제" | "HFT 학습 데이터 + 도메인-언어 alignment 부산물" | 두 LLM 합의 + 추가 가설 (HFT 데이터) |
 
 → **이 3개 발견은 paper-ready 수준**. 두 LLM이 독립적으로 같은 결론에 도달하면 reviewer 신뢰도가 매우 상승한다.
 
