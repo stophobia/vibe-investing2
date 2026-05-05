@@ -532,7 +532,7 @@ class BlobUserProfileRepo(UserProfileRepo):
 
 ---
 
-### 7.6 사용 로그 — Blob 적재 + 배치 분석
+### 7.4 사용 로그 — Blob 적재 + 배치 분석
 
 #### 적재 형식
 
@@ -592,7 +592,7 @@ container "logs" (private)
 
 ---
 
-### 7.3 Telegram Webhook 모드로 전환
+### 7.5 Telegram Webhook 모드로 전환
 
 현재 `app.run_polling()` ([main.py:40](main.py#L40)) 은 Functions에서 동작 불가. 전환 작업:
 
@@ -623,7 +623,7 @@ curl -F "url=https://<func-app>.azurewebsites.net/api/telegram/webhook" \
 
 `secret_token` 은 Telegram이 매 호출 헤더 `X-Telegram-Bot-Api-Secret-Token` 에 실어 보내며, Functions에서 검증 → 외부 위조 호출 차단.
 
-### 7.4 일일 리포트 사전 생성 + CDN 캐시
+### 7.6 일일 리포트 사전 생성 + CDN 캐시
 
 ```
 KST 06:30 (UTC 21:30 — 미장 마감 직후)
