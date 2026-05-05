@@ -1,4 +1,4 @@
-// AI Investor — Azure infrastructure (Korea Central, Flex Consumption + CDN + Blob).
+// AI Investor — Azure infrastructure (Korea Central, Flex Consumption + Blob; CDN deferred).
 //
 // Deploy:
 //   az group create --name rg-aiinvestor-${env} --location koreacentral
@@ -23,8 +23,6 @@ var stName = toLower(replace('st${prefix}', '-', ''))   // storage names disallo
 var kvName = 'kv-${prefix}'
 var funcName = 'func-${prefix}'
 var planName = 'plan-${prefix}'
-var cdnProfile = 'cdn-${prefix}'
-var cdnEndpoint = 'cdne-${prefix}'
 var appiName = 'appi-${prefix}'
 var lawName = 'law-${prefix}'
 
@@ -196,57 +194,9 @@ resource funcApp 'Microsoft.Web/sites@2023-12-01' = {
 }
 
 // -----------------------------------------------------------------
-// CDN Profile + endpoint (origin = reports/ container)
-// -----------------------------------------------------------------
-resource cdnProfileRes 'Microsoft.Cdn/profiles@2024-02-01' = {
-  name: cdnProfile
-  location: 'global'
-  sku: { name: 'Standard_Microsoft' }
-}
-
-resource cdnEndpointRes 'Microsoft.Cdn/profiles/endpoints@2024-02-01' = {
-  parent: cdnProfileRes
-  name: cdnEndpoint
-  location: 'global'
-  properties: {
-    originHostHeader: '${storage.name}.blob.core.windows.net'
-    isHttpAllowed: false
-    isHttpsAllowed: true
-    queryStringCachingBehavior: 'IgnoreQueryString'
-    origins: [{
-      name: 'blob-origin'
-      properties: {
-        hostName: '${storage.name}.blob.core.windows.net'
-        originHostHeader: '${storage.name}.blob.core.windows.net'
-      }
-    }]
-    deliveryPolicy: {
-      rules: [{
-        name: 'OnlyAllowReports'
-        order: 1
-        conditions: [{
-          name: 'UrlPath'
-          parameters: {
-            typeName: 'DeliveryRuleUrlPathMatchConditionParameters'
-            operator: 'BeginsWith'
-            negateCondition: true
-            matchValues: ['/reports/']
-          }
-        }]
-        actions: [{
-          name: 'UrlRedirect'
-          parameters: {
-            typeName: 'DeliveryRuleUrlRedirectActionParameters'
-            redirectType: 'Found'
-            destinationProtocol: 'Https'
-            customHostname: 'example.com'
-          }
-        }]
-      }]
-    }
-  }
-}
-
+// (CDN removed — classic Azure CDN is retired for new deployments.
+// Reports are served directly from Blob Storage HTTPS for now.
+// Front Door Standard can be layered on top in a follow-up PR.)
 // -----------------------------------------------------------------
 // RBAC — Function App MSI gets Blob Data Contributor + Key Vault Secrets User
 // -----------------------------------------------------------------
@@ -291,6 +241,5 @@ resource roleKvDeployer 'Microsoft.Authorization/roleAssignments@2022-04-01' = i
 output functionAppName string = funcApp.name
 output functionAppHost string = funcApp.properties.defaultHostName
 output storageAccount string = storage.name
-output cdnEndpointHost string = '${cdnEndpointRes.name}.azureedge.net'
 output keyVaultName string = keyVault.name
 output appInsightsName string = appi.name
