@@ -11,9 +11,9 @@ on:
       env:
         description: 'Target environment'
         required: true
-        default: 'dev'
+        default: 'prod'
         type: choice
-        options: [dev, prod]
+        options: [prod, dev]
 
 env:
   PYTHON_VERSION: '3.11'
