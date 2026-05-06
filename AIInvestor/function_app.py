@@ -47,6 +47,7 @@ _market_report_service: MarketReportService | None = None
 _profile_repo = None
 _persona_engine = None
 _stock_service = None
+_usage_logger = None
 
 
 async def _bootstrap() -> None:
@@ -57,7 +58,7 @@ async def _bootstrap() -> None:
     trip the bot performs on entry to its async context manager.
     """
     global _config, _ptb_app, _market_report_service, _profile_repo
-    global _persona_engine, _stock_service
+    global _persona_engine, _stock_service, _usage_logger
     if _ptb_app is not None:
         return
 
@@ -75,12 +76,18 @@ async def _bootstrap() -> None:
     _profile_repo = build_repo(_config)
     _market_report_service = MarketReportService(persona_engine=_persona_engine)
 
+    # Usage logger — async append-blob NDJSON. Best-effort.
+    if _config.storage_account_name:
+        from services.usage_logger import UsageLogger
+        _usage_logger = UsageLogger(_config.storage_account_name)
+
     deps = BotDependencies(
         persona_engine=_persona_engine,
         stock_service=_stock_service,
         profile_repo=_profile_repo,
         market_report_service=_market_report_service,
         default_persona_key=get_persona(_config.default_persona).key,
+        usage_logger=_usage_logger,
     )
     _ptb_app = build_application(_config.telegram_token, deps)
     await _ptb_app.initialize()  # one getMe call — never repeated per request
@@ -267,3 +274,113 @@ async def prewarm_commentaries(timer: func.TimerRequest) -> None:
 async def keepalive(timer: func.TimerRequest) -> None:
     await _bootstrap()
     logger.debug("keepalive tick")
+    # Flush any buffered usage events on every 5-min tick (best effort)
+    if _usage_logger is not None:
+        try:
+            await _usage_logger.flush()
+        except Exception:
+            logger.exception("usage_logger flush failed (non-fatal)")
+
+
+# ---------------------------------------------------------------------
+# 5) Dashboard aggregator — every 15 minutes builds dashboard/24h.json + 7d.json
+# ---------------------------------------------------------------------
+
+@app.timer_trigger(
+    schedule="0 */15 * * * *",
+    arg_name="timer",
+    run_on_startup=False,
+    use_monitor=True,
+)
+async def aggregate_dashboard(timer: func.TimerRequest) -> None:
+    await _bootstrap()
+    if not _config or not _config.storage_account_name:
+        return
+    from services.dashboard_aggregator import run_aggregation
+    try:
+        await run_aggregation(_config.storage_account_name)
+    except Exception:
+        logger.exception("dashboard aggregation failed")
+
+
+# ---------------------------------------------------------------------
+# 6) Public landing + Operator dashboard (key-gated)
+# ---------------------------------------------------------------------
+
+def _check_dashboard_key(req: func.HttpRequest) -> bool:
+    expected = os.getenv("DASHBOARD_ACCESS_KEY", "").strip()
+    if not expected or len(expected) < 16:
+        return False
+    provided = (req.params.get("key") or "").strip()
+    return provided == expected
+
+
+@app.route(route="dashboard", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET"])
+async def dashboard(req: func.HttpRequest) -> func.HttpResponse:
+    await _bootstrap()
+    from services.dashboard_html import landing_page, dashboard_page
+
+    if not _check_dashboard_key(req):
+        return func.HttpResponse(landing_page(), mimetype="text/html", status_code=200)
+
+    from services.dashboard_aggregator import fetch_dashboard_json
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse(landing_page(), mimetype="text/html", status_code=200)
+
+    stats_24h = await fetch_dashboard_json(_config.storage_account_name, "24h")
+    stats_7d = await fetch_dashboard_json(_config.storage_account_name, "7d")
+    key_param = req.params.get("key", "")
+    html = dashboard_page(stats_24h, stats_7d, key_param)
+    return func.HttpResponse(html, mimetype="text/html", status_code=200)
+
+
+@app.route(route="dashboard_export", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET"])
+async def dashboard_export(req: func.HttpRequest) -> func.HttpResponse:
+    await _bootstrap()
+    if not _check_dashboard_key(req):
+        return func.HttpResponse("Forbidden", status_code=403)
+
+    window = (req.params.get("window") or "24h").strip()
+    if window not in ("24h", "7d"):
+        return func.HttpResponse("Bad window", status_code=400)
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse("Not configured", status_code=500)
+
+    from azure.identity.aio import DefaultAzureCredential
+    from azure.storage.blob.aio import BlobServiceClient
+    from services.dashboard_aggregator import _read_logs_in_window
+    hours = 24 if window == "24h" else 168
+
+    creds = DefaultAzureCredential()
+    try:
+        async with BlobServiceClient(
+            account_url=f"https://{_config.storage_account_name}.blob.core.windows.net",
+            credential=creds,
+        ) as svc:
+            events = await _read_logs_in_window(svc, hours)
+    finally:
+        await creds.close()
+
+    lines = ["timestamp,anon_user_id_short,language,persona,ticker,tier,duration_ms,llm_in,llm_out"]
+    for e in events:
+        lines.append(",".join([
+            str(e.get("ts", "")),
+            str(e.get("anon", ""))[:8],
+            str(e.get("lang", "")),
+            str(e.get("persona", "")),
+            str(e.get("ticker", "")),
+            str(e.get("tier", "")),
+            str(e.get("duration_ms", 0)),
+            str(e.get("llm_in", 0)),
+            str(e.get("llm_out", 0)),
+        ]))
+    csv_body = "\n".join(lines).encode("utf-8")
+
+    return func.HttpResponse(
+        csv_body,
+        mimetype="text/csv",
+        status_code=200,
+        headers={
+            "Content-Disposition": f'attachment; filename="ai_investor_{window}.csv"'
+        },
+    )

@@ -60,6 +60,7 @@ class BotDependencies:
     profile_repo: AsyncUserProfileRepo  # Blob native async or SQLite-wrapped
     market_report_service: MarketReportService
     default_persona_key: str
+    usage_logger: object = None  # services.usage_logger.UsageLogger or None
 
 
 def build_application(token: str, deps: BotDependencies) -> Application:
@@ -688,12 +689,29 @@ def _strip_md(text: str) -> str:
     return text
 
 
+async def _log_usage(deps, profile, ticker: str, tier: str, duration_ms: int) -> None:
+    """Best-effort usage telemetry (NDJSON in Blob)."""
+    logger_inst = getattr(deps, "usage_logger", None)
+    if logger_inst is None:
+        return
+    try:
+        await logger_inst.record(
+            anon=profile.anon_user_id, lang=profile.language,
+            persona=profile.persona_key, ticker=ticker, tier=tier,
+            duration_ms=duration_ms,
+        )
+    except Exception:
+        logger.exception("usage_logger.record failed (non-fatal)")
+
+
 async def _handle_ticker_query(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
     profile: UserProfile,
     text: str,
 ) -> None:
+    import time
+    started = time.monotonic()
     deps = _deps(context)
     lang = profile.language
     s = t(lang)
@@ -704,6 +722,8 @@ async def _handle_ticker_query(
     # ────────────────────────────────────────────────────────────────
     if _classify_intent(text) == "natural_language":
         await update.message.reply_text(s.intent_unrecognized)
+        await _log_usage(deps, profile, "", "intent_unrecognized",
+                         int((time.monotonic() - started) * 1000))
         return
 
     # Resolve to canonical ticker once for cache lookups (e.g. "테슬라" → "TSLA").
@@ -720,6 +740,8 @@ async def _handle_ticker_query(
             logger.info("prewarm.cache_hit ticker=%s persona=%s lang=%s",
                         ticker_key, persona.key, lang)
             await update.message.reply_text(_strip_md(cached))
+            await _log_usage(deps, profile, ticker_key, "commentary_hit",
+                             int((time.monotonic() - started) * 1000))
             # Snapshot lookup for sector recording is cheap (in-memory cache hit)
             try:
                 snap = deps.stock_service.get_snapshot(ticker_key)
@@ -740,12 +762,15 @@ async def _handle_ticker_query(
         if snapshot is not None:
             logger.info("prewarm.snapshot_hit ticker=%s", ticker_key)
 
+    snapshot_was_cached = snapshot is not None
     if snapshot is None:
         try:
             snapshot = deps.stock_service.get_snapshot(text)
         except StockServiceError:
             # Localize the not-found error
             await update.message.reply_text(s.ticker_not_found.format(q=text))
+            await _log_usage(deps, profile, ticker_key or text[:8], "ticker_not_found",
+                             int((time.monotonic() - started) * 1000))
             return
         except Exception:
             logger.exception("Stock lookup failed for input=%r", text)
@@ -769,6 +794,9 @@ async def _handle_ticker_query(
 
     header = f"[{persona.name(lang)} · {snapshot.ticker}]"
     await update.message.reply_text(f"{header}\n\n{_strip_md(reply)}")
+    tier = "snapshot_hit" if snapshot_was_cached else "live"
+    await _log_usage(deps, profile, snapshot.ticker, tier,
+                     int((time.monotonic() - started) * 1000))
     try:
         await _record_and_maybe_offer_sector(update, context, profile, snapshot.ticker, snapshot)
     except Exception:

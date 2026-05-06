@@ -51,7 +51,7 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01'
   }
 }
 
-var containerNames = ['users', 'reports', 'logs', 'analysis', 'deployment', 'prewarm']
+var containerNames = ['users', 'reports', 'logs', 'analysis', 'deployment', 'prewarm', 'dashboard']
 resource containers 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = [for name in containerNames: {
   parent: blobService
   name: name
@@ -187,6 +187,8 @@ resource funcApp 'Microsoft.Web/sites@2023-12-01' = {
         { name: 'DEFAULT_PERSONA', value: 'buffett' }
         { name: 'SQLITE_PATH', value: '/home/data/aiinvestor.db' }
         { name: 'STORAGE_ACCOUNT_NAME', value: storage.name }
+        { name: 'STORAGE_BACKEND', value: 'blob' }
+        { name: 'DASHBOARD_ACCESS_KEY', value: '@Microsoft.KeyVault(SecretUri=https://${keyVault.name}.vault.azure.net/secrets/dashboard-access-key/)' }
         { name: 'LOG_LEVEL', value: 'INFO' }
       ]
     }
