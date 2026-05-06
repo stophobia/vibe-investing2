@@ -5,8 +5,7 @@
     { "route": "/dashboard-persona", "rewrite": "/dashboard-persona.html" },
     { "route": "/페르소나", "rewrite": "/dashboard-persona.html" },
     { "route": "/ticker", "rewrite": "/ticker.html" },
-    { "route": "/miniapp", "rewrite": "/miniapp/index.html" },
-    { "route": "/miniapp/", "rewrite": "/miniapp/index.html" }
+    { "route": "/miniapp", "rewrite": "/miniapp/index.html" }
   ],
   "responseOverrides": {
     "404": { "rewrite": "/index.html", "statusCode": 200 }
