@@ -47,8 +47,13 @@ _market_report_service: MarketReportService | None = None
 _profile_repo: UserProfileRepo | None = None
 
 
-def _bootstrap() -> None:
-    """Build the bot application once per Functions instance."""
+async def _bootstrap() -> None:
+    """Build the bot application once per Functions instance.
+
+    Calling _ptb_app.initialize() ONCE here (instead of `async with` per
+    request) saves ~750ms on every webhook call — that's the getMe round
+    trip the bot performs on entry to its async context manager.
+    """
     global _config, _ptb_app, _market_report_service, _profile_repo
     if _ptb_app is not None:
         return
@@ -75,6 +80,7 @@ def _bootstrap() -> None:
         default_persona_key=get_persona(_config.default_persona).key,
     )
     _ptb_app = build_application(_config.telegram_token, deps)
+    await _ptb_app.initialize()  # one getMe call — never repeated per request
     logger.info("AI Investor bootstrapped (model=%s)", _config.deepseek_model)
 
 
@@ -84,7 +90,7 @@ def _bootstrap() -> None:
 
 @app.route(route="telegram/webhook", auth_level=func.AuthLevel.ANONYMOUS)
 async def telegram_webhook(req: func.HttpRequest) -> func.HttpResponse:
-    _bootstrap()
+    await _bootstrap()
     assert _ptb_app is not None
 
     # Verify Telegram's secret token to reject forged webhook hits.
@@ -101,8 +107,9 @@ async def telegram_webhook(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(status_code=400)
 
     update = Update.de_json(body, _ptb_app.bot)
-    async with _ptb_app:
-        await _ptb_app.process_update(update)
+    # No `async with` — initialize() ran once at bootstrap; per-request
+    # context entry was costing ~750ms of getMe roundtrip.
+    await _ptb_app.process_update(update)
 
     return func.HttpResponse(status_code=200)
 
@@ -118,7 +125,7 @@ async def telegram_webhook(req: func.HttpRequest) -> func.HttpResponse:
     use_monitor=True,
 )
 async def daily_report(timer: func.TimerRequest) -> None:
-    _bootstrap()
+    await _bootstrap()
     assert _market_report_service is not None
     from services.blob_report_writer import BlobReportWriter
     from services.persona_engine import list_personas
@@ -165,5 +172,5 @@ async def daily_report(timer: func.TimerRequest) -> None:
     use_monitor=False,
 )
 async def keepalive(timer: func.TimerRequest) -> None:
-    _bootstrap()
+    await _bootstrap()
     logger.debug("keepalive tick")
