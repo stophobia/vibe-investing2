@@ -3,7 +3,9 @@
 **대상 엔드포인트**: `https://black-plant-0f73c5e00.7.azurestaticapps.net/data/{ticker}`
 **리프레시 주기**: 30분 ~ 4시간 (적응형, 본 문서 §1 참조)
 **문서 버전**: v1.0 (2026-05-05)
-**관련 문서**: `jeunggwon-architecture-v3.0-ko.md` (§8 적응형 캐싱, §12 Cosmos TTL)
+**관련 문서**:
+- `jeunggwon-architecture-v3.0-ko.md` (§8 적응형 캐싱, §12 Cosmos TTL)
+- **[report-generation-policy-v1.0-ko.md](report-generation-policy-v1.0-ko.md)** — 본 문서의 가벼운 ticker price 캐시 위에, **시간대별 6개 슬롯 자동 리포트 + 페르소나×섹터 매트릭스 + 휴장 정책** 을 추가한 상위 정책. 옵션 C 도입 시 정량 효과 (응답시간 8s→1.7s, LLM 호출 70%↓, 월 비용 67%↓) 분석 포함.
 
 ---
 
