@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+import threading
+import time
 from dataclasses import dataclass
 from typing import Any
 
@@ -11,6 +13,12 @@ import yfinance as yf
 from .ticker_lookup import TickerLookup
 
 logger = logging.getLogger(__name__)
+
+# In-process snapshot cache. Same ticker queried within TTL skips both
+# yfinance roundtrips entirely (~0.5–1.5s saved per repeat).
+_SNAPSHOT_TTL_SEC = 300
+_snapshot_cache: dict[str, tuple[float, "StockSnapshot"]] = {}
+_snapshot_lock = threading.Lock()
 
 
 @dataclass
@@ -80,6 +88,14 @@ class StockService:
         ticker_symbol = self._lookup.resolve(query)
         if not ticker_symbol:
             raise StockServiceError(f"Empty query: {query!r}")
+
+        # Cache hit: skip both yfinance HTTP calls.
+        with _snapshot_lock:
+            cached = _snapshot_cache.get(ticker_symbol)
+            if cached and cached[0] > time.monotonic():
+                logger.info("Snapshot cache hit for %s", ticker_symbol)
+                return cached[1]
+
         logger.info("Fetching snapshot for %s (raw=%r)", ticker_symbol, query)
 
         ticker = yf.Ticker(ticker_symbol)
@@ -94,7 +110,7 @@ class StockService:
         price = self._latest_price(history, info)
         changes = self._price_changes(history)
 
-        return StockSnapshot(
+        snapshot = StockSnapshot(
             ticker=ticker_symbol,
             name=info.get("longName") or info.get("shortName") or ticker_symbol,
             sector=info.get("sector"),
@@ -118,6 +134,10 @@ class StockService:
             price_change_6m_pct=changes.get("6m"),
             price_change_1y_pct=changes.get("1y"),
         )
+
+        with _snapshot_lock:
+            _snapshot_cache[ticker_symbol] = (time.monotonic() + _SNAPSHOT_TTL_SEC, snapshot)
+        return snapshot
 
     @staticmethod
     def _normalize(query: str) -> str:

@@ -148,6 +148,7 @@ class PersonaEngine:
         response = await self._client.chat.completions.create(
             model=self._model,
             temperature=0.4,
+            max_tokens=500,
             timeout=20.0,
             messages=[
                 {"role": "system", "content": f"{persona.system_prompt}\n\n{lang_instruction}"},
