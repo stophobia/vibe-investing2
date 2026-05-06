@@ -84,6 +84,18 @@ class StockService:
     def __init__(self, ticker_lookup: TickerLookup | None = None) -> None:
         self._lookup = ticker_lookup or TickerLookup()
 
+    def is_cached(self, query: str) -> bool:
+        """True iff get_snapshot(query) would return from the in-process
+        5-min memory cache without hitting yfinance. Cheap O(1) probe —
+        callers use this to attribute a hit to the 'function cache' tier
+        (vs 'live' yfinance + LLM full path)."""
+        ticker_symbol = self._lookup.resolve(query)
+        if not ticker_symbol:
+            return False
+        with _snapshot_lock:
+            cached = _snapshot_cache.get(ticker_symbol)
+            return bool(cached and cached[0] > time.monotonic())
+
     def get_snapshot(self, query: str) -> StockSnapshot:
         ticker_symbol = self._lookup.resolve(query)
         if not ticker_symbol:

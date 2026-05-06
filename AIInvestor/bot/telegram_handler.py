@@ -318,10 +318,13 @@ async def _cmd_recommend(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     """List top tickers — by sector arg, or by user's revealed interests.
     No LLM call: pure data lookup. Validates the cache-first hypothesis.
     """
+    import time as _time
+    rec_started = _time.monotonic()
     profile = await _profile(update, context)
     lang = profile.language
     s = t(lang)
     arg = " ".join(context.args or []).strip().lower()
+    deps = _deps(context)
 
     from services.sector_tracker import SECTOR_RELATED
 
@@ -363,10 +366,11 @@ async def _cmd_recommend(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         etfs = SECTOR_RELATED[sector_key]["etfs"]
     else:
         await update.message.reply_text(no_section)
+        await _log_usage(deps, profile, "", "recommend_no_sector",
+                         int((_time.monotonic() - rec_started) * 1000))
         return
 
     lines = [f"{header}", f"{sector_label}: {sector_key}", ""]
-    deps = _deps(context)
 
     # Render each peer with whatever cached price we can get cheaply (no yfinance hit if miss)
     peers_label = {"ko": "📌 핵심 종목", "en": "📌 Peers", "ja": "📌 主要銘柄", "zh": "📌 核心股票"}.get(lang, "📌 Peers")
@@ -394,15 +398,20 @@ async def _cmd_recommend(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     lines.append("")
     lines.append(f"⚠ {s.short_disclaimer}")
     await update.message.reply_text("\n".join(lines))
+    await _log_usage(deps, profile, sector_key or "", "recommend",
+                     int((_time.monotonic() - rec_started) * 1000))
 
 
 async def _cmd_compare(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """/compare AAPL MSFT [GOOGL …] — side-by-side fundamentals snapshot.
     No LLM call. 2–4 tickers supported.
     """
+    import time as _time
+    cmp_started = _time.monotonic()
     profile = await _profile(update, context)
     lang = profile.language
     s = t(lang)
+    deps = _deps(context)
 
     raw_args = [a.strip().upper() for a in (context.args or []) if a.strip()]
     if len(raw_args) < 2:
@@ -413,22 +422,27 @@ async def _cmd_compare(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             "zh": "用法: /compare AAPL MSFT GOOGL  (2-4 支股票)",
         }.get(lang, "Usage: /compare AAPL MSFT GOOGL")
         await update.message.reply_text(usage)
+        await _log_usage(deps, profile, "", "compare_usage",
+                         int((_time.monotonic() - cmp_started) * 1000))
         return
 
     tickers = raw_args[:4]
-    deps = _deps(context)
     snapshots = []
     for tk in tickers:
         try:
             snapshots.append(deps.stock_service.get_snapshot(tk))
         except StockServiceError:
             await update.message.reply_text(s.ticker_not_found.format(q=tk))
+            await _log_usage(deps, profile, tk, "compare_not_found",
+                             int((_time.monotonic() - cmp_started) * 1000))
             return
         except Exception:
             logger.exception("compare snapshot failed for %s", tk)
 
     if len(snapshots) < 2:
         await update.message.reply_text(s.error_market_data)
+        await _log_usage(deps, profile, "", "compare_error",
+                         int((_time.monotonic() - cmp_started) * 1000))
         return
 
     # Localized header
@@ -465,6 +479,8 @@ async def _cmd_compare(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     rows.append("")
     rows.append(f"⚠ {s.short_disclaimer}")
     await update.message.reply_text("\n".join(rows))
+    await _log_usage(deps, profile, ",".join(snap.ticker for snap in snapshots)[:8],
+                     "compare", int((_time.monotonic() - cmp_started) * 1000))
 
 
 def _fmt_market_cap(v):
@@ -668,6 +684,8 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
         # choice == ticker symbol — run live LLM with full unbounded prompt
         ticker = choice.upper()
+        import time as _time
+        deep_started = _time.monotonic()
         await context.bot.send_chat_action(
             chat_id=query.message.chat_id, action=ChatAction.TYPING,
         )
@@ -697,11 +715,17 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 await query.message.reply_text(body[:cut])
                 await query.message.reply_text(body[cut:].lstrip(),
                     reply_markup=_dual_offer_keyboard(persona.key, ticker, lang))
+            await _log_usage(deps, profile, ticker, "deep",
+                             int((_time.monotonic() - deep_started) * 1000))
         except StockServiceError:
             await query.message.reply_text(s.ticker_not_found.format(q=ticker))
+            await _log_usage(deps, profile, ticker, "deep_not_found",
+                             int((_time.monotonic() - deep_started) * 1000))
         except Exception:
             logger.exception("Deeper analysis failed ticker=%s", ticker)
             await query.message.reply_text(s.error_llm)
+            await _log_usage(deps, profile, ticker, "deep_error",
+                             int((_time.monotonic() - deep_started) * 1000))
         return
 
     if data.startswith("dual:"):
@@ -746,6 +770,8 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         )
 
         ticker = ticker.upper()
+        import time as _time
+        dual_started = _time.monotonic()
         await context.bot.send_chat_action(
             chat_id=query.message.chat_id, action=ChatAction.TYPING,
         )
@@ -774,11 +800,17 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     cut = 3500
                 await query.message.reply_text(body[:cut])
                 await query.message.reply_text(body[cut:].lstrip())
+            await _log_usage(deps, profile, ticker, "dual",
+                             int((_time.monotonic() - dual_started) * 1000))
         except StockServiceError:
             await query.message.reply_text(s.ticker_not_found.format(q=ticker))
+            await _log_usage(deps, profile, ticker, "dual_not_found",
+                             int((_time.monotonic() - dual_started) * 1000))
         except Exception:
             logger.exception("Dual-persona analysis failed ticker=%s", ticker)
             await query.message.reply_text(s.error_llm)
+            await _log_usage(deps, profile, ticker, "dual_error",
+                             int((_time.monotonic() - dual_started) * 1000))
         return
 
     if data.startswith("sector:"):
@@ -1199,6 +1231,13 @@ async def _handle_ticker_query(
             logger.info("prewarm.snapshot_hit ticker=%s", ticker_key)
 
     snapshot_was_cached = snapshot is not None
+    # Probe the stock_service in-memory cache *before* the call so we can
+    # attribute Tier 0 ("function_cache") hits separately from a true live
+    # path. The probe is O(1) and never hits yfinance.
+    mem_was_cached = (
+        False if snapshot_was_cached
+        else deps.stock_service.is_cached(text)
+    )
     if snapshot is None:
         try:
             snapshot = deps.stock_service.get_snapshot(text)
@@ -1239,7 +1278,12 @@ async def _handle_ticker_query(
 
     header = f"[{persona.name(lang)} · {snapshot.ticker}]"
     await update.message.reply_text(f"{header}\n\n{_strip_md(reply)}")
-    tier = "snapshot_hit" if snapshot_was_cached else "live"
+    if snapshot_was_cached:
+        tier = "snapshot_hit"
+    elif mem_was_cached:
+        tier = "function_cache"  # in-process 5-min snapshot cache, LLM still ran
+    else:
+        tier = "live"
     await _log_usage(deps, profile, snapshot.ticker, tier,
                      int((time.monotonic() - started) * 1000))
     try:

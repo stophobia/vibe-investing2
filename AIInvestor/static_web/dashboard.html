@@ -12,7 +12,7 @@
 :root { --bg:#151521; --card:#2a2a3c; --border:#3a3a4a;
         --accent:#f7931a; --good:#4caf50; --bad:#e57373; --info:#74b9ff;
         --c-llm-call:#e57373; --c-llm-cache:#4caf50; --c-obj-cache:#ffb74d;
-        --c-cdn:#64b5f6; --c-other:#9e9e9e; }
+        --c-fn-cache:#64b5f6; --c-other:#9e9e9e; }
 body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
        background:var(--bg); color:#e0e0e0; }
 .container-xl { max-width:1280px; }
@@ -28,8 +28,9 @@ h1 { font-weight:700; font-size:1.6rem; }
 .kpi.llm-call  .num { color:var(--c-llm-call); }
 .kpi.llm-cache .num { color:var(--c-llm-cache); }
 .kpi.obj-cache .num { color:var(--c-obj-cache); }
-.kpi.cdn       .num { color:var(--c-cdn); }
+.kpi.fn-cache  .num { color:var(--c-fn-cache); }
 .kpi.total     .num { color:var(--accent); }
+.kpi.saved     .num { color:var(--good); }
 .section-title { font-size:1.1rem; font-weight:700; margin:30px 0 12px; padding-left:8px;
                  border-left:4px solid var(--accent); }
 /* Bootstrap 5 reads cell color from these CSS variables — overriding `.table { color }`
@@ -49,7 +50,7 @@ h1 { font-weight:700; font-size:1.6rem; }
 .lp-llm-call  { background:rgba(229,115,115,.18); color:var(--c-llm-call); }
 .lp-llm-cache { background:rgba(76,175,80,.18);  color:var(--c-llm-cache); }
 .lp-obj-cache { background:rgba(255,183,77,.18); color:var(--c-obj-cache); }
-.lp-cdn       { background:rgba(100,181,246,.18); color:var(--c-cdn); }
+.lp-fn-cache  { background:rgba(100,181,246,.18); color:var(--c-fn-cache); }
 .signif-card.good { border-left:4px solid var(--good); }
 .signif-card.bad  { border-left:4px solid var(--bad); }
 .signif-card { background:var(--card); padding:12px 16px; border-radius:8px;
@@ -91,33 +92,47 @@ canvas { max-height: 240px; }
 
   <div id="error-area"></div>
 
-  <!-- KPI Cards: 4-way cache breakdown -->
+  <!-- KPI Cards: 4-tier cache breakdown + saved-LLM-calls highlight -->
   <h2 class="section-title">캐시 단계별 호출 (KST 기준)</h2>
   <div class="row g-3">
-    <div class="col-md-3 col-6"><div class="card kpi llm-call">
+    <div class="col-md-2 col-6"><div class="card kpi fn-cache">
+      <div class="label">⚡ Function 캐시</div>
+      <div class="num" id="kpi-fn-cache-today">—</div>
+      <div class="sub">오늘 · 누적 <span id="kpi-fn-cache-total">—</span></div>
+    </div></div>
+    <div class="col-md-2 col-6"><div class="card kpi llm-cache">
+      <div class="label">✨ LLM 캐시</div>
+      <div class="num" id="kpi-llm-cache-today">—</div>
+      <div class="sub">오늘 · 누적 <span id="kpi-llm-cache-total">—</span></div>
+    </div></div>
+    <div class="col-md-2 col-6"><div class="card kpi obj-cache">
+      <div class="label">💾 Object 캐시</div>
+      <div class="num" id="kpi-obj-cache-today">—</div>
+      <div class="sub">오늘 · 누적 <span id="kpi-obj-cache-total">—</span></div>
+    </div></div>
+    <div class="col-md-2 col-6"><div class="card kpi llm-call">
       <div class="label">🔥 LLM 직접 호출</div>
       <div class="num" id="kpi-llm-call-today">—</div>
       <div class="sub">오늘 · 누적 <span id="kpi-llm-call-total">—</span></div>
     </div></div>
-    <div class="col-md-3 col-6"><div class="card kpi llm-cache">
-      <div class="label">✨ LLM 캐시 히트</div>
-      <div class="num" id="kpi-llm-cache-today">—</div>
-      <div class="sub">오늘 · 누적 <span id="kpi-llm-cache-total">—</span></div>
-    </div></div>
-    <div class="col-md-3 col-6"><div class="card kpi obj-cache">
-      <div class="label">💾 Object Storage 캐시</div>
-      <div class="num" id="kpi-obj-cache-today">—</div>
-      <div class="sub">오늘 · 누적 <span id="kpi-obj-cache-total">—</span></div>
-    </div></div>
-    <div class="col-md-3 col-6"><div class="card kpi total">
+    <div class="col-md-2 col-6"><div class="card kpi total">
       <div class="label">📈 캐시 적중률</div>
       <div class="num" id="kpi-cache-pct">—</div>
       <div class="sub" id="kpi-cache-pct-note">캐시 / 전체</div>
     </div></div>
+    <div class="col-md-2 col-6"><div class="card kpi saved" style="border-top:3px solid var(--good);">
+      <div class="label">💰 절감 LLM 호출</div>
+      <div class="num" id="kpi-saved-total">—</div>
+      <div class="sub">DeepSeek 미호출 (오늘 <span id="kpi-saved-today">—</span>)</div>
+    </div></div>
   </div>
 
   <p class="muted mt-2"><i class="fa-solid fa-circle-info"></i>
-    CDN 엣지 캐시는 Cache-Control 헤더로 자동 처리되며 NDJSON 로그에 별도 기록되지 않습니다 (브라우저/SWA 측 트래킹).
+    <strong>4-tier 정의</strong> ⚡ Function 캐시 = 인메모리 5분 TTL (yfinance 절감, LLM 호출됨) ·
+    ✨ LLM 캐시 = 사전 캐싱 commentary (yfinance + LLM 모두 절감) ·
+    💾 Object 캐시 = Blob snapshot (yfinance 절감, LLM 호출됨) ·
+    🔥 LLM 직접 = 풀 라이브 패스 (live / deep / dual / ai_search_live).
+    💰 절감 LLM 호출은 LLM 캐시 히트 수 (DeepSeek API 사용 안 됨).
   </p>
 
   <!-- Statistical interpretation -->
@@ -128,9 +143,10 @@ canvas { max-height: 240px; }
   <h2 class="section-title">일별 호출 추이 (최근 30일, KST 기준)</h2>
   <div class="card p-3">
     <div class="mb-2">
-      <span class="legend-pill lp-llm-call">🔥 LLM 직접</span>
+      <span class="legend-pill lp-fn-cache">⚡ Function 캐시</span>
       <span class="legend-pill lp-llm-cache">✨ LLM 캐시</span>
       <span class="legend-pill lp-obj-cache">💾 Object 캐시</span>
+      <span class="legend-pill lp-llm-call">🔥 LLM 직접</span>
     </div>
     <canvas id="dailyChart"></canvas>
   </div>
@@ -141,12 +157,14 @@ canvas { max-height: 240px; }
     <p class="muted mb-2"><i class="fa-solid fa-circle-info"></i>
       셀이 진할수록 해당 시간대에 호출 누적이 많음. 피크 시간 직전에 사전 캐싱하면 첫 사용자 응답시간을 절감할 수 있다는 가설의 근거.
     </p>
-    <div class="muted small mb-1">LLM 직접 호출</div>
-    <div class="heatmap-row" id="heat-llm-call"></div>
-    <div class="muted small mb-1 mt-2">LLM 캐시 히트</div>
+    <div class="muted small mb-1">⚡ Function 캐시</div>
+    <div class="heatmap-row" id="heat-fn-cache"></div>
+    <div class="muted small mb-1 mt-2">✨ LLM 캐시 히트</div>
     <div class="heatmap-row" id="heat-llm-cache"></div>
-    <div class="muted small mb-1 mt-2">Object Storage 캐시</div>
+    <div class="muted small mb-1 mt-2">💾 Object Storage 캐시</div>
     <div class="heatmap-row" id="heat-obj-cache"></div>
+    <div class="muted small mb-1 mt-2">🔥 LLM 직접 호출</div>
+    <div class="heatmap-row" id="heat-llm-call"></div>
   </div>
 
   <!-- Cohort & ticker concentration -->
@@ -212,9 +230,10 @@ canvas { max-height: 240px; }
             <th>날짜 (KST)</th>
             <th class="text-end">유저</th>
             <th class="text-end">총 호출</th>
-            <th class="text-end" style="color:var(--c-llm-call)">LLM 직접</th>
+            <th class="text-end" style="color:var(--c-fn-cache)">Function</th>
             <th class="text-end" style="color:var(--c-llm-cache)">LLM 캐시</th>
-            <th class="text-end" style="color:var(--c-obj-cache)">Object 캐시</th>
+            <th class="text-end" style="color:var(--c-obj-cache)">Object</th>
+            <th class="text-end" style="color:var(--c-llm-call)">LLM 직접</th>
             <th class="text-end">캐시%</th>
             <th class="text-end">p50 ms</th>
             <th>다운로드</th>
@@ -289,23 +308,29 @@ function renderV2(d) {
   document.getElementById('meta').textContent =
     '갱신: ' + fmtTs(d.generated_at) + ' · 30일 윈도우';
 
-  // KPI
+  // KPI — 4-tier breakdown + saved-LLM-calls highlight
   const t = d.totals || {};
   const today = t.today || {};
   const cum   = t.cumulative || {};
-  document.getElementById('kpi-llm-call-today').textContent = fmtNum(today.llm_call);
-  document.getElementById('kpi-llm-call-total').textContent = fmtNum(cum.llm_call);
+  document.getElementById('kpi-fn-cache-today').textContent = fmtNum(today.function_cache);
+  document.getElementById('kpi-fn-cache-total').textContent = fmtNum(cum.function_cache);
   document.getElementById('kpi-llm-cache-today').textContent = fmtNum(today.llm_cache);
   document.getElementById('kpi-llm-cache-total').textContent = fmtNum(cum.llm_cache);
   document.getElementById('kpi-obj-cache-today').textContent = fmtNum(today.obj_cache);
   document.getElementById('kpi-obj-cache-total').textContent = fmtNum(cum.obj_cache);
+  document.getElementById('kpi-llm-call-today').textContent = fmtNum(today.llm_call);
+  document.getElementById('kpi-llm-call-total').textContent = fmtNum(cum.llm_call);
 
-  const cacheTotal = (cum.llm_cache || 0) + (cum.obj_cache || 0);
+  const cacheTotal = (cum.function_cache || 0) + (cum.llm_cache || 0) + (cum.obj_cache || 0);
   const allTotal   = cacheTotal + (cum.llm_call || 0);
   const cachePct   = allTotal ? (cacheTotal / allTotal * 100).toFixed(1) : '—';
   document.getElementById('kpi-cache-pct').textContent = cachePct + '%';
   document.getElementById('kpi-cache-pct-note').textContent =
     `캐시 ${fmtNum(cacheTotal)} / 전체 ${fmtNum(allTotal)}`;
+
+  // Saved LLM calls — exposed by aggregator at totals.llm_calls_saved_*
+  document.getElementById('kpi-saved-total').textContent = fmtNum(t.llm_calls_saved_total);
+  document.getElementById('kpi-saved-today').textContent = fmtNum(t.llm_calls_saved_today);
 
   // Significance bullets
   const sig = document.getElementById('signif-area');
@@ -331,12 +356,14 @@ function renderV2(d) {
     data: {
       labels,
       datasets: [
-        { label:'🔥 LLM 직접', data:daily.map(x=>x.llm_call),
-          backgroundColor:'#e57373', stack:'a' },
-        { label:'✨ LLM 캐시', data:daily.map(x=>x.llm_cache),
+        { label:'⚡ Function 캐시', data:daily.map(x=>x.function_cache||0),
+          backgroundColor:'#64b5f6', stack:'a' },
+        { label:'✨ LLM 캐시', data:daily.map(x=>x.llm_cache||0),
           backgroundColor:'#4caf50', stack:'a' },
-        { label:'💾 Object 캐시', data:daily.map(x=>x.obj_cache),
+        { label:'💾 Object 캐시', data:daily.map(x=>x.obj_cache||0),
           backgroundColor:'#ffb74d', stack:'a' },
+        { label:'🔥 LLM 직접', data:daily.map(x=>x.llm_call||0),
+          backgroundColor:'#e57373', stack:'a' },
       ],
     },
     options: {
@@ -349,12 +376,13 @@ function renderV2(d) {
     },
   });
 
-  // Hourly heatmaps (one row per cache type)
+  // Hourly heatmaps (one row per cache type — 4 tiers)
   const hourly = d.hourly_routine || [];
   const maxByType = {
-    llm_call:  Math.max(1, ...hourly.map(h=>h.llm_call)),
-    llm_cache: Math.max(1, ...hourly.map(h=>h.llm_cache)),
-    obj_cache: Math.max(1, ...hourly.map(h=>h.obj_cache)),
+    function_cache: Math.max(1, ...hourly.map(h=>h.function_cache||0)),
+    llm_call:       Math.max(1, ...hourly.map(h=>h.llm_call||0)),
+    llm_cache:      Math.max(1, ...hourly.map(h=>h.llm_cache||0)),
+    obj_cache:      Math.max(1, ...hourly.map(h=>h.obj_cache||0)),
   };
   function renderHeatRow(elemId, key, color) {
     const el = document.getElementById(elemId);
@@ -366,9 +394,10 @@ function renderV2(d) {
                    style="background:rgba(${color},${alpha})">${h.hour}</div>`;
     }).join('');
   }
-  renderHeatRow('heat-llm-call',  'llm_call',  '229,115,115');
-  renderHeatRow('heat-llm-cache', 'llm_cache', '76,175,80');
-  renderHeatRow('heat-obj-cache', 'obj_cache', '255,183,77');
+  renderHeatRow('heat-fn-cache',  'function_cache', '100,181,246');
+  renderHeatRow('heat-llm-cache', 'llm_cache',      '76,175,80');
+  renderHeatRow('heat-obj-cache', 'obj_cache',      '255,183,77');
+  renderHeatRow('heat-llm-call',  'llm_call',       '229,115,115');
 
   // Cohorts
   const cohorts = d.cohorts || {};
@@ -454,14 +483,15 @@ function renderDates(d) {
       <td><strong>${escapeHtml(row.date)}</strong></td>
       <td class="text-end">${fmtNum(row.users)}</td>
       <td class="text-end">${fmtNum(row.total)}</td>
-      <td class="text-end" style="color:var(--c-llm-call)">${fmtNum(row.llm_call)}</td>
+      <td class="text-end" style="color:var(--c-fn-cache)">${fmtNum(row.function_cache)}</td>
       <td class="text-end" style="color:var(--c-llm-cache)">${fmtNum(row.llm_cache)}</td>
       <td class="text-end" style="color:var(--c-obj-cache)">${fmtNum(row.obj_cache)}</td>
+      <td class="text-end" style="color:var(--c-llm-call)">${fmtNum(row.llm_call)}</td>
       <td class="text-end">${row.cache_hit_pct}%</td>
       <td class="text-end">${fmtNum(row.p50_ms)}</td>
       <td><a class="csv-link" href="${dl}" target="_blank">📥 CSV</a></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="9" class="muted text-center">데이터 없음</td></tr>';
+  }).join('') || '<tr><td colspan="10" class="muted text-center">데이터 없음</td></tr>';
 
   // Pagination
   const pag = document.getElementById('dates-pagination');

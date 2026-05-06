@@ -567,6 +567,19 @@ async def public_stats(req: func.HttpRequest) -> func.HttpResponse:
             except Exception:
                 # Fallback to cumulative users
                 mau = cumulative_users
+
+            # LLM 호출 절감 — read v2.json totals (commentary_hit count)
+            llm_calls_saved = 0
+            try:
+                v2_blob = svc.get_blob_client("dashboard", "v2.json")
+                v2_stream = await v2_blob.download_blob()
+                v2_body = await v2_stream.readall()
+                v2_doc = json.loads(v2_body)
+                totals = v2_doc.get("totals", {})
+                llm_calls_saved = int(totals.get("llm_calls_saved_total", 0))
+            except Exception:
+                # No v2 yet — fallback to 0
+                llm_calls_saved = 0
     finally:
         await creds.close()
 
@@ -574,6 +587,7 @@ async def public_stats(req: func.HttpRequest) -> func.HttpResponse:
         "cumulative_users": cumulative_users,
         "active_today": active_today,
         "mau": mau,
+        "llm_calls_saved": llm_calls_saved,
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
     headers = dict(_CORS_HEADERS)

@@ -352,14 +352,26 @@ async def fetch_persona_breakdown(
 
 
 def _classify_cache_category(tier: str) -> str:
-    """Map raw tier values to one of the 4 cache buckets."""
+    """Map raw tier values to one of the 4 cache buckets.
+
+    Cache hierarchy (fastest → slowest):
+      function_cache  — Function App in-process 5-min memory cache hit
+                        (no yfinance, but LLM still ran)
+      llm_cache       — pre-warmed LLM commentary blob (no yfinance, no LLM)
+      obj_cache       — pre-warmed snapshot blob (no yfinance, LLM ran)
+      llm_call        — full live path (yfinance + LLM)
+
+    Note: 'commentary_hit' saves the LLM call; 'snapshot_hit' and
+    'function_cache' both save yfinance only — LLM still runs in those tiers.
+    """
     if tier == "commentary_hit":
         return "llm_cache"
     if tier == "snapshot_hit":
         return "obj_cache"
-    if tier in ("live", "deep"):
+    if tier == "function_cache":
+        return "function_cache"
+    if tier in ("live", "deep", "dual", "ai_search_live"):
         return "llm_call"
-    # cdn_edge is only inferred at the public-stats level; not in NDJSON
     return "other"
 
 
@@ -443,15 +455,16 @@ def _aggregate_v2(events: list[dict], days: int = 30) -> dict[str, Any]:
     """The big aggregation. Returns the full payload the v2 dashboard renders."""
     now = datetime.now(timezone.utc)
 
-    # 4-way category counters
-    cat_today: dict[str, int] = {"llm_call": 0, "llm_cache": 0, "obj_cache": 0, "other": 0}
-    cat_total: dict[str, int] = {"llm_call": 0, "llm_cache": 0, "obj_cache": 0, "other": 0}
+    # 4-way category counters (function_cache replaces the old cdn_edge slot)
+    _empty_cats = lambda: {"function_cache": 0, "llm_cache": 0, "obj_cache": 0, "llm_call": 0, "other": 0}
+    cat_today: dict[str, int] = _empty_cats()
+    cat_total: dict[str, int] = _empty_cats()
 
-    # daily_series[date_key] → {llm_call, llm_cache, obj_cache, other, users(set), p50_pool}
+    # daily_series[date_key] → {function_cache, llm_call, llm_cache, obj_cache, other, users(set), p50_pool}
     daily: dict[str, dict[str, Any]] = {}
 
-    # hourly_routine[hour] → {llm_call, llm_cache, obj_cache, other}
-    hourly: dict[int, dict[str, int]] = {h: {"llm_call": 0, "llm_cache": 0, "obj_cache": 0, "other": 0} for h in range(24)}
+    # hourly_routine[hour] → {function_cache, llm_call, llm_cache, obj_cache, other}
+    hourly: dict[int, dict[str, int]] = {h: _empty_cats() for h in range(24)}
 
     # cohort tracking
     first_seen: dict[str, datetime] = {}
@@ -479,7 +492,7 @@ def _aggregate_v2(events: list[dict], days: int = 30) -> dict[str, Any]:
 
         # daily series
         d = daily.setdefault(date_key, {
-            "llm_call": 0, "llm_cache": 0, "obj_cache": 0, "other": 0,
+            "function_cache": 0, "llm_cache": 0, "obj_cache": 0, "llm_call": 0, "other": 0,
             "users": set(), "durations": [],
         })
         d[cat] = d.get(cat, 0) + 1
@@ -524,11 +537,9 @@ def _aggregate_v2(events: list[dict], days: int = 30) -> dict[str, Any]:
         users = d.pop("users", set())
         d["users"] = len(users)
         d["p50_ms"] = _percentile(durations, 0.5) if durations else 0
-        d["total"] = d["llm_call"] + d["llm_cache"] + d["obj_cache"]
-        d["cache_hit_pct"] = (
-            round((d["llm_cache"] + d["obj_cache"]) / d["total"] * 100, 1)
-            if d["total"] else 0.0
-        )
+        d["total"] = d["function_cache"] + d["llm_call"] + d["llm_cache"] + d["obj_cache"]
+        cache_hits = d["function_cache"] + d["llm_cache"] + d["obj_cache"]
+        d["cache_hit_pct"] = round(cache_hits / d["total"] * 100, 1) if d["total"] else 0.0
         d["date"] = date_key
         daily_list.append(d)
 
@@ -537,7 +548,7 @@ def _aggregate_v2(events: list[dict], days: int = 30) -> dict[str, Any]:
     for h in range(24):
         b = hourly[h]
         b["hour"] = h
-        b["total"] = b["llm_call"] + b["llm_cache"] + b["obj_cache"]
+        b["total"] = b["function_cache"] + b["llm_call"] + b["llm_cache"] + b["obj_cache"]
         hourly_list.append(b)
 
     # concentration metrics
@@ -603,16 +614,19 @@ def _aggregate_v2(events: list[dict], days: int = 30) -> dict[str, Any]:
             "good": gini_temporal >= 0.3,
         })
     if total_events_with_ticker:
-        cache_hit_pct = round(
-            (cat_total["llm_cache"] + cat_total["obj_cache"]) /
-            max(cat_total["llm_call"] + cat_total["llm_cache"] + cat_total["obj_cache"], 1) * 100,
-            1,
+        cache_hits = (
+            cat_total["function_cache"] + cat_total["llm_cache"] + cat_total["obj_cache"]
         )
+        all_paths = cache_hits + cat_total["llm_call"]
+        cache_hit_pct = round(cache_hits / max(all_paths, 1) * 100, 1)
+        # LLM 호출 절감 = LLM 캐시 히트 (commentary_hit). function_cache + obj_cache
+        # 는 yfinance 만 절약하고 LLM 은 호출됨.
+        llm_calls_saved = cat_total["llm_cache"]
         interpretation.append({
             "kind": "cache_efficiency",
             "msg": (
-                f"실측 캐시 적중률 {cache_hit_pct}% (LLM 캐시 + Object 캐시 / 전체). "
-                f"미적중 LLM 호출 {cat_total['llm_call']}건만 DeepSeek API 사용."
+                f"실측 캐시 적중률 {cache_hit_pct}% (Function/LLM/Object 캐시 / 전체). "
+                f"LLM 호출 절감 {llm_calls_saved:,}건 — DeepSeek API 미사용."
             ),
             "good": cache_hit_pct >= 50,
         })
@@ -634,6 +648,9 @@ def _aggregate_v2(events: list[dict], days: int = 30) -> dict[str, Any]:
             "cumulative": cat_total,
             "today_total": sum(cat_today.values()),
             "cumulative_total": sum(cat_total.values()),
+            # LLM 호출 절감 = commentary_hit (LLM 결과 캐시 히트, DeepSeek 호출 안 됨)
+            "llm_calls_saved_today": cat_today["llm_cache"],
+            "llm_calls_saved_total": cat_total["llm_cache"],
         },
         "daily_series": daily_list,
         "hourly_routine": hourly_list,

@@ -162,23 +162,30 @@
     <section id="stats" class="py-5">
         <div class="container">
             <h2 class="section-title">서비스 현황</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
+            <div class="row g-3">
+                <div class="col-md-3 col-6">
                     <div class="stat-card">
                         <div class="stat-number" id="today">—</div>
                         <div>오늘 활성 사용자</div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3 col-6">
                     <div class="stat-card">
                         <div class="stat-number" id="total">—</div>
                         <div>누적 가입자</div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3 col-6">
                     <div class="stat-card">
                         <div class="stat-number" id="mau">—</div>
                         <div>월간 활성 사용자 (MAU)</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card" style="border-top:3px solid #4caf50;">
+                        <div class="stat-number" id="saved" style="color:#4caf50;">—</div>
+                        <div>절약된 LLM 호출 수</div>
+                        <div style="color:#888;font-size:11px;margin-top:4px;">캐시 적중으로 DeepSeek 미호출</div>
                     </div>
                 </div>
             </div>
@@ -206,10 +213,11 @@
                 animate('today', s.active_today || 0);
                 animate('total', s.cumulative_users || 0);
                 animate('mau',   s.mau || 0);
+                animate('saved', s.llm_calls_saved || 0);
                 document.getElementById('stats-meta').textContent =
                     '갱신: ' + formatTs(s.generated_at);
             } catch (e) {
-                ['today','total','mau'].forEach(id => document.getElementById(id).textContent = '—');
+                ['today','total','mau','saved'].forEach(id => document.getElementById(id).textContent = '—');
                 document.getElementById('stats-meta').textContent = '통계 로딩 실패 — 잠시 후 다시 시도해 주세요.';
             }
         }
