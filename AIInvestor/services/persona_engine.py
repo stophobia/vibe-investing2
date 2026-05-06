@@ -169,6 +169,14 @@ class PersonaEngine:
         with multi-perspective: persona's own view + counter-view from a
         different persona + sector/peer context."""
         lang_instruction = PERSONA_LANGUAGE_INSTRUCTION.get(language, PERSONA_LANGUAGE_INSTRUCTION["en"])
+        # Human-readable language name for the absolute language directive
+        lang_name = {
+            "ko": "Korean (한국어)",
+            "en": "English",
+            "ja": "Japanese (日本語)",
+            "zh": "Simplified Chinese (简体中文)",
+        }.get(language, "English")
+
         interest_block = ""
         if interests:
             interest_block = (
@@ -184,8 +192,16 @@ class PersonaEngine:
             "wood":    "Ray Dalio (macro / risk parity)",
         }
         counter = counter_personas.get(persona.key, "a different investor archetype")
+        # Localized name of the user's selected persona (so it appears in the section header)
+        persona_local_name = persona.name(language)
 
         user_prompt = (
+            f"⚠️ MANDATORY OUTPUT LANGUAGE: {lang_name}.\n"
+            f"Both the section headers AND every sentence below them MUST be written in {lang_name}.\n"
+            f"Translate the English template headers I give you (e.g. '📊 1. Business model & moat')\n"
+            f"into the natural {lang_name} equivalent BEFORE you write the section.\n"
+            f"If you produce English when {lang_name} was requested, the response is invalid.\n\n"
+            f"---\n\n"
             f"You are giving a DEEP professional analysis of {snapshot.name} ({snapshot.ticker}).\n"
             f"{interest_block}\n"
             f"Use ONLY the data block below — do not invent figures.\n\n"
@@ -199,7 +215,7 @@ class PersonaEngine:
             "not just list them\n\n"
             "📈 3. Price action & technicals (2–3 sentences) — 1M / 6M / 1Y trends, "
             "52-week range positioning, what the recent move suggests\n\n"
-            f"🎯 4. Your persona ({persona.display_name['en']}) stance (3–5 sentences) — "
+            f"🎯 4. {persona_local_name} stance (3–5 sentences) — "
             f"your strongest single thesis, the price level you'd want to act at, "
             f"the metric you'd watch most\n\n"
             f"⚖️  5. Counter-view from {counter} (2–3 sentences) — argue the opposite case "
@@ -209,12 +225,21 @@ class PersonaEngine:
             "💡 7. What you'd watch next (1–2 sentences) — the one earnings-call line item or "
             "macro indicator that would change the thesis\n\n"
             "End with the mandatory disclaimer line.\n"
-            "Do not use bullet markdown ** ** for emphasis — use the section headers instead.\n"
+            "Do not use bullet markdown ** ** for emphasis — use the section headers instead.\n\n"
+            f"⚠️ FINAL REMINDER: Write every word — including section headers — in {lang_name}.\n"
         )
 
         logger.info(
             "Calling DEEP LLM model=%s persona=%s ticker=%s lang=%s",
             self._model, persona.key, snapshot.ticker, language,
+        )
+
+        # System message: persona + language instruction TWICE (once at start
+        # so persona absorbs it, once at end as a hard guardrail)
+        sys_msg = (
+            f"{lang_instruction}\n\n"
+            f"{persona.system_prompt}\n\n"
+            f"FINAL: Output language is {lang_name}. Translate ALL section headers."
         )
 
         response = await self._client.chat.completions.create(
@@ -223,7 +248,7 @@ class PersonaEngine:
             max_tokens=1500,
             timeout=45.0,
             messages=[
-                {"role": "system", "content": f"{persona.system_prompt}\n\n{lang_instruction}"},
+                {"role": "system", "content": sys_msg},
                 {"role": "user", "content": user_prompt},
             ],
         )
