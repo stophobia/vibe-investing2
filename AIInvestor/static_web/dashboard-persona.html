@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>페르소나 대시보드 — 증권당</title>
+<meta name="robots" content="noindex,nofollow">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root { --dark:#1e1e2f; --darker:#151521; --card:#2a2a3c; --accent:#f7931a;
+        --buffett:#74b9ff; --dalio:#a29bfe; --wood:#fd79a8; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+       background:var(--darker); color:#e0e0e0; }
+.container { max-width: 1100px; }
+h1 { font-weight:700; }
+.persona-tab { background:var(--card); border:1px solid #3a3a4a; color:#ccc;
+               padding:10px 22px; border-radius:50px; margin-right:8px;
+               text-decoration:none; display:inline-block; font-weight:600;
+               transition:all .2s; }
+.persona-tab.active.buffett { background:var(--buffett); color:#1a1a2a; border-color:var(--buffett); }
+.persona-tab.active.dalio   { background:var(--dalio);   color:#1a1a2a; border-color:var(--dalio); }
+.persona-tab.active.wood    { background:var(--wood);    color:#1a1a2a; border-color:var(--wood); }
+.persona-tab.active.all     { background:var(--accent);  color:#1a1a2a; border-color:var(--accent); }
+.persona-tab:hover { color:#fff; }
+.card { background:var(--card); border:none; border-radius:12px; }
+.card-header { background:transparent; border-bottom:1px solid #3a3a4a;
+               font-weight:700; padding:16px 20px; }
+.kpi-num { font-size:2rem; font-weight:800; color:var(--accent); }
+.table { color:#e0e0e0; --bs-table-bg:transparent; }
+.table thead { color:#aaa; font-size:13px; text-transform:uppercase; letter-spacing:.5px; }
+.table tbody tr:hover { background:#33334a; }
+.rank-pill { background:#3a3a4a; color:#ccc; border-radius:8px;
+             padding:2px 8px; font-size:11px; font-weight:700; }
+.bar-wrap { background:#2a2a3c; border-radius:4px; height:8px; overflow:hidden;
+            display:inline-block; vertical-align:middle; min-width:60px; }
+.bar-fill { height:100%; background:var(--accent); }
+.lang-badge { background:#3a3a4a; padding:3px 10px; border-radius:12px;
+              font-size:12px; margin-right:6px; color:#bbb; }
+.lang-badge .num { color:var(--accent); font-weight:700; }
+.reason { color:#999; font-size:12px; line-height:1.4; }
+.muted { color:#888; font-size:13px; }
+.hero { background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); padding:30px 0; margin-bottom:30px; }
+.error-box { background:#3a1f1f; border-left:4px solid #c62828;
+             padding:14px 18px; border-radius:8px; color:#ffb4b4; }
+</style>
+</head>
+<body>
+
+<section class="hero">
+<div class="container">
+  <div class="d-flex align-items-center mb-2">
+    <a href="/" class="text-decoration-none me-3" style="color:var(--accent);">
+      <i class="fa-solid fa-arrow-left"></i> 메인
+    </a>
+    <h1 class="mb-0">페르소나 대시보드</h1>
+  </div>
+  <p class="muted mb-3">한국 retail 선호 종목 14종을 페르소나별로 분석. 운영자 전용.</p>
+  <div>
+    <a href="#" class="persona-tab all active" data-p="">전체</a>
+    <a href="#" class="persona-tab buffett" data-p="buffett">🎩 버핏</a>
+    <a href="#" class="persona-tab dalio" data-p="dalio">📐 달리오</a>
+    <a href="#" class="persona-tab wood" data-p="wood">🚀 우드</a>
+    <span class="ms-3 muted">기간:
+      <select id="window" class="form-select form-select-sm d-inline-block w-auto"
+              style="background:var(--card);color:#ddd;border:1px solid #444;">
+        <option value="24h">24시간</option>
+        <option value="7d" selected>7일</option>
+      </select>
+    </span>
+    <span class="ms-3 muted" id="meta">로딩 중…</span>
+  </div>
+</div>
+</section>
+
+<div class="container pb-5">
+  <div id="error-area"></div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card p-3"><div class="muted">총 분석</div>
+      <div class="kpi-num" id="kpi-total">—</div></div></div>
+    <div class="col-md-3"><div class="card p-3"><div class="muted">버핏</div>
+      <div class="kpi-num" style="color:var(--buffett);" id="kpi-buffett">—</div></div></div>
+    <div class="col-md-3"><div class="card p-3"><div class="muted">달리오</div>
+      <div class="kpi-num" style="color:var(--dalio);"  id="kpi-dalio">—</div></div></div>
+    <div class="col-md-3"><div class="card p-3"><div class="muted">우드</div>
+      <div class="kpi-num" style="color:var(--wood);"   id="kpi-wood">—</div></div></div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">한국 선호 종목 14종 — 페르소나별 커버리지</div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th style="width:48px;">#</th>
+            <th>종목</th>
+            <th>사유</th>
+            <th class="text-end" style="color:var(--buffett);">버핏</th>
+            <th class="text-end" style="color:var(--dalio);">달리오</th>
+            <th class="text-end" style="color:var(--wood);">우드</th>
+            <th class="text-end">합계</th>
+          </tr>
+        </thead>
+        <tbody id="coverage-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="persona-detail-area"></div>
+
+  <p class="muted text-center mt-4">
+    ⚠ 본 페이지는 운영자 전용입니다. 키 없이 새로고침하면 403이 반환됩니다.
+  </p>
+</div>
+
+<script>
+const API_PERSONA = "https://func-aiinvestor-prod.azurewebsites.net/api/dashboard_stats_persona";
+
+function getKey() {
+  const u = new URL(location.href);
+  return u.searchParams.get("key") || "";
+}
+function setQs(name, val) {
+  const u = new URL(location.href);
+  if (val) u.searchParams.set(name, val); else u.searchParams.delete(name);
+  history.replaceState(null, "", u.toString());
+}
+function fmtTs(iso) {
+  if (!iso) return '—';
+  return iso.replace('T',' ').replace(/\+00:00$/,' UTC').replace(/\.\d+$/,'');
+}
+function escapeHtml(s) {
+  return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+const tabs = document.querySelectorAll('.persona-tab');
+let currentPersona = "";
+let currentWindow  = "7d";
+
+tabs.forEach(t => t.addEventListener('click', (e) => {
+  e.preventDefault();
+  tabs.forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  currentPersona = t.dataset.p;
+  setQs('p', currentPersona);
+  load();
+}));
+
+document.getElementById('window').addEventListener('change', e => {
+  currentWindow = e.target.value;
+  setQs('w', currentWindow);
+  load();
+});
+
+async function load() {
+  const key = getKey();
+  const errArea = document.getElementById('error-area');
+  errArea.innerHTML = '';
+  if (!key) {
+    errArea.innerHTML = '<div class="error-box">🔒 ?key=&lt;DASHBOARD_ACCESS_KEY&gt; 필요</div>';
+    return;
+  }
+  document.getElementById('meta').textContent = '로딩 중…';
+  const params = new URLSearchParams({ key, window: currentWindow });
+  if (currentPersona) params.set('p', currentPersona);
+  try {
+    const r = await fetch(`${API_PERSONA}?${params}`, { mode:'cors' });
+    if (r.status === 403) {
+      errArea.innerHTML = '<div class="error-box">🔒 잘못된 키입니다 (403).</div>';
+      document.getElementById('meta').textContent = '—';
+      return;
+    }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    render(d);
+  } catch (e) {
+    errArea.innerHTML = `<div class="error-box">로딩 실패: ${escapeHtml(e.message)}</div>`;
+    document.getElementById('meta').textContent = '—';
+  }
+}
+
+function render(d) {
+  document.getElementById('meta').textContent =
+    '갱신: ' + fmtTs(d.generated_at) + ' · 이벤트 ' + (d.total_events||0) + '건';
+
+  const personas = d.personas || {};
+  document.getElementById('kpi-total').textContent =
+    Object.values(personas).reduce((a,p) => a + (p.total||0), 0).toLocaleString();
+  ['buffett','dalio','wood'].forEach(p => {
+    document.getElementById('kpi-'+p).textContent = (personas[p]?.total || 0).toLocaleString();
+  });
+
+  // Coverage table
+  const tbody = document.getElementById('coverage-body');
+  tbody.innerHTML = (d.korean_favorites_coverage || []).map(row => `
+    <tr>
+      <td><span class="rank-pill">#${row.rank}</span></td>
+      <td>
+        <div><strong>${escapeHtml(row.name_kr)}</strong>
+          <span class="muted">${escapeHtml(row.ticker)}</span></div>
+      </td>
+      <td><div class="reason">${escapeHtml(row.reason_kr || '')}</div></td>
+      <td class="text-end" style="color:var(--buffett);">${row.buffett||0}</td>
+      <td class="text-end" style="color:var(--dalio);">${row.dalio||0}</td>
+      <td class="text-end" style="color:var(--wood);">${row.wood||0}</td>
+      <td class="text-end"><strong>${row.total||0}</strong></td>
+    </tr>
+  `).join('');
+
+  // Per-persona detail (if filter applied OR show all 3)
+  const detailArea = document.getElementById('persona-detail-area');
+  const personaList = currentPersona ? [currentPersona] : ['buffett','dalio','wood'];
+  detailArea.innerHTML = personaList.map(p => renderPersonaCard(p, personas[p])).join('');
+}
+
+const PERSONA_NAMES = {
+  buffett: '🎩 워렌 버핏 (장기 가치)',
+  dalio:   '📐 레이 달리오 (매크로)',
+  wood:    '🚀 캐시 우드 (혁신 성장)',
+};
+
+function renderPersonaCard(p, data) {
+  if (!data) return '';
+  const langs = Object.entries(data.language_dist || {})
+    .sort((a,b) => b[1]-a[1])
+    .map(([k,v]) => `<span class="lang-badge">${escapeHtml(k)} <span class="num">${v}</span></span>`)
+    .join('');
+  const krRows = (data.korean_favorites_top || []).map(r => `
+    <tr>
+      <td><span class="rank-pill">#${r.rank}</span></td>
+      <td><strong>${escapeHtml(r.name_kr)}</strong> <span class="muted">${escapeHtml(r.ticker)}</span></td>
+      <td class="text-end">${r.count}</td>
+    </tr>`).join('');
+  return `
+    <div class="card mb-3">
+      <div class="card-header">${PERSONA_NAMES[p] || p}
+        <span class="ms-2 muted">— 총 ${data.total||0}건 분석</span>
+      </div>
+      <div class="row g-0">
+        <div class="col-md-7 p-3">
+          <div class="muted mb-2">한국 선호 종목 분석 빈도</div>
+          <table class="table table-sm mb-0">
+            <thead><tr><th></th><th>종목</th><th class="text-end">건수</th></tr></thead>
+            <tbody>${krRows || '<tr><td colspan=3 class="muted text-center">데이터 없음</td></tr>'}</tbody>
+          </table>
+        </div>
+        <div class="col-md-5 p-3" style="border-left:1px solid #3a3a4a;">
+          <div class="muted mb-2">언어 분포</div>
+          <div>${langs || '<span class="muted">—</span>'}</div>
+          <div class="muted mt-3">LLM 토큰</div>
+          <div>입력: <strong>${(data.llm_in||0).toLocaleString()}</strong></div>
+          <div>출력: <strong>${(data.llm_out||0).toLocaleString()}</strong></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// init
+const u = new URL(location.href);
+const initialP = u.searchParams.get('p') || '';
+const initialW = u.searchParams.get('w') || '7d';
+currentPersona = initialP;
+currentWindow  = initialW;
+document.getElementById('window').value = initialW;
+tabs.forEach(t => t.classList.toggle('active', t.dataset.p === initialP));
+load();
+</script>
+</body>
+</html>

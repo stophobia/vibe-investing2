@@ -220,3 +220,106 @@ async def resolve_hot_tickers(
 
     ranked = combine_scores(favorites, frequency)
     return [e.ticker for e in ranked[:top_k]]
+
+
+# -----------------------------------------------------------------------
+# §9 Weekly cache pool expansion — 22 → 50 → 100 → 200 over weeks
+#
+#   Pool size depends on the previous-7-day distinct user count:
+#     <50 users   → 22  (default — cold start / soft launch)
+#     50–199      → 50  (early traction)
+#     200–999     → 100 (growth)
+#     ≥1000       → 200 (scale)
+#
+#   Why not jump straight to 200 ?
+#     - prewarm cost is ~3 × pool_size LLM calls per 4h cycle
+#     - blob storage churn scales linearly
+#     - we want pool size to match real demand, not theoretical max
+# -----------------------------------------------------------------------
+
+POOL_TIERS = [
+    (1000, 200),
+    (200,  100),
+    (50,    50),
+    (0,     22),
+]
+
+
+def determine_pool_size(weekly_distinct_users: int) -> int:
+    """Map weekly user count → hot pool size. Step function, not interpolated."""
+    for threshold, size in POOL_TIERS:
+        if weekly_distinct_users >= threshold:
+            return size
+    return POOL_TIERS[-1][1]
+
+
+async def count_weekly_distinct_users(
+    storage_account_name: str,
+    credential=None,
+) -> int:
+    """Count distinct anon_user_id values in logs over the last 7 days."""
+    creds = credential or DefaultAzureCredential()
+    seen: set[str] = set()
+    now = datetime.now(timezone.utc)
+    earliest = now - timedelta(days=7)
+
+    try:
+        async with BlobServiceClient(
+            account_url=f"https://{storage_account_name}.blob.core.windows.net",
+            credential=creds,
+        ) as svc:
+            container = svc.get_container_client(LOGS_CONTAINER)
+            async for blob in container.list_blobs():
+                try:
+                    parts = blob.name.split("/")
+                    blob_dt = datetime(
+                        int(parts[0]), int(parts[1]), int(parts[2]),
+                        int(parts[3].split(".")[0]),
+                        tzinfo=timezone.utc,
+                    )
+                    if blob_dt < earliest - timedelta(hours=1):
+                        continue
+                except (ValueError, IndexError):
+                    continue
+                try:
+                    client = container.get_blob_client(blob.name)
+                    stream = await client.download_blob()
+                    body = await stream.readall()
+                    for line in body.decode("utf-8").splitlines():
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            evt = json.loads(line)
+                            anon = evt.get("anon")
+                            if anon:
+                                seen.add(anon)
+                        except json.JSONDecodeError:
+                            continue
+                except Exception:
+                    continue
+    except Exception as exc:
+        logger.warning("count_weekly_distinct_users failed: %s", exc)
+    finally:
+        if credential is None and hasattr(creds, "close"):
+            await creds.close()
+
+    return len(seen)
+
+
+async def resolve_pool_size(
+    storage_account_name: str | None,
+    credential=None,
+) -> tuple[int, int]:
+    """Determine current hot-pool size based on weekly traffic.
+
+    Returns (pool_size, weekly_distinct_users).
+    """
+    if not storage_account_name:
+        return POOL_TIERS[-1][1], 0
+    try:
+        weekly = await count_weekly_distinct_users(storage_account_name, credential)
+    except Exception:
+        logger.exception("weekly user count failed; using default pool size")
+        return POOL_TIERS[-1][1], 0
+    return determine_pool_size(weekly), weekly

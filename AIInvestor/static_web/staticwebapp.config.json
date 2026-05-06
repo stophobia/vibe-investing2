@@ -2,6 +2,8 @@
   "routes": [
     { "route": "/", "rewrite": "/index.html" },
     { "route": "/dashboard", "rewrite": "/dashboard.html" },
+    { "route": "/dashboard-persona", "rewrite": "/dashboard-persona.html" },
+    { "route": "/페르소나", "rewrite": "/dashboard-persona.html" },
     { "route": "/ticker", "rewrite": "/ticker.html" }
   ],
   "responseOverrides": {

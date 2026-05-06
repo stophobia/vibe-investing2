@@ -255,5 +255,94 @@ class PersonaEngine:
         content = response.choices[0].message.content or ""
         return content.strip()
 
+    async def generate_dual(
+        self,
+        persona_a: Persona,
+        persona_b: Persona,
+        snapshot: StockSnapshot,
+        language: str,
+        interests: list[str] | None = None,
+    ) -> str:
+        """§8 Premium dual-persona analysis — two personas debate the same
+        stock side-by-side, ending with a consensus + divergence section.
+
+        Costs ~2× the tokens of generate_deep() (≈2400 max). Caller is
+        responsible for premium-gate (daily quota cost = 2).
+        """
+        lang_instruction = PERSONA_LANGUAGE_INSTRUCTION.get(language, PERSONA_LANGUAGE_INSTRUCTION["en"])
+        lang_name = {
+            "ko": "Korean (한국어)",
+            "en": "English",
+            "ja": "Japanese (日本語)",
+            "zh": "Simplified Chinese (简体中文)",
+        }.get(language, "English")
+
+        interest_block = ""
+        if interests:
+            interest_block = (
+                "\nUser's known interests: "
+                + ", ".join(interests)
+                + ". Reference these only when naturally relevant.\n"
+            )
+
+        name_a = persona_a.name(language)
+        name_b = persona_b.name(language)
+
+        user_prompt = (
+            f"⚠️ MANDATORY OUTPUT LANGUAGE: {lang_name}.\n"
+            f"All section headers AND every sentence MUST be written in {lang_name}.\n"
+            f"Translate the English template headers into the natural {lang_name} equivalent.\n"
+            f"If you produce English when {lang_name} was requested, the response is invalid.\n\n"
+            f"---\n\n"
+            f"You are presenting a DUAL-PERSONA debate analysis of {snapshot.name} ({snapshot.ticker}).\n"
+            f"Two investor archetypes — {name_a} and {name_b} — examine the same data.\n"
+            f"{interest_block}\n"
+            f"Use ONLY the data block below — do not invent figures.\n\n"
+            f"```\n{snapshot.to_prompt_block()}\n```\n\n"
+            f"Produce a structured comparative analysis. Aim for ~1400–1800 tokens.\n"
+            f"Use clear section headers. Each persona section needs concrete numbers.\n\n"
+            f"📊 1. Business model (2–3 sentences) — neutral overview\n\n"
+            f"🎩 2. {name_a}'s thesis (5–7 sentences) — frame through this persona's lens "
+            f"(moat / fundamentals / OR macro / cycle / OR innovation curve / TAM, depending on persona). "
+            f"Cite ≥3 specific numbers. End with their stance (accumulate/hold/pass) and target action level.\n\n"
+            f"🚀 3. {name_b}'s thesis (5–7 sentences) — frame through this persona's lens. "
+            f"Cite ≥3 specific numbers. End with their stance and target action level.\n\n"
+            f"🤝 4. Where they agree (2–3 sentences) — common ground; shared concerns or shared appeal\n\n"
+            f"⚔️  5. Where they disagree (3–5 sentences) — the hard divergence; "
+            f"name the metric or assumption each side weighs differently\n\n"
+            f"🛑 6. Combined risk view (2–3 sentences) — risks BOTH personas would flag\n\n"
+            f"💡 7. What you'd watch (2–3 sentences) — the indicator that would shift the balance\n\n"
+            f"End with the mandatory disclaimer line.\n"
+            f"Do not use bold ** ** — use the section headers instead.\n\n"
+            f"⚠️ FINAL REMINDER: Write every word — including section headers — in {lang_name}.\n"
+        )
+
+        logger.info(
+            "Calling DUAL LLM model=%s personas=%s+%s ticker=%s lang=%s",
+            self._model, persona_a.key, persona_b.key, snapshot.ticker, language,
+        )
+
+        # Combine both personas' system prompts so the model honors both voices
+        sys_msg = (
+            f"{lang_instruction}\n\n"
+            f"You will alternate between two personas in clearly-labeled sections.\n\n"
+            f"=== {name_a} voice ===\n{persona_a.system_prompt}\n\n"
+            f"=== {name_b} voice ===\n{persona_b.system_prompt}\n\n"
+            f"FINAL: Output language is {lang_name}. Translate ALL section headers."
+        )
+
+        response = await self._client.chat.completions.create(
+            model=self._model,
+            temperature=0.55,
+            max_tokens=2400,
+            timeout=60.0,
+            messages=[
+                {"role": "system", "content": sys_msg},
+                {"role": "user", "content": user_prompt},
+            ],
+        )
+        content = response.choices[0].message.content or ""
+        return content.strip()
+
     async def aclose(self) -> None:
         await self._client.close()

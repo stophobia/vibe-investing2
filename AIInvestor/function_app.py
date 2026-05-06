@@ -361,16 +361,22 @@ async def refresh_hot_ticker_data(timer: func.TimerRequest) -> None:
     use_monitor=True,
 )
 async def rotate_hot_tickers(timer: func.TimerRequest) -> None:
+    """§9 Daily HOT_TICKERS rotation. Pool size auto-scales with weekly
+    distinct-user traffic: 22 → 50 → 100 → 200 across 4 tiers."""
     await _bootstrap()
     if not _config or not _config.storage_account_name:
         return
-    from services.hot_ticker_resolver import resolve_hot_tickers
+    from services.hot_ticker_resolver import resolve_hot_tickers, resolve_pool_size
     from services.ticker_data_cache import update_hot_tickers
     try:
-        new_hot = await resolve_hot_tickers(_config.storage_account_name, top_k=50)
+        pool_size, weekly_users = await resolve_pool_size(_config.storage_account_name)
+        new_hot = await resolve_hot_tickers(_config.storage_account_name, top_k=pool_size)
         if new_hot:
             update_hot_tickers(new_hot)
-            logger.info("rotate_hot_tickers — top 5: %s", new_hot[:5])
+            logger.info(
+                "rotate_hot_tickers — weekly_users=%d pool_size=%d top 5: %s",
+                weekly_users, pool_size, new_hot[:5],
+            )
     except Exception:
         logger.exception("rotate_hot_tickers failed")
 
@@ -524,6 +530,47 @@ async def dashboard_stats(req: func.HttpRequest) -> func.HttpResponse:
     headers = dict(_CORS_HEADERS)
     headers["Cache-Control"] = "public, max-age=1800"  # 30 min browser cache
     return func.HttpResponse(body, status_code=200, mimetype="application/json", headers=headers)
+
+
+@app.route(route="dashboard_stats_persona", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def dashboard_stats_persona(req: func.HttpRequest) -> func.HttpResponse:
+    """§7 Persona sub-dashboard — per-persona breakdown of KR favorites.
+    Query: ?key=<DASHBOARD_ACCESS_KEY>&window=24h|7d&p=buffett|dalio|wood (p optional)
+    """
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    if not _check_dashboard_key(req):
+        return func.HttpResponse(
+            json.dumps({"error": "forbidden"}),
+            status_code=403, mimetype="application/json", headers=_CORS_HEADERS,
+        )
+    window = (req.params.get("window") or "7d").strip()
+    if window not in ("24h", "7d"):
+        return func.HttpResponse(
+            json.dumps({"error": "bad window"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS,
+        )
+    persona = (req.params.get("p") or "").strip().lower() or None
+    if persona and persona not in ("buffett", "dalio", "wood"):
+        return func.HttpResponse(
+            json.dumps({"error": "bad persona"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS,
+        )
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse(
+            json.dumps({"error": "not configured"}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS,
+        )
+
+    from services.dashboard_aggregator import fetch_persona_breakdown
+    data = await fetch_persona_breakdown(_config.storage_account_name, window, persona)
+    headers = dict(_CORS_HEADERS)
+    headers["Cache-Control"] = "public, max-age=900"  # 15 min
+    return func.HttpResponse(
+        json.dumps(data, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=headers,
+    )
 
 
 @app.route(route="dashboard_export", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET"])

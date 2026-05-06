@@ -148,6 +148,34 @@ def _lang_keyboard() -> InlineKeyboardMarkup:
     ]])
 
 
+# §8 Pairings — current persona is paired with a contrasting one.
+# Quota cost: 2 (vs 1 for single deep). Premium gate.
+_DUAL_COUNTERPARTS = {
+    "buffett": "wood",     # value vs growth
+    "dalio":   "buffett",  # macro vs value
+    "wood":    "dalio",    # innovation vs macro
+}
+
+_DUAL_LABELS = {
+    "ko": "⚔ 듀얼 페르소나 분석",
+    "en": "⚔ Dual-persona analysis",
+    "ja": "⚔ デュアルペルソナ分析",
+    "zh": "⚔ 双角色分析",
+}
+
+
+def _dual_offer_keyboard(persona_key: str, ticker: str, lang: str) -> InlineKeyboardMarkup:
+    """Show after a deep analysis — 'compare with another persona' (premium, 2 quota)."""
+    counter = _DUAL_COUNTERPARTS.get(persona_key, "wood")
+    if counter == persona_key:
+        counter = "buffett" if persona_key != "buffett" else "wood"
+    counter_local = get_persona(counter).name(lang)
+    label = f"{_DUAL_LABELS.get(lang, _DUAL_LABELS['en'])} (vs {counter_local}, ×2)"
+    return InlineKeyboardMarkup([[
+        InlineKeyboardButton(label, callback_data=f"dual:{persona_key}+{counter}:{ticker}"),
+    ]])
+
+
 def _format_interests(profile: UserProfile, lang: str) -> str:
     if not profile.interest_tags and not profile.watchlist_tickers:
         return ""
@@ -460,9 +488,87 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             # Telegram message limit is 4096 chars — long deep analyses may need split
             body = f"{header}\n\n{_strip_md(reply)}\n\n{s.short_disclaimer}"
             if len(body) <= 4000:
-                await query.message.reply_text(body)
+                await query.message.reply_text(body, reply_markup=_dual_offer_keyboard(persona.key, ticker, lang))
             else:
                 # Split at paragraph boundary close to 3500 chars
+                cut = body.rfind("\n\n", 0, 3500)
+                if cut == -1:
+                    cut = 3500
+                await query.message.reply_text(body[:cut])
+                await query.message.reply_text(body[cut:].lstrip(),
+                    reply_markup=_dual_offer_keyboard(persona.key, ticker, lang))
+        except StockServiceError:
+            await query.message.reply_text(s.ticker_not_found.format(q=ticker))
+        except Exception:
+            logger.exception("Deeper analysis failed ticker=%s", ticker)
+            await query.message.reply_text(s.error_llm)
+        return
+
+    if data.startswith("dual:"):
+        # §8 Premium dual-persona analysis. Format: dual:<p1>+<p2>:<ticker>
+        # Costs 2 quota units (counts as 2 deep queries).
+        rest = data.split(":", 1)[1]
+        lang = profile.language
+        s = t(lang)
+        try:
+            pair, ticker = rest.split(":", 1)
+            p1, p2 = pair.split("+", 1)
+        except ValueError:
+            return
+        if p1 not in {"buffett", "dalio", "wood"} or p2 not in {"buffett", "dalio", "wood"} or p1 == p2:
+            return
+
+        from datetime import datetime, timezone, timedelta
+        now = datetime.now(timezone.utc)
+        kst_offset = timedelta(hours=9)
+        kst_now = now + kst_offset
+        next_midnight_kst = (kst_now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)) - kst_offset
+        reset_at = profile.daily_deep_reset_at
+        try:
+            reset_dt = datetime.fromisoformat(reset_at.replace("Z", "+00:00")) if reset_at else None
+        except Exception:
+            reset_dt = None
+        if reset_dt is None or now >= reset_dt:
+            profile = await deps.profile_repo.update(
+                user_key, daily_deep_count=0,
+                daily_deep_reset_at=next_midnight_kst.isoformat(timespec="seconds"),
+            )
+        # Dual = 2 quota units
+        if profile.daily_deep_count + 2 > 5:
+            keyboard = InlineKeyboardMarkup([[
+                InlineKeyboardButton(s.subscribe_offer_yes, callback_data="subscribe:start"),
+                InlineKeyboardButton(s.subscribe_offer_no,  callback_data="subscribe:later"),
+            ]])
+            await query.message.reply_text(s.daily_limit_reached, reply_markup=keyboard)
+            return
+        profile = await deps.profile_repo.update(
+            user_key, daily_deep_count=profile.daily_deep_count + 2,
+        )
+
+        ticker = ticker.upper()
+        await context.bot.send_chat_action(
+            chat_id=query.message.chat_id, action=ChatAction.TYPING,
+        )
+        persona_a = get_persona(p1)
+        persona_b = get_persona(p2)
+        try:
+            snapshot = deps.stock_service.get_snapshot(ticker)
+            interests = [_localize_tag(tag, lang) for tag in profile.interest_tags] + profile.watchlist_tickers
+            reply = await deps.persona_engine.generate_dual(
+                persona_a=persona_a, persona_b=persona_b,
+                snapshot=snapshot, language=lang, interests=interests,
+            )
+            header_label = {
+                "ko": "듀얼 페르소나 분석",
+                "en": "dual-persona analysis",
+                "ja": "デュアルペルソナ分析",
+                "zh": "双角色分析",
+            }.get(lang, "dual-persona analysis")
+            header = f"[{persona_a.name(lang)} ⚔ {persona_b.name(lang)} · {ticker} · {header_label}]"
+            body = f"{header}\n\n{_strip_md(reply)}\n\n{s.short_disclaimer}"
+            if len(body) <= 4000:
+                await query.message.reply_text(body)
+            else:
                 cut = body.rfind("\n\n", 0, 3500)
                 if cut == -1:
                     cut = 3500
@@ -471,7 +577,7 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         except StockServiceError:
             await query.message.reply_text(s.ticker_not_found.format(q=ticker))
         except Exception:
-            logger.exception("Deeper analysis failed ticker=%s", ticker)
+            logger.exception("Dual-persona analysis failed ticker=%s", ticker)
             await query.message.reply_text(s.error_llm)
         return
 

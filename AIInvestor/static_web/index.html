@@ -28,7 +28,10 @@
                background: var(--darker); color: #e0e0e0; scroll-behavior: smooth; }
         .navbar { backdrop-filter: blur(10px); background: rgba(30,30,47,0.9);
                   border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .navbar-brand { font-weight: 700; font-size: 1.4rem; }
+        .navbar-brand { font-weight: 700; font-size: 1.4rem; color: #f0f0f0; }
+        .navbar-brand:hover { color: #fff; }
+        .navbar .nav-link { color: #d8d8e8; font-weight: 500; }
+        .navbar .nav-link:hover { color: var(--accent); }
         .brand-icon { color: var(--accent); margin-right: 6px; }
         .hero { padding: 100px 0 60px;
                 background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -54,11 +57,14 @@
         .stat-number { font-size: 2.5rem; font-weight: 800; color: var(--accent); }
         .persona-img { font-size: 3rem; margin-bottom: 12px; }
         .chat-demo { background: var(--card); border-radius: 20px; padding: 24px;
-                     max-width: 500px; margin: 0 auto; }
-        .chat-bubble { border-radius: 12px; padding: 10px 16px; margin: 8px 0;
-                       max-width: 80%; clear: both; text-align: left; }
-        .chat-bubble.user { background: var(--accent); float: right; }
-        .chat-bubble.bot { background: #3a3a4a; float: left; }
+                     max-width: 500px; margin: 0 auto;
+                     display: flex; flex-direction: column; gap: 10px; text-align: left; }
+        .chat-bubble { border-radius: 14px; padding: 10px 16px; max-width: 85%;
+                       line-height: 1.5; word-wrap: break-word; }
+        .chat-bubble.user { background: var(--accent); color: #1a1a2a; align-self: flex-end;
+                            border-bottom-right-radius: 4px; font-weight: 600; }
+        .chat-bubble.bot { background: #3a3a4a; color: #f0f0f0; align-self: flex-start;
+                           border-bottom-left-radius: 4px; }
         .feature-list { list-style: none; padding: 0; max-width: 720px; margin: 0 auto; }
         .feature-list li { padding: 8px 0; color: #c0c0c0; }
         .feature-list i { color: var(--accent); margin-right: 8px; }
@@ -201,11 +207,20 @@
                 animate('total', s.cumulative_users || 0);
                 animate('mau',   s.mau || 0);
                 document.getElementById('stats-meta').textContent =
-                    '갱신: ' + (s.generated_at || '—');
+                    '갱신: ' + formatTs(s.generated_at);
             } catch (e) {
                 ['today','total','mau'].forEach(id => document.getElementById(id).textContent = '—');
                 document.getElementById('stats-meta').textContent = '통계 로딩 실패 — 잠시 후 다시 시도해 주세요.';
             }
+        }
+
+        function formatTs(iso) {
+            if (!iso) return '—';
+            // 2026-05-06T12:01:22+00:00 → 2026-05-06 12:01:22 UTC
+            return iso
+                .replace('T', ' ')
+                .replace(/\+00:00$/, ' UTC')
+                .replace(/\.\d+$/, '');
         }
 
         function animate(id, end) {

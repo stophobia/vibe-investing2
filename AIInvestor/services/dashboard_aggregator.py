@@ -209,3 +209,123 @@ async def fetch_dashboard_json(
         except Exception:
             logger.exception("dashboard fetch failed window=%s", window)
             return None
+
+
+# ────────────────────────────────────────────────────────────
+# §7 Persona sub-dashboard — per-persona breakdown of Korean
+# favorites + all tickers, language distribution, traffic share.
+# ────────────────────────────────────────────────────────────
+
+VALID_PERSONAS = ("buffett", "dalio", "wood")
+
+
+def _build_persona_breakdown(
+    events: list[dict],
+    persona_filter: str | None,
+) -> dict[str, Any]:
+    """For each persona, aggregate ticker counts, language dist, total."""
+    from .hot_ticker_resolver import load_korean_favorites
+    favs = load_korean_favorites()
+
+    per: dict[str, dict] = {p: {
+        "total": 0,
+        "language_dist": {},
+        "ticker_counts": {},
+        "llm_in": 0, "llm_out": 0,
+    } for p in VALID_PERSONAS}
+
+    for e in events:
+        prs = (e.get("persona") or "").lower()
+        if prs not in per:
+            continue
+        if persona_filter and prs != persona_filter:
+            continue
+        bucket = per[prs]
+        bucket["total"] += 1
+        lng = e.get("lang") or "?"
+        bucket["language_dist"][lng] = bucket["language_dist"].get(lng, 0) + 1
+        tk = (e.get("ticker") or "").upper()
+        if tk:
+            bucket["ticker_counts"][tk] = bucket["ticker_counts"].get(tk, 0) + 1
+        bucket["llm_in"] += int(e.get("llm_in", 0) or 0)
+        bucket["llm_out"] += int(e.get("llm_out", 0) or 0)
+
+    # Build per-persona output: top KR favorites (with name) + top all tickers
+    out_personas: dict[str, dict] = {}
+    for prs, b in per.items():
+        if persona_filter and prs != persona_filter:
+            continue
+        ranked = sorted(b["ticker_counts"].items(), key=lambda x: -x[1])
+        kr_top = []
+        for tk, count in ranked:
+            if tk in favs:
+                fav = favs[tk]
+                kr_top.append({
+                    "ticker": tk,
+                    "name_kr": fav.name_kr,
+                    "rank": fav.preference_rank,
+                    "count": count,
+                })
+            if len(kr_top) >= 14:
+                break
+        out_personas[prs] = {
+            "total": b["total"],
+            "language_dist": b["language_dist"],
+            "korean_favorites_top": kr_top,
+            "all_top_tickers": ranked[:20],
+            "llm_in": b["llm_in"],
+            "llm_out": b["llm_out"],
+        }
+
+    # KR favorites coverage matrix — for each favorite, how many queries per persona
+    coverage = []
+    for tk, fav in sorted(favs.items(), key=lambda x: x[1].preference_rank):
+        row = {
+            "ticker": tk,
+            "name_kr": fav.name_kr,
+            "name_en": fav.name_en,
+            "rank": fav.preference_rank,
+            "reason_kr": fav.reason_kr,
+        }
+        total = 0
+        for prs in VALID_PERSONAS:
+            c = per[prs]["ticker_counts"].get(tk, 0)
+            row[prs] = c
+            total += c
+        row["total"] = total
+        coverage.append(row)
+
+    return {
+        "personas": out_personas,
+        "korean_favorites_coverage": coverage,
+    }
+
+
+async def fetch_persona_breakdown(
+    storage_account_name: str,
+    window: str,
+    persona: str | None = None,
+    credential=None,
+) -> dict[str, Any]:
+    """Read logs in window, build per-persona breakdown. Heavier than
+    fetch_dashboard_json — meant for the operator-only persona dashboard."""
+    hours = 24 if window == "24h" else 168
+    creds = credential or DefaultAzureCredential()
+    try:
+        async with BlobServiceClient(
+            account_url=f"https://{storage_account_name}.blob.core.windows.net",
+            credential=creds,
+        ) as svc:
+            events = await _read_logs_in_window(svc, hours)
+    finally:
+        if credential is None and hasattr(creds, "close"):
+            await creds.close()
+
+    breakdown = _build_persona_breakdown(events, persona)
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "window": window,
+        "persona_filter": persona,
+        "total_events": len(events),
+        **breakdown,
+    }

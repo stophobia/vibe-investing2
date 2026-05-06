@@ -21,6 +21,7 @@ OpenAI에서 DeepSeek로 전환한 이유: ChatGPT는 실시간 데이터성 미
 → **[paper_plan.md — 아키텍처 및 개발 계획 (v2.0)](docs/paper_plan.md)**
 
 함께 보는 자료 ([docs/](docs/) 디렉토리):
+- **[development-spec-v1.0-ko.md](docs/development-spec-v1.0-ko.md)** — 11장 통합 개발 스펙 (개발 방식 장점 / 전체 아키텍처 / 비용 구조 / 장애 복구 / 보안 / 로드맵 + 페르소나 서브 대시보드 / 듀얼 페르소나 / 주간 캐시 확장 / 콜드 스타트 극복 + 역순 커밋 히스토리)
 - **[postmortem.md](docs/postmortem.md)** — 응답 지연 진단·수정 + 사전 캐싱 도입 기록 (1+2부). Free Trial 제약, `aiohttp` transitive 등 함정 체크리스트 포함
 - **[ticker-data-caching-architecture-v1.0-ko.md](docs/ticker-data-caching-architecture-v1.0-ko.md)** — `/api/data/{ticker}` 옵션 C 결정 (인메모리 + Blob + yfinance 3-tier)
 - **[report-generation-policy-v1.0-ko.md](docs/report-generation-policy-v1.0-ko.md)** — 시간대별 6개 슬롯 자동 리포트 + 섹터 라이벌 매트릭스 + 휴장 정책 + 옵션 C 정량 효과 (응답시간 -79%, LLM 호출 -70%, 월비용 -67%)
