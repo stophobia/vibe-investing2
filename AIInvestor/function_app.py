@@ -325,6 +325,117 @@ async def slot_23_us_after(timer: func.TimerRequest) -> None:
 
 
 # ---------------------------------------------------------------------
+# §T2E-B — Prediction resolve timers
+# ---------------------------------------------------------------------
+
+@app.timer_trigger(
+    schedule="0 0 7 * * 1-5",   # KST 16:00 = UTC 07:00, Mon-Fri only
+    arg_name="timer", run_on_startup=False, use_monitor=True,
+)
+async def resolve_kospi_predictions(timer: func.TimerRequest) -> None:
+    """KST 16:00 — KOSPI close. Resolve all UP/DOWN predictions for today."""
+    await _bootstrap()
+    if not _config or not _config.storage_account_name:
+        return
+    from services.prediction_service import resolve_market_predictions
+    from datetime import datetime, timezone, timedelta
+    window_id = (datetime.now(timezone.utc) + timedelta(hours=9)).date().isoformat()
+    try:
+        # Fetch KOSPI close vs open via yfinance (^KS11)
+        import yfinance as yf
+        import asyncio as _asyncio
+        df = await _asyncio.to_thread(
+            yf.download, "^KS11", period="2d", interval="1d", auto_adjust=False, progress=False,
+        )
+        if df is None or df.empty or len(df) < 1:
+            logger.warning("KOSPI close data unavailable, skipping resolve")
+            return
+        last = df.iloc[-1]
+        open_p, close_p = float(last["Open"]), float(last["Close"])
+        actual = "up" if close_p >= open_p else "down"
+        logger.info("KOSPI resolve: open=%.2f close=%.2f → %s", open_p, close_p, actual)
+
+        awarded = await resolve_market_predictions(
+            _config.storage_account_name, "kospi", actual, window_id,
+            repo=_profile_repo, usage_logger=_usage_logger,
+        )
+        logger.info("KOSPI resolve: %d users awarded", len(awarded))
+    except Exception:
+        logger.exception("KOSPI resolve failed")
+
+
+@app.timer_trigger(
+    schedule="0 0 21 * * 2-6",  # KST 06:00 next day = UTC 21:00 prev day; Mon-Fri close → resolved Tue-Sat morning
+    arg_name="timer", run_on_startup=False, use_monitor=True,
+)
+async def resolve_nasdaq_predictions(timer: func.TimerRequest) -> None:
+    """KST 06:00 — NASDAQ close (previous US session). Resolve UP/DOWN for yesterday's KST window."""
+    await _bootstrap()
+    if not _config or not _config.storage_account_name:
+        return
+    from services.prediction_service import resolve_market_predictions
+    from datetime import datetime, timezone, timedelta
+    # The window_id is yesterday's KST date (the day the user submitted)
+    window_id = ((datetime.now(timezone.utc) + timedelta(hours=9)).date() - timedelta(days=1)).isoformat()
+    try:
+        import yfinance as yf
+        import asyncio as _asyncio
+        df = await _asyncio.to_thread(
+            yf.download, "^IXIC", period="2d", interval="1d", auto_adjust=False, progress=False,
+        )
+        if df is None or df.empty or len(df) < 1:
+            logger.warning("NASDAQ close data unavailable, skipping resolve")
+            return
+        last = df.iloc[-1]
+        open_p, close_p = float(last["Open"]), float(last["Close"])
+        actual = "up" if close_p >= open_p else "down"
+        logger.info("NASDAQ resolve: open=%.2f close=%.2f → %s", open_p, close_p, actual)
+
+        awarded = await resolve_market_predictions(
+            _config.storage_account_name, "nasdaq", actual, window_id,
+            repo=_profile_repo, usage_logger=_usage_logger,
+        )
+        logger.info("NASDAQ resolve: %d users awarded", len(awarded))
+    except Exception:
+        logger.exception("NASDAQ resolve failed")
+
+
+@app.timer_trigger(
+    schedule="0 1 * * * *",  # Top of hour + 1 min
+    arg_name="timer", run_on_startup=False, use_monitor=True,
+)
+async def resolve_btc_hourly(timer: func.TimerRequest) -> None:
+    """Resolve last hour's BTC price predictions. Window ID = the hour just ended."""
+    await _bootstrap()
+    if not _config or not _config.storage_account_name:
+        return
+    from services.prediction_service import resolve_btc_hourly_predictions
+    from datetime import datetime, timezone, timedelta
+    # Window that just resolved = previous hour KST
+    kst_prev = (datetime.now(timezone.utc) + timedelta(hours=9)) - timedelta(hours=1)
+    window_id = f"{kst_prev.year:04d}-{kst_prev.month:02d}-{kst_prev.day:02d}T{kst_prev.hour:02d}"
+    try:
+        import yfinance as yf
+        import asyncio as _asyncio
+        ticker = yf.Ticker("BTC-USD")
+        info = await _asyncio.to_thread(lambda: ticker.fast_info)
+        actual = float(info.last_price) if info and info.last_price else None
+        if not actual:
+            logger.warning("BTC price unavailable, skipping resolve")
+            return
+        logger.info("BTC hourly resolve window=%s actual=$%.2f", window_id, actual)
+
+        awarded = await resolve_btc_hourly_predictions(
+            _config.storage_account_name, actual, window_id,
+            repo=_profile_repo, usage_logger=_usage_logger,
+        )
+        if awarded:
+            logger.info("BTC resolve: %d users awarded", len(awarded))
+    except Exception:
+        logger.exception("BTC hourly resolve failed")
+
+
+# ---------------------------------------------------------------------
 # 4) Keepalive — every 5 minutes to prevent cold starts (Always Ready=1 fallback)
 # ---------------------------------------------------------------------
 
@@ -448,6 +559,61 @@ async def gamification_profile(req: func.HttpRequest) -> func.HttpResponse:
         json.dumps(payload, ensure_ascii=False),
         status_code=200, mimetype="application/json", headers=headers,
     )
+
+
+@app.route(route="gamification/predict", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST", "OPTIONS"])
+async def gamification_predict(req: func.HttpRequest) -> func.HttpResponse:
+    """§T2E-B — Submit a daily prediction. Body:
+       {"market":"kospi"|"nasdaq", "direction":"up"|"down"}
+    or {"market":"btc", "predicted_price": 87432.50}
+    """
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS_POST)
+    await _bootstrap()
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    if not user_key:
+        return func.HttpResponse(json.dumps({"error": "unauthorized"}),
+            status_code=401, mimetype="application/json", headers=_CORS_HEADERS_POST)
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse(json.dumps({"error": "not configured"}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    try:
+        body = req.get_json()
+    except ValueError:
+        return func.HttpResponse(json.dumps({"error": "bad json"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    market = (body.get("market") or "").strip().lower()
+    profile_get = _profile_repo.get_or_create(user_key=user_key, default_language="ko", default_persona="buffett")
+    profile = await profile_get if hasattr(profile_get, "__await__") else profile_get
+
+    from services.prediction_service import submit_daily_prediction, submit_btc_hourly_prediction
+    if market in ("kospi", "nasdaq"):
+        ok, err, payload = await submit_daily_prediction(
+            _config.storage_account_name, user_key, profile.anon_user_id,
+            market, (body.get("direction") or "").strip().lower(),
+            repo=_profile_repo, usage_logger=_usage_logger,
+        )
+    elif market == "btc":
+        try:
+            price = float(body.get("predicted_price", 0))
+        except (TypeError, ValueError):
+            return func.HttpResponse(json.dumps({"error": "bad predicted_price"}),
+                status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
+        ok, err, payload = await submit_btc_hourly_prediction(
+            _config.storage_account_name, user_key, profile.anon_user_id, price,
+            repo=_profile_repo, usage_logger=_usage_logger,
+        )
+    else:
+        return func.HttpResponse(json.dumps({"error": "unknown market"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    if not ok:
+        return func.HttpResponse(json.dumps({"error": err}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
+    return func.HttpResponse(json.dumps({"success": True, **(payload or {})}, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=_CORS_HEADERS_POST)
 
 
 @app.route(route="gamification/attend", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST", "OPTIONS"])
