@@ -46,6 +46,25 @@ class UserProfile:
     # §17.2 — daily deep analysis quota
     daily_deep_count: int = 0
     daily_deep_reset_at: str = ""                                  # ISO of next midnight KST
+    # §T2E-A — gamification fields
+    points_cumulative: int = 0          # never resets — lifetime total earned
+    points_balance: int = 0             # current spendable balance
+    points_this_season: int = 0         # resets each quarter (§4.3)
+    season_id: str = ""                 # e.g. "2026-Q2"
+    tier: str = "bronze"                # bronze|silver|gold|platinum|diamond
+    tier_stage: int = 0                 # 0..4 within tier (visual ▼▼ → ▲▲)
+    tier_updated_at: str = ""
+    consecutive_login_days: int = 0     # for streak bonus
+    last_attendance_kst: str = ""       # last KST-date checkin happened
+    display_name: str = ""              # user-set; fallback to "User_<anon[:4]>"
+    opt_in_leaderboard: bool = True
+    # invite tracking (§T2E-C)
+    invite_code: str = ""               # 8-char alphanumeric, generated lazily
+    invited_by_anon: str = ""           # the inviter's anon_user_id (not user_key!)
+    invite_validated_at: str = ""       # filled when first mission completes
+    invite_landings_count: int = 0      # how many ref_ link clicks this user generated
+    invite_validated_count: int = 0     # invitees who passed first-mission gate
+    invite_zombie_count: int = 0        # 7-day no-activity invitees
 
 
 class UserProfileRepo:
@@ -67,10 +86,28 @@ class UserProfileRepo:
             last_followup_at    TEXT NOT NULL DEFAULT '',
             daily_deep_count    INTEGER NOT NULL DEFAULT 0,
             daily_deep_reset_at TEXT NOT NULL DEFAULT '',
+            points_cumulative   INTEGER NOT NULL DEFAULT 0,
+            points_balance      INTEGER NOT NULL DEFAULT 0,
+            points_this_season  INTEGER NOT NULL DEFAULT 0,
+            season_id           TEXT NOT NULL DEFAULT '',
+            tier                TEXT NOT NULL DEFAULT 'bronze',
+            tier_stage          INTEGER NOT NULL DEFAULT 0,
+            tier_updated_at     TEXT NOT NULL DEFAULT '',
+            consecutive_login_days INTEGER NOT NULL DEFAULT 0,
+            last_attendance_kst TEXT NOT NULL DEFAULT '',
+            display_name        TEXT NOT NULL DEFAULT '',
+            opt_in_leaderboard  INTEGER NOT NULL DEFAULT 1,
+            invite_code         TEXT NOT NULL DEFAULT '',
+            invited_by_anon     TEXT NOT NULL DEFAULT '',
+            invite_validated_at TEXT NOT NULL DEFAULT '',
+            invite_landings_count INTEGER NOT NULL DEFAULT 0,
+            invite_validated_count INTEGER NOT NULL DEFAULT 0,
+            invite_zombie_count INTEGER NOT NULL DEFAULT 0,
             created_at          TEXT NOT NULL,
             updated_at          TEXT NOT NULL
         );
         CREATE INDEX IF NOT EXISTS idx_users_anon ON users(anon_user_id);
+        CREATE INDEX IF NOT EXISTS idx_users_invite_code ON users(invite_code);
     """
 
     # ALTER statements for upgrading older databases. SQLite ignores ALTER
@@ -81,6 +118,24 @@ class UserProfileRepo:
         "ALTER TABLE users ADD COLUMN last_followup_at TEXT NOT NULL DEFAULT ''",
         "ALTER TABLE users ADD COLUMN daily_deep_count INTEGER NOT NULL DEFAULT 0",
         "ALTER TABLE users ADD COLUMN daily_deep_reset_at TEXT NOT NULL DEFAULT ''",
+        # §T2E-A migrations
+        "ALTER TABLE users ADD COLUMN points_cumulative INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN points_balance INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN points_this_season INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN season_id TEXT NOT NULL DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN tier TEXT NOT NULL DEFAULT 'bronze'",
+        "ALTER TABLE users ADD COLUMN tier_stage INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN tier_updated_at TEXT NOT NULL DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN consecutive_login_days INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN last_attendance_kst TEXT NOT NULL DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN display_name TEXT NOT NULL DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN opt_in_leaderboard INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE users ADD COLUMN invite_code TEXT NOT NULL DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN invited_by_anon TEXT NOT NULL DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN invite_validated_at TEXT NOT NULL DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN invite_landings_count INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN invite_validated_count INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN invite_zombie_count INTEGER NOT NULL DEFAULT 0",
     )
 
     def __init__(self, db_path: str | Path, salt: str) -> None:
@@ -131,7 +186,7 @@ class UserProfileRepo:
                 coerced[k] = json.dumps(v, ensure_ascii=False)
             elif k == "sector_count" and isinstance(v, dict):
                 coerced[k] = json.dumps(v, ensure_ascii=False)
-            elif k in {"intro_seen", "research_consent"}:
+            elif k in {"intro_seen", "research_consent", "opt_in_leaderboard"}:
                 coerced[k] = 1 if v else 0
             else:
                 coerced[k] = v
@@ -162,6 +217,8 @@ class UserProfileRepo:
 
 def _row_to_profile(row: sqlite3.Row) -> UserProfile:
     keys = row.keys()
+    def _g(name, default=""):
+        return row[name] if name in keys else default
     return UserProfile(
         user_key=row["user_key"],
         anon_user_id=row["anon_user_id"],
@@ -174,9 +231,27 @@ def _row_to_profile(row: sqlite3.Row) -> UserProfile:
         watchlist_tickers=json.loads(row["watchlist_tickers"] or "[]"),
         created_at=row["created_at"],
         updated_at=row["updated_at"],
-        recent_tickers=json.loads(row["recent_tickers"] or "[]") if "recent_tickers" in keys else [],
-        sector_count=json.loads(row["sector_count"] or "{}") if "sector_count" in keys else {},
-        last_followup_at=row["last_followup_at"] if "last_followup_at" in keys else "",
-        daily_deep_count=row["daily_deep_count"] if "daily_deep_count" in keys else 0,
-        daily_deep_reset_at=row["daily_deep_reset_at"] if "daily_deep_reset_at" in keys else "",
+        recent_tickers=json.loads(_g("recent_tickers", "[]") or "[]"),
+        sector_count=json.loads(_g("sector_count", "{}") or "{}"),
+        last_followup_at=_g("last_followup_at", ""),
+        daily_deep_count=_g("daily_deep_count", 0),
+        daily_deep_reset_at=_g("daily_deep_reset_at", ""),
+        # §T2E-A
+        points_cumulative=_g("points_cumulative", 0),
+        points_balance=_g("points_balance", 0),
+        points_this_season=_g("points_this_season", 0),
+        season_id=_g("season_id", ""),
+        tier=_g("tier", "bronze"),
+        tier_stage=_g("tier_stage", 0),
+        tier_updated_at=_g("tier_updated_at", ""),
+        consecutive_login_days=_g("consecutive_login_days", 0),
+        last_attendance_kst=_g("last_attendance_kst", ""),
+        display_name=_g("display_name", ""),
+        opt_in_leaderboard=bool(_g("opt_in_leaderboard", 1)),
+        invite_code=_g("invite_code", ""),
+        invited_by_anon=_g("invited_by_anon", ""),
+        invite_validated_at=_g("invite_validated_at", ""),
+        invite_landings_count=_g("invite_landings_count", 0),
+        invite_validated_count=_g("invite_validated_count", 0),
+        invite_zombie_count=_g("invite_zombie_count", 0),
     )
