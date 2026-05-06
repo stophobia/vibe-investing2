@@ -1,0 +1,477 @@
+﻿name_kr,name_en,nickname_kr,name_cn,name_jp,ticker,category,sector
+엔비디아,NVIDIA,엔비,英伟达,エヌビディア,NVDA,NASDAQ100,Technology
+애플,Apple,애플,苹果,アップル,AAPL,NASDAQ100,Technology
+알파벳 클래스 C,Alphabet Class C,구글 C,谷歌 C,アルファベット C,GOOG,NASDAQ100,Communication Services
+알파벳 클래스 A,Alphabet Class A,구글,谷歌 A,アルファベット A,GOOGL,NASDAQ100,Communication Services
+마이크로소프트,Microsoft,마소,微软,マイクロソフト,MSFT,NASDAQ100,Technology
+아마존,Amazon,아마존,亚马逊,アマゾン,AMZN,NASDAQ100,Consumer Discretionary
+메타 플랫폼스,Meta Platforms,메타,Meta,メタ,META,NASDAQ100,Communication Services
+브로드컴,Broadcom,브컴,博通,ブロードコム,AVGO,NASDAQ100,Technology
+테슬라,Tesla,테슬,特斯拉,テスラ,TSLA,NASDAQ100,Consumer Discretionary
+ASML 홀딩,ASML Holding,ASML,阿斯麦,ASML,ASML,NASDAQ100,Technology
+마이크론 테크놀로지,Micron Technology,마이크론,美光,マイクロン,MU,NASDAQ100,Technology
+코스트코,Costco,코스트코,好市多,コストコ,COST,NASDAQ100,Consumer Staples
+AMD,Advanced Micro Devices,AMD,超威,AMD,AMD,NASDAQ100,Technology
+넷플릭스,Netflix,넷플,网飞,ネットフリックス,NFLX,NASDAQ100,Communication Services
+아스트라제네카,AstraZeneca,아제,阿斯利康,アストラゼネカ,AZN,NASDAQ100,Healthcare
+팔란티어,Palantir,팔란티어,帕兰提尔,パランティア,PLTR,NASDAQ100,Technology
+시스코 시스템스,Cisco Systems,시스코,思科,シスコ,CSCO,NASDAQ100,Technology
+램 리서치,Lam Research,램리서치,拉姆研究,ラム・リサーチ,LRCX,NASDAQ100,Technology
+어플라이드 머티어리얼즈,Applied Materials,어플라이드,应用材料,アプライド,AMAT,NASDAQ100,Technology
+T-모바일,T-Mobile US,티모,T-Mobile,Tモバイル,TMUS,NASDAQ100,Communication Services
+인텔,Intel,인텔,英特尔,インテル,INTC,NASDAQ100,Technology
+펩시코,PepsiCo,펩시,百事,ペプシコ,PEP,NASDAQ100,Consumer Staples
+린데,Linde,린데,林德,リンデ,LIN,NASDAQ100,Materials
+텍사스 인스트루먼츠,Texas Instruments,TI,德州仪器,テキサス・インスツルメンツ,TXN,NASDAQ100,Technology
+암젠,Amgen,암젠,安进,アムジェン,AMGN,NASDAQ100,Healthcare
+KLA,KLA,KLA,科磊,KLA,KLAC,NASDAQ100,Technology
+길리어드 사이언스,Gilead Sciences,길리어드,吉利德,ギリアド,GILD,NASDAQ100,Healthcare
+인튜이티브 서지컬,Intuitive Surgical,인튜이티브,直觉外科,インテュイティブサージカル,ISRG,NASDAQ100,Healthcare
+아날로그 디바이시스,Analog Devices,아날로그,亚德诺,アナログ・デバイセズ,ADI,NASDAQ100,Technology
+허니웰,Honeywell,허니웰,霍尼韦尔,ハネウェル,HON,NASDAQ100,Industrials
+퀄컴,Qualcomm,퀄컴,高通,クアルコム,QCOM,NASDAQ100,Technology
+쇼피파이,Shopify,쇼피,Shopify,ショッピファイ,SHOP,NASDAQ100,Technology
+PDD 홀딩스,PDD Holdings,핀둬둬,拼多多,PDD,PDD,NASDAQ100,Consumer Discretionary
+부킹홀딩스,Booking Holdings,부킹,缤客,ブッキング,BKNG,NASDAQ100,Consumer Discretionary
+암 홀딩스,Arm Holdings,ARM,ARM,アーム,ARM,NASDAQ100,Technology
+앱러빈,AppLovin,앱러빈,AppLovin,アップラビン,APP,NASDAQ100,Technology
+버텍스 파마슈티컬스,Vertex Pharmaceuticals,버텍스,福泰制药,バーテックス,VRTX,NASDAQ100,Healthcare
+컴캐스트,Comcast,컴캐스트,康卡斯特,コムキャスト,CMCSA,NASDAQ100,Communication Services
+팔로알토 네트웍스,Palo Alto Networks,팔로알토,派拓,パロアルト,PANW,NASDAQ100,Technology
+인튜이트,Intuit,인튜이트,财捷,インテュイット,INTU,NASDAQ100,Technology
+스타벅스,Starbucks,스벅,星巴克,スタバ,SBUX,NASDAQ100,Consumer Discretionary
+어도비,Adobe,어도비,奥多比,アドビ,ADBE,NASDAQ100,Technology
+크라우드스트라이크,CrowdStrike,크라우드,CrowdStrike,クラウドストライク,CRWD,NASDAQ100,Technology
+메르카도리브레,MercadoLibre,메리,美客多,メルカドリブレ,MELI,NASDAQ100,Consumer Discretionary
+콘스텔레이션 에너지,Constellation Energy,콘스텔,星座能源,コンステレーション・エナジー,CEG,NASDAQ100,Utilities
+메리어트 인터내셔널,Marriott International,메리어트,万豪,マリオット,MAR,NASDAQ100,Consumer Discretionary
+ADP,Automatic Data Processing,ADP,ADP,ADP,ADP,NASDAQ100,Industrials
+시놉시스,Synopsys,시놉시스,新思,シノプシス,SNPS,NASDAQ100,Technology
+리제네론 파마슈티컬스,Regeneron Pharmaceuticals,리제네론,再生元,リジェネロン,REGN,NASDAQ100,Healthcare
+오라일리 오토모티브,O'Reilly Automotive,오라일리,奥莱利,オライリー,ORLY,NASDAQ100,Consumer Discretionary
+몬스터 베버리지,Monster Beverage,몬스터,怪兽,モンスター,MNST,NASDAQ100,Consumer Staples
+몬델리즈 인터내셔널,Mondelez International,몬델리즈,亿滋,モンデリーズ,MDLZ,NASDAQ100,Consumer Staples
+케이던스 디자인 시스템스,Cadence Design Systems,케이던스,铿腾,ケイデンス,CDNS,NASDAQ100,Technology
+신타스,Cintas,신타스,信达思,シンタス,CTAS,NASDAQ100,Industrials
+CSX,CSX,CSX,CSX,CSX,CSX,NASDAQ100,Industrials
+에어비앤비,Airbnb,에비,爱彼迎,エアビー,ABNB,NASDAQ100,Consumer Discretionary
+워너 브라더스 디스커버리,Warner Bros. Discovery,워너,华纳兄弟,ワーナー,WBD,NASDAQ100,Communication Services
+도어대시,DoorDash,도어대시,DoorDash,ドアダッシュ,DASH,NASDAQ100,Consumer Discretionary
+마벨 테크놀로지,Marvell Technology,마벨,迈威尔,マーベル,MRVL,NASDAQ100,Technology
+아메리칸 일렉트릭 파워,American Electric Power,AEP,美国电力,アメリカン・エレクトリック,AEP,NASDAQ100,Utilities
+PACCAR,PACCAR,파카,帕卡,パッカー,PCAR,NASDAQ100,Industrials
+로스 스토어스,Ross Stores,로스,罗斯百货,ロス・ストアーズ,ROST,NASDAQ100,Consumer Discretionary
+포티넷,Fortinet,포티넷,飞塔,フォーティネット,FTNT,NASDAQ100,Technology
+NXP 세미컨덕터스,NXP Semiconductors,NXP,恩智浦,NXP,NXPI,NASDAQ100,Technology
+베이커 휴즈,Baker Hughes,베이커,贝克休斯,ベーカー・ヒューズ,BKR,NASDAQ100,Energy
+패스널,Fastenal,패스널,快扣,ファステナル,FAST,NASDAQ100,Industrials
+일렉트로닉 아츠,Electronic Arts,EA,艺电,EA,EA,NASDAQ100,Communication Services
+IDEXX 래버러토리스,IDEXX Laboratories,IDEXX,爱德士,IDEXX,IDXX,NASDAQ100,Healthcare
+엑셀론,Exelon,엑셀론,爱克斯龙,エクセロン,EXC,NASDAQ100,Utilities
+다이아몬드백 에너지,Diamondback Energy,다이아몬드백,钻石回,ダイヤモンドバック,FANG,NASDAQ100,Energy
+오토데스크,Autodesk,오토데스크,欧特克,オートデスク,ADSK,NASDAQ100,Technology
+엑셀 에너지,Xcel Energy,엑셀,Xcel能源,エクセル・エナジー,XEL,NASDAQ100,Utilities
+코카콜라 유로퍼시픽,Coca-Cola Europacific,코카콜라EP,可口可乐欧洲,コカコーラEP,CCEP,NASDAQ100,Consumer Staples
+데이터독,Datadog,데이터독,Datadog,データドッグ,DDOG,NASDAQ100,Technology
+마이크로칩 테크놀로지,Microchip Technology,마이크로칩,微芯,マイクロチップ,MCHP,NASDAQ100,Technology
+스트래티지,Strategy,마스트,微策略,ストラテジー,MSTR,NASDAQ100,Technology
+큐릭 닥터페퍼,Keurig Dr Pepper,KDP,克里格胡椒博士,キューリグ,KDP,NASDAQ100,Consumer Staples
+올드 도미니언 프레이트,Old Dominion Freight Line,ODFL,老多米尼,オールド・ドミニオン,ODFL,NASDAQ100,Industrials
+톰슨 로이터,Thomson Reuters,톰로이,汤森路透,トムソン・ロイター,TRI,NASDAQ100,Industrials
+워크데이,Workday,워크데이,Workday,ワークデイ,WDAY,NASDAQ100,Technology
+페이팔,PayPal,페팔,贝宝,ペイパル,PYPL,NASDAQ100,Financials
+GE 헬스케어,GE HealthCare,GE헬케,GE医疗,GEヘルスケア,GEHC,NASDAQ100,Healthcare
+코파트,Copart,코파트,Copart,コパート,CPRT,NASDAQ100,Industrials
+테이크-투 인터랙티브,Take-Two Interactive,테이크투,Take-Two,テイクツー,TTWO,NASDAQ100,Communication Services
+액슨 엔터프라이즈,Axon Enterprise,액슨,Axon,アクソン,AXON,NASDAQ100,Industrials
+로퍼 테크놀로지스,Roper Technologies,로퍼,罗珀,ローパー,ROP,NASDAQ100,Technology
+차터 커뮤니케이션스,Charter Communications,차터,特许通信,チャーター,CHTR,NASDAQ100,Communication Services
+페이첵스,Paychex,페이첵스,Paychex,ペイチェックス,PAYX,NASDAQ100,Industrials
+코그니전트 테크놀로지,Cognizant Technology,코그니전트,高知特,コグニザント,CTSH,NASDAQ100,Technology
+크래프트 하인즈,Kraft Heinz,크하,卡夫亨氏,クラフト・ハインツ,KHC,NASDAQ100,Consumer Staples
+바이오젠,Biogen,바이오젠,百健,バイオジェン,BIIB,NASDAQ100,Healthcare
+온 세미컨덕터,ON Semiconductor,온세미,安森美,オン・セミコンダクター,ON,NASDAQ100,Technology
+지스케일러,Zscaler,지스케일러,Zscaler,ジースケーラー,ZS,NASDAQ100,Technology
+글로벌파운드리,GlobalFoundries,글파,格罗方德,グローバルファウンドリーズ,GFS,NASDAQ100,Technology
+덱스컴,DexCom,덱스컴,德康,デックスコム,DXCM,NASDAQ100,Healthcare
+베리스크 애널리틱스,Verisk Analytics,베리스크,Verisk,ベリスク,VRSK,NASDAQ100,Industrials
+아틀라시안,Atlassian,아틀라시안,Atlassian,アトラシアン,TEAM,NASDAQ100,Technology
+룰루레몬,Lululemon Athletica,룰루,露露乐蒙,ルルレモン,LULU,NASDAQ100,Consumer Discretionary
+코스타 그룹,CoStar Group,코스타,CoStar,コースター,CSGP,NASDAQ100,Real Estate
+CDW,CDW,CDW,CDW,CDW,CDW,NASDAQ100,Technology
+트레이드 데스크,The Trade Desk,트레이드데스크,Trade Desk,ザ・トレードデスク,TTD,NASDAQ100,Technology
+버크셔 해서웨이 B,Berkshire Hathaway B,버크셔,伯克希尔哈撒韦,バークシャー,BRK.B,SP500,Financials
+월마트,Walmart,월마트,沃尔玛,ウォルマート,WMT,SP500,Consumer Staples
+일라이 릴리,Eli Lilly,일라이릴리,礼来,イーライリリー,LLY,SP500,Healthcare
+JP모건 체이스,JPMorgan Chase,제이피,摩根大通,JPモルガン,JPM,SP500,Financials
+엑손모빌,Exxon Mobil,엑손,埃克森美孚,エクソンモービル,XOM,SP500,Energy
+비자,Visa,비자,Visa,ビザ,V,SP500,Financials
+존슨앤드존슨,Johnson & Johnson,JNJ,强生,ジョンソン・エンド・ジョンソン,JNJ,SP500,Healthcare
+마스터카드,Mastercard,마카,万事达,マスターカード,MA,SP500,Financials
+오라클,Oracle,오라클,甲骨文,オラクル,ORCL,SP500,Technology
+쉐브론,Chevron,쉐브론,雪佛龙,シェブロン,CVX,SP500,Energy
+애브비,AbbVie,애브비,艾伯维,アッヴィ,ABBV,SP500,Healthcare
+뱅크 오브 아메리카,Bank of America,뱅오,美国银行,バンク・オブ・アメリカ,BAC,SP500,Financials
+프록터 앤 갬블,Procter & Gamble,P&G,宝洁,P&G,PG,SP500,Consumer Staples
+홈디포,Home Depot,홈디포,家得宝,ホーム・デポ,HD,SP500,Consumer Discretionary
+캐터필러,Caterpillar,캐터필러,卡特彼勒,キャタピラー,CAT,SP500,Industrials
+코카콜라,Coca-Cola,코카콜라,可口可乐,コカコーラ,KO,SP500,Consumer Staples
+GE 에어로스페이스,GE Aerospace,GE,通用电气,GEエアロスペース,GE,SP500,Industrials
+머크,Merck,머크,默克,メルク,MRK,SP500,Healthcare
+RTX,RTX,RTX,雷神技术,RTX,RTX,SP500,Industrials
+모건 스탠리,Morgan Stanley,모건스탠리,摩根士丹利,モルガン・スタンレー,MS,SP500,Financials
+필립 모리스 인터내셔널,Philip Morris International,필립모리스,菲利普莫里斯,フィリップ・モリス,PM,SP500,Consumer Staples
+골드만삭스,Goldman Sachs,골삭,高盛,ゴールドマン・サックス,GS,SP500,Financials
+유나이티드헬스,UnitedHealth,UNH,联合健康,ユナイテッドヘルス,UNH,SP500,Healthcare
+웰스파고,Wells Fargo,웰파,富国银行,ウェルズ・ファーゴ,WFC,SP500,Financials
+GE 베르노바,GE Vernova,GEV,GE能源,GEベルノバ,GEV,SP500,Industrials
+IBM,IBM,IBM,IBM,IBM,IBM,SP500,Technology
+맥도날드,McDonald's,맥도날드,麦当劳,マクドナルド,MCD,SP500,Consumer Discretionary
+버라이즌,Verizon,버라이즌,威瑞森,ベライゾン,VZ,SP500,Communication Services
+아메리칸 익스프레스,American Express,아멕스,美国运通,アメックス,AXP,SP500,Financials
+AT&T,AT&T,AT&T,AT&T,AT&T,T,SP500,Communication Services
+씨티그룹,Citigroup,씨티,花旗,シティグループ,C,SP500,Financials
+넥스트에라 에너지,NextEra Energy,NEE,新纪元能源,ネクステラ,NEE,SP500,Utilities
+애보트 래버러토리스,Abbott Laboratories,애보트,雅培,アボット,ABT,SP500,Healthcare
+세일즈포스,Salesforce,세포,Salesforce,セールスフォース,CRM,SP500,Technology
+써모피셔 사이언티픽,Thermo Fisher Scientific,써모피셔,赛默飞世尔,サーモフィッシャー,TMO,SP500,Healthcare
+월트 디즈니,Walt Disney,디즈니,迪士尼,ディズニー,DIS,SP500,Communication Services
+TJX 컴퍼니,TJX Companies,TJX,TJX,TJX,TJX,SP500,Consumer Discretionary
+아리스타 네트웍스,Arista Networks,아리스타,Arista,アリスタ,ANET,SP500,Technology
+찰스 슈왑,Charles Schwab,슈왑,嘉信,チャールズ・シュワブ,SCHW,SP500,Financials
+암페놀,Amphenol,암페놀,安费诺,アムフェノール,APH,SP500,Technology
+보잉,Boeing,보잉,波音,ボーイング,BA,SP500,Industrials
+코노코필립스,ConocoPhillips,코노코,康菲,コノコフィリップス,COP,SP500,Energy
+우버 테크놀로지스,Uber Technologies,우버,优步,ウーバー,UBER,SP500,Industrials
+디어 앤 컴퍼니,Deere & Company,존디어,迪尔,ディア,DE,SP500,Industrials
+블랙록,BlackRock,블랙록,贝莱德,ブラックロック,BLK,SP500,Financials
+화이자,Pfizer,화이자,辉瑞,ファイザー,PFE,SP500,Healthcare
+록히드 마틴,Lockheed Martin,록마,洛克希德马丁,ロッキード・マーティン,LMT,SP500,Industrials
+유니언 퍼시픽,Union Pacific,UNP,联合太平洋,ユニオン・パシフィック,UNP,SP500,Industrials
+이튼,Eaton,이튼,伊顿,イートン,ETN,SP500,Industrials
+웰타워,Welltower,웰타워,Welltower,ウェルタワー,WELL,SP500,Real Estate
+다나허,Danaher,다나허,丹纳赫,ダナハー,DHR,SP500,Healthcare
+로우스,Lowe's,로우스,劳氏,ロウズ,LOW,SP500,Consumer Discretionary
+S&P 글로벌,S&P Global,S&P,标普全球,S&Pグローバル,SPGI,SP500,Financials
+처브,Chubb,처브,丘博,チャブ,CB,SP500,Financials
+스트라이커,Stryker,스트라이커,史塞克,ストライカー,SYK,SP500,Healthcare
+액센츄어,Accenture,액센츄어,埃森哲,アクセンチュア,ACN,SP500,Technology
+프롤로지스,Prologis,프롤로지스,安博,プロロジス,PLD,SP500,Real Estate
+프로그레시브,Progressive,프로그레시브,前进保险,プログレッシブ,PGR,SP500,Financials
+브리스톨 마이어스 스큅,Bristol-Myers Squibb,BMS,百时美施贵宝,ブリストル・マイヤーズ,BMY,SP500,Healthcare
+서비스나우,ServiceNow,서나,ServiceNow,サービスナウ,NOW,SP500,Technology
+파커 해니핀,Parker-Hannifin,파커,派克汉尼汾,パーカー・ハネフィン,PH,SP500,Industrials
+캐피털 원,Capital One,캡원,第一资本,キャピタル・ワン,COF,SP500,Financials
+코닝,Corning,코닝,康宁,コーニング,GLW,SP500,Technology
+메드트로닉,Medtronic,메드트로닉,美敦力,メドトロニック,MDT,SP500,Healthcare
+HCA 헬스케어,HCA Healthcare,HCA,HCA医疗,HCAヘルスケア,HCA,SP500,Healthcare
+CME 그룹,CME Group,CME,芝商所,CMEグループ,CME,SP500,Financials
+알트리아,Altria,알트리아,奥驰亚,アルトリア,MO,SP500,Consumer Staples
+뉴몬트,Newmont,뉴몬트,纽蒙特,ニューモント,NEM,SP500,Materials
+델 테크놀로지,Dell Technologies,델,戴尔,デル,DELL,SP500,Technology
+보스턴 사이언티픽,Boston Scientific,보사,波士顿科学,ボストン・サイエンティフィック,BSX,SP500,Healthcare
+샌디스크,SanDisk,샌디스크,闪迪,サンディスク,SNDK,SP500,Technology
+웨스턴 디지털,Western Digital,WDC,西部数据,ウェスタン・デジタル,WDC,SP500,Technology
+듀크 에너지,Duke Energy,듀크,杜克能源,デューク,DUK,SP500,Utilities
+노스롭 그루먼,Northrop Grumman,노스롭,诺斯罗普,ノースロップ,NOC,SP500,Industrials
+에퀴닉스,Equinix,에퀴닉스,Equinix,エクイニクス,EQIX,SP500,Real Estate
+제너럴 다이나믹스,General Dynamics,GD,通用动力,ゼネラル・ダイナミクス,GD,SP500,Industrials
+웨이스트 매니지먼트,Waste Management,WM,废物管理,ウェイスト・マネジメント,WM,SP500,Industrials
+인터컨티넨탈 익스체인지,Intercontinental Exchange,ICE,洲际交易所,ICE,ICE,SP500,Financials
+씨게이트 테크놀로지,Seagate Technology,씨게이트,希捷,シーゲート,STX,SP500,Technology
+페덱스,FedEx,페덱스,联邦快递,フェデックス,FDX,SP500,Industrials
+UPS,United Parcel Service,UPS,UPS,UPS,UPS,SP500,Industrials
+PNC 파이낸셜,PNC Financial,PNC,PNC金融,PNC,PNC,SP500,Financials
+블랙스톤,Blackstone,블랙스톤,黑石,ブラックストーン,BX,SP500,Financials
+아메리칸 타워,American Tower,아메리칸타워,美国电塔,アメリカン・タワー,AMT,SP500,Real Estate
+KKR,KKR,KKR,KKR,KKR,KKR,SP500,Financials
+US 뱅코프,U.S. Bancorp,USB,美国合众,USバンコープ,USB,SP500,Financials
+프리포트 맥모란,Freeport-McMoRan,프리포트,自由港,フリーポート,FCX,SP500,Materials
+무디스,Moody's,무디스,穆迪,ムーディーズ,MCO,SP500,Financials
+나이키,Nike,나이키,耐克,ナイキ,NKE,SP500,Consumer Discretionary
+셔윈 윌리엄스,Sherwin-Williams,셔윈,宣伟,シャーウィン・ウィリアムズ,SHW,SP500,Materials
+3M,3M,3M,3M,スリーエム,MMM,SP500,Industrials
+모토로라 솔루션,Motorola Solutions,모토로라,摩托罗拉,モトローラ,MSI,SP500,Technology
+EOG 리소시스,EOG Resources,EOG,EOG资源,EOG,EOG,SP500,Energy
+로열 캐리비안,Royal Caribbean,로캐,皇家加勒比,ロイヤル・カリビアン,RCL,SP500,Consumer Discretionary
+킨더 모건,Kinder Morgan,킨더모건,金德摩根,キンダー・モルガン,KMI,SP500,Energy
+에코랩,Ecolab,에코랩,艺康,エコラボ,ECL,SP500,Materials
+에머슨 일렉트릭,Emerson Electric,에머슨,艾默生,エマソン,EMR,SP500,Industrials
+슐룸베르거,SLB,슐럼버거,斯伦贝谢,シュルンベルジェ,SLB,SP500,Energy
+필립스 66,Phillips 66,필립스66,菲利普66,フィリップス66,PSX,SP500,Energy
+발레로 에너지,Valero Energy,발레로,瓦莱罗,バレロ,VLO,SP500,Energy
+아온,Aon,아온,怡安,エーオン,AON,SP500,Financials
+힐튼,Hilton,힐튼,希尔顿,ヒルトン,HLT,SP500,Consumer Discretionary
+마라톤 페트롤리엄,Marathon Petroleum,마라톤,马拉松石油,マラソン,MPC,SP500,Energy
+시그나,Cigna,시그나,信诺,シグナ,CI,SP500,Healthcare
+제너럴 모터스,General Motors,GM,通用汽车,GM,GM,SP500,Consumer Discretionary
+포드 모터,Ford Motor,포드,福特,フォード,F,SP500,Consumer Discretionary
+콜게이트 팜올리브,Colgate-Palmolive,콜팜,高露洁棕榄,コルゲート,CL,SP500,Consumer Staples
+로빈후드,Robinhood,로빈후드,罗宾汉,ロビンフッド,HOOD,SP500,Financials
+아폴로 글로벌 매니지먼트,Apollo Global,아폴로,阿波罗,アポロ,APO,SP500,Financials
+노포크 서던,Norfolk Southern,NSC,诺福克南方,ノーフォーク・サザン,NSC,SP500,Industrials
+엘리번스 헬스,Elevance Health,엘리번스,Elevance,エレバンス,ELV,SP500,Healthcare
+에어 프로덕츠 앤 케미컬스,Air Products and Chemicals,APD,空气产品,エア・プロダクツ,APD,SP500,Materials
+옥시덴탈 페트롤리엄,Occidental Petroleum,옥시,西方石油,オクシデンタル,OXY,SP500,Energy
+오토존,AutoZone,오토존,汽车地带,オートゾーン,AZO,SP500,Consumer Discretionary
+아플락,Aflac,아플락,美国家庭保险,アフラック,AFL,SP500,Financials
+코인베이스,Coinbase,코베,Coinbase,コインベース,COIN,SP500,Financials
+모놀리식 파워 시스템스,Monolithic Power Systems,MPS,矽力杰,モノリシック,MPWR,SP500,Technology
+델타 항공,Delta Air Lines,델타,达美航空,デルタ航空,DAL,SP500,Industrials
+비스트라 코프,Vistra Corp,비스트라,Vistra,ビストラ,VST,SP500,Utilities
+키사이트 테크놀로지스,Keysight Technologies,키사이트,是德科技,キーサイト,KEYS,SP500,Technology
+캐리어 글로벌,Carrier Global,캐리어,开利,キャリア,CARR,SP500,Industrials
+조에티스,Zoetis,조에티스,硕腾,ゾエティス,ZTS,SP500,Healthcare
+에드워즈 라이프사이언스,Edwards Lifesciences,에드워즈,爱德华兹,エドワーズ,EW,SP500,Healthcare
+유나이티드 렌털스,United Rentals,URI,联合租赁,ユナイテッド・レンタルズ,URI,SP500,Industrials
+휴렛팩커드 엔터프라이즈,Hewlett Packard Enterprise,HPE,慧与,HPE,HPE,SP500,Technology
+가민,Garmin,가민,佳明,ガーミン,GRMN,SP500,Consumer Discretionary
+크로거,Kroger,크로거,克罗格,クローガー,KR,SP500,Consumer Staples
+치폴레,Chipotle Mexican Grill,치폴레,墨式烧烤,チポトレ,CMG,SP500,Consumer Discretionary
+유나이티드 에어라인스,United Airlines,유나이티드,美联航,ユナイテッド航空,UAL,SP500,Industrials
+인터랙티브 브로커스,Interactive Brokers,IBKR,盈透,インタラクティブ・ブローカーズ,IBKR,SP500,Financials
+카바나,Carvana,카바나,Carvana,カーバナ,CVNA,SP500,Consumer Discretionary
+타겟,Target,타겟,塔吉特,ターゲット,TGT,SP500,Consumer Staples
+텍사스 퍼시픽 랜드,Texas Pacific Land,TPL,德州太平洋土地,TPL,TPL,SP500,Energy
+라스베가스 샌즈,Las Vegas Sands,LVS,金沙,ラスベガス・サンズ,LVS,SP500,Consumer Discretionary
+라이브 네이션,Live Nation,라이브네이션,Live Nation,ライブ・ネイション,LYV,SP500,Communication Services
+쿠안타 서비스,Quanta Services,쿠안타,Quanta,クアンタ,PWR,SP500,Industrials
+아처 대니얼스 미들랜드,Archer-Daniels-Midland,ADM,ADM,ADM,ADM,SP500,Consumer Staples
+에스티 로더,Estée Lauder,에스티,雅诗兰黛,エスティ・ローダー,EL,SP500,Consumer Staples
+서던 컴퍼니,Southern Company,서던,南方公司,サザン,SO,SP500,Utilities
+메트라이프,MetLife,메트라이프,大都会人寿,メットライフ,MET,SP500,Financials
+마쉬 앤드 맥레넌,Marsh & McLennan,마쉬,美世,マーシュ,MMC,SP500,Financials
+크라운 캐슬,Crown Castle,CCI,皇冠城堡,クラウン・キャッスル,CCI,SP500,Real Estate
+휴마나,Humana,휴마나,Humana,ヒューマナ,HUM,SP500,Healthcare
+모더나,Moderna,모더나,莫德纳,モデルナ,MRNA,SP500,Healthcare
+퍼스트 솔라,First Solar,퍼솔,第一太阳能,ファースト・ソーラー,FSLR,SP500,Technology
+올스테이트,Allstate,올스테이트,好事达,オールステート,ALL,SP500,Financials
+AIG,AIG,AIG,AIG,AIG,AIG,SP500,Financials
+할리버튼,Halliburton,할리버튼,哈里伯顿,ハリバートン,HAL,SP500,Energy
+허쉬,Hershey,허쉬,好时,ハーシーズ,HSY,SP500,Consumer Staples
+얌 브랜즈,Yum! Brands,얌,百胜,ヤム・ブランズ,YUM,SP500,Consumer Discretionary
+콘스텔레이션 브랜즈,Constellation Brands,콘스텔레이션,星座品牌,コンステレーション,STZ,SP500,Consumer Staples
+MSCI,MSCI,MSCI,MSCI明晟,MSCI,MSCI,SP500,Financials
+DR 호튼,D.R. Horton,DHI,霍顿房屋,DRホートン,DHI,SP500,Consumer Discretionary
+레나,Lennar,레나,莱纳房产,レナー,LEN,SP500,Consumer Discretionary
+울타 뷰티,Ulta Beauty,울타,Ulta美妆,ウルタ,ULTA,SP500,Consumer Discretionary
+제너럴 밀스,General Mills,GIS,通用磨坊,ゼネラル・ミルズ,GIS,SP500,Consumer Staples
+HP,HP,HP,惠普,HP,HPQ,SP500,Technology
+달러 제너럴,Dollar General,달러제너럴,美国元店,ダラー・ジェネラル,DG,SP500,Consumer Staples
+데커스 아웃도어,Deckers Outdoor,데커스,Deckers,デッカーズ,DECK,SP500,Consumer Discretionary
+윈 리조트,Wynn Resorts,윈,永利,ウィン,WYNN,SP500,Consumer Discretionary
+MGM 리조트,MGM Resorts,MGM,美高梅,MGM,MGM,SP500,Consumer Discretionary
+랩코프,Labcorp,랩코프,Labcorp,ラボコープ,LH,SP500,Healthcare
+T. 로우 프라이스,T. Rowe Price,T로우,普信,Tロウ・プライス,TROW,SP500,Financials
+푸르덴셜 파이낸셜,Prudential Financial,푸르덴셜,保德信,プルデンシャル,PRU,SP500,Financials
+킴벌리클라크,Kimberly-Clark,킴벌리,金佰利,キンバリークラーク,KMB,SP500,Consumer Staples
+베스트 바이,Best Buy,베스트바이,百思买,ベスト・バイ,BBY,SP500,Consumer Discretionary
+이베이,eBay,이베이,易贝,eBay,EBAY,SP500,Consumer Discretionary
+해즈브로,Hasbro,해즈브로,孩之宝,ハズブロ,HAS,SP500,Consumer Discretionary
+슈퍼 마이크로 컴퓨터,Super Micro Computer,슈마컴,超微,スーパーマイクロ,SMCI,SP500,Technology
+타이슨 푸드,Tyson Foods,타이슨,泰森食品,タイソン・フーズ,TSN,SP500,Consumer Staples
+폭스 코퍼레이션 A,Fox Corporation A,폭스A,福克斯A,フォックスA,FOXA,SP500,Communication Services
+블록,Block,블록,Block,ブロック,XYZ,SP500,Financials
+얼라인 테크놀로지,Align Technology,얼라인,爱齐,アライン,ALGN,SP500,Healthcare
+시스코,Sysco,사이스코,西斯科,シスコフーズ,SYY,SP500,Consumer Staples
+리비안 오토모티브,Rivian Automotive,리비안,Rivian,リヴィアン,RIVN,NASDAQ_OTHER,Consumer Discretionary
+루시드 그룹,Lucid Group,루시드,Lucid,ルシード,LCID,NASDAQ_OTHER,Consumer Discretionary
+로켓 랩,Rocket Lab,로켓랩,Rocket Lab,ロケット・ラブ,RKLB,NASDAQ_OTHER,Industrials
+소파이 테크놀로지스,SoFi Technologies,소파이,SoFi,ソファイ,SOFI,NASDAQ_OTHER,Financials
+힘스 앤드 허스 헬스,Hims & Hers Health,힘스,Hims & Hers,ヒムズ,HIMS,NASDAQ_OTHER,Healthcare
+업스타트 홀딩스,Upstart Holdings,업스타트,Upstart,アップスタート,UPST,NASDAQ_OTHER,Financials
+엔페이즈 에너지,Enphase Energy,엔페이즈,Enphase,エンフェーズ,ENPH,NASDAQ_OTHER,Technology
+선런,Sunrun,선런,Sunrun,サンラン,RUN,NASDAQ_OTHER,Technology
+어펌 홀딩스,Affirm Holdings,어펌,Affirm,アファーム,AFRM,NASDAQ_OTHER,Financials
+로블록스,Roblox,로블록스,Roblox,ロブロックス,RBLX,NASDAQ_OTHER,Communication Services
+유니티 소프트웨어,Unity Software,유니티,Unity,ユニティ,U,NASDAQ_OTHER,Technology
+드래프트킹스,DraftKings,드래프트킹스,DraftKings,ドラフトキングス,DKNG,NASDAQ_OTHER,Consumer Discretionary
+비욘드 미트,Beyond Meat,비욘드미트,Beyond Meat,ビヨンド・ミート,BYND,NASDAQ_OTHER,Consumer Staples
+펠로톤 인터랙티브,Peloton Interactive,펠로톤,Peloton,ペロトン,PTON,NASDAQ_OTHER,Consumer Discretionary
+트윌리오,Twilio,트윌리오,Twilio,トゥイリオ,TWLO,NASDAQ_OTHER,Technology
+도큐사인,DocuSign,도큐사인,DocuSign,ドキュサイン,DOCU,NASDAQ_OTHER,Technology
+줌 비디오,Zoom Communications,줌,Zoom,ズーム,ZM,NASDAQ_OTHER,Technology
+핀터레스트,Pinterest,핀터레스트,Pinterest,ピンタレスト,PINS,NASDAQ_OTHER,Communication Services
+스냅,Snap,스냅,Snap,スナップ,SNAP,NASDAQ_OTHER,Communication Services
+니오,NIO,니오,蔚来,NIO,NIO,NASDAQ_OTHER,Consumer Discretionary
+샤오펑 모터스,XPeng,샤오펑,小鹏,シャオペン,XPEV,NASDAQ_OTHER,Consumer Discretionary
+리 오토,Li Auto,리오토,理想,リオート,LI,NASDAQ_OTHER,Consumer Discretionary
+바이두,Baidu,바이두,百度,バイドゥ,BIDU,NASDAQ_OTHER,Communication Services
+JD닷컴,JD.com,징동,京东,JDドットコム,JD,NASDAQ_OTHER,Consumer Discretionary
+알리바바,Alibaba,알리바바,阿里巴巴,アリババ,BABA,NASDAQ_OTHER,Consumer Discretionary
+TSMC,Taiwan Semiconductor,TSMC,台积电,TSMC,TSM,NASDAQ_OTHER,Technology
+아처 에비에이션,Archer Aviation,아처,Archer,アーチャー,ACHR,NASDAQ_OTHER,Industrials
+조비 에비에이션,Joby Aviation,조비,Joby,ジョビー,JOBY,NASDAQ_OTHER,Industrials
+아이온큐,IonQ,아이온큐,IonQ,アイオンキュー,IONQ,NASDAQ_OTHER,Technology
+리게티 컴퓨팅,Rigetti Computing,리게티,Rigetti,リゲッティ,RGTI,NASDAQ_OTHER,Technology
+디 웨이브 퀀텀,D-Wave Quantum,디웨이브,D-Wave,ディー・ウェーブ,QBTS,NASDAQ_OTHER,Technology
+오클로,Oklo,오클로,Oklo,オクロ,OKLO,NASDAQ_OTHER,Utilities
+인튜이티브 머신,Intuitive Machines,인튜이티브머신,Intuitive Machines,インテュイティブ・マシーンズ,LUNR,NASDAQ_OTHER,Industrials
+블랙스카이 테크놀로지,BlackSky Technology,블랙스카이,BlackSky,ブラックスカイ,BKSY,NASDAQ_OTHER,Industrials
+레딧,Reddit,레딧,Reddit,レディット,RDDT,NASDAQ_OTHER,Communication Services
+CRISPR 테라퓨틱스,CRISPR Therapeutics,크리스퍼,CRISPR,クリスパー,CRSP,NASDAQ_OTHER,Healthcare
+비트마인,BitMine Immersion Technologies,비트마인,BitMine,ビットマイン,BMNR,NASDAQ_OTHER,Financials
+샤프링크 게이밍,SharpLink Gaming,샤프링크,SharpLink,シャープリンク,SBET,NASDAQ_OTHER,Consumer Discretionary
+AMC 엔터테인먼트,AMC Entertainment,AMC,AMC娱乐,AMC,AMC,NASDAQ_OTHER,Communication Services
+게임스톱,GameStop,게임스톱,游戏驿站,ゲームストップ,GME,NASDAQ_OTHER,Consumer Discretionary
+블랙베리,BlackBerry,블랙베리,黑莓,ブラックベリー,BB,NASDAQ_OTHER,Technology
+푸보TV,fuboTV,푸보,fuboTV,フーボTV,FUBO,NASDAQ_OTHER,Communication Services
+마라 홀딩스,MARA Holdings,마라,MARA,マラ,MARA,NASDAQ_OTHER,Financials
+라이오트 플랫폼,Riot Platforms,라이오트,Riot,ライオット,RIOT,NASDAQ_OTHER,Financials
+허트 8 마이닝,Hut 8 Corp,허트8,Hut 8,ハット・エイト,HUT,NASDAQ_OTHER,Financials
+사이퍼 마이닝,Cipher Mining,사이퍼,Cipher,サイファー,CIFR,NASDAQ_OTHER,Financials
+클린스파크,CleanSpark,클린스파크,CleanSpark,クリーンスパーク,CLSK,NASDAQ_OTHER,Financials
+테라울프,TeraWulf,테라울프,TeraWulf,テラウルフ,WULF,NASDAQ_OTHER,Financials
+어플라이드 디지털,Applied Digital,어플라이드디지털,Applied Digital,アプライド・デジタル,APLD,NASDAQ_OTHER,Technology
+블링크 차징,Blink Charging,블링크,Blink,ブリンク,BLNK,NASDAQ_OTHER,Industrials
+차지포인트 홀딩스,ChargePoint Holdings,차지포인트,ChargePoint,チャージポイント,CHPT,NASDAQ_OTHER,Industrials
+플러그 파워,Plug Power,플러그,普拉格,プラグ・パワー,PLUG,NASDAQ_OTHER,Industrials
+블룸 에너지,Bloom Energy,블룸,Bloom,ブルーム,BE,NASDAQ_OTHER,Industrials
+크리스피 크림,Krispy Kreme,크리스피크림,Krispy Kreme,クリスピー・クリーム,DNUT,NASDAQ_OTHER,Consumer Discretionary
+웬디스,Wendy's,웬디스,温迪,ウェンディーズ,WEN,NASDAQ_OTHER,Consumer Discretionary
+파라마운트 글로벌,Paramount Global,파라마운트,派拉蒙,パラマウント,PARA,NASDAQ_OTHER,Communication Services
+월그린스 부츠 얼라이언스,Walgreens Boots Alliance,월그린스,沃尔格林,ウォルグリーン,WBA,NASDAQ_OTHER,Consumer Staples
+질로우 그룹,Zillow Group,질로우,Zillow,ジロー,ZG,NASDAQ_OTHER,Real Estate
+오픈도어 테크놀로지,Opendoor Technologies,오픈도어,Opendoor,オープンドア,OPEN,NASDAQ_OTHER,Real Estate
+사운드하운드 AI,SoundHound AI,사운드하운드,SoundHound,サウンドハウンド,SOUN,NASDAQ_OTHER,Technology
+비기빅 AI,BigBear.ai,비기빅,BigBear.ai,ビッグベア,BBAI,NASDAQ_OTHER,Technology
+유아이패스,UiPath,유아이패스,UiPath,ユーアイパス,PATH,NASDAQ_OTHER,Technology
+C3.ai,C3.ai,C3AI,C3.ai,C3エーアイ,AI,NASDAQ_OTHER,Technology
+클라우드플레어,Cloudflare,클플,Cloudflare,クラウドフレア,NET,NASDAQ_OTHER,Technology
+스노우플레이크,Snowflake,스노우,Snowflake,スノーフレーク,SNOW,NASDAQ_OTHER,Technology
+몽고DB,MongoDB,몽고,MongoDB,モンゴDB,MDB,NASDAQ_OTHER,Technology
+옥타,Okta,옥타,Okta,オクタ,OKTA,NASDAQ_OTHER,Technology
+센티넬원,SentinelOne,센티넬원,SentinelOne,センチネルワン,S,NASDAQ_OTHER,Technology
+컨플루언트,Confluent,컨플루언트,Confluent,コンフルエント,CFLT,NASDAQ_OTHER,Technology
+엘라스틱,Elastic,엘라스틱,Elastic,エラスティック,ESTC,NASDAQ_OTHER,Technology
+디지털오션,DigitalOcean,디지털오션,DigitalOcean,デジタルオーシャン,DOCN,NASDAQ_OTHER,Technology
+템퍼스 AI,Tempus AI,템퍼스,Tempus,テンパス,TEM,NASDAQ_OTHER,Healthcare
+서브 로보틱스,Serve Robotics,서브로보틱스,Serve,サーブ,SERV,NASDAQ_OTHER,Industrials
+마이크로클라우드 홀로그램,MicroCloud Hologram,홀로,微美全息,マイクロクラウド,HOLO,NASDAQ_OTHER,Technology
+SPDR S&P 500 ETF,SPDR S&P 500 ETF,SPY,SPDR标普500,SPY,SPY,ETF_INDEX,S&P 500
+뱅가드 S&P 500 ETF,Vanguard S&P 500 ETF,VOO,先锋标普500,VOO,VOO,ETF_INDEX,S&P 500
+iShares 코어 S&P 500 ETF,iShares Core S&P 500 ETF,IVV,安硕标普500,IVV,IVV,ETF_INDEX,S&P 500
+Invesco QQQ Trust,Invesco QQQ Trust,QQQ,景顺QQQ,QQQ,QQQ,ETF_INDEX,NASDAQ-100
+Invesco NASDAQ 100 ETF,Invesco NASDAQ 100 ETF,QQQM,景顺纳指100,QQQM,QQQM,ETF_INDEX,NASDAQ-100
+뱅가드 토탈 스톡 마켓 ETF,Vanguard Total Stock Market ETF,VTI,先锋全股市,VTI,VTI,ETF_INDEX,Total Market
+SPDR 다우존스 ETF,SPDR Dow Jones ETF,DIA,SPDR道指,DIA,DIA,ETF_INDEX,Dow Jones
+iShares 러셀 2000 ETF,iShares Russell 2000 ETF,IWM,安硕罗素2000,IWM,IWM,ETF_INDEX,Russell 2000
+Invesco S&P 500 동일가중 ETF,Invesco S&P 500 Equal Weight ETF,RSP,景顺标普等权,RSP,RSP,ETF_INDEX,S&P 500
+iShares MSCI EAFE ETF,iShares MSCI EAFE ETF,EFA,安硕EAFE,EFA,EFA,ETF_INDEX,International
+뱅가드 FTSE 선진국 ETF,Vanguard FTSE Developed Markets ETF,VEA,先锋发达市场,VEA,VEA,ETF_INDEX,International
+뱅가드 FTSE 신흥국 ETF,Vanguard FTSE Emerging Markets ETF,VWO,先锋新兴市场,VWO,VWO,ETF_INDEX,Emerging Markets
+iShares MSCI 신흥시장 ETF,iShares MSCI Emerging Markets ETF,EEM,安硕新兴市场,EEM,EEM,ETF_INDEX,Emerging Markets
+테크놀로지 셀렉트 섹터 SPDR,Technology Select Sector SPDR,XLK,SPDR科技,XLK,XLK,ETF_INDEX,Technology
+파이낸셜 셀렉트 섹터 SPDR,Financial Select Sector SPDR,XLF,SPDR金融,XLF,XLF,ETF_INDEX,Financials
+에너지 셀렉트 섹터 SPDR,Energy Select Sector SPDR,XLE,SPDR能源,XLE,XLE,ETF_INDEX,Energy
+헬스케어 셀렉트 섹터 SPDR,Health Care Select Sector SPDR,XLV,SPDR医疗,XLV,XLV,ETF_INDEX,Healthcare
+임의소비재 셀렉트 섹터 SPDR,Consumer Discretionary Select Sector SPDR,XLY,SPDR非必需消费,XLY,XLY,ETF_INDEX,Consumer Discretionary
+필수소비재 셀렉트 섹터 SPDR,Consumer Staples Select Sector SPDR,XLP,SPDR必需消费,XLP,XLP,ETF_INDEX,Consumer Staples
+산업재 셀렉트 섹터 SPDR,Industrial Select Sector SPDR,XLI,SPDR工业,XLI,XLI,ETF_INDEX,Industrials
+유틸리티 셀렉트 섹터 SPDR,Utilities Select Sector SPDR,XLU,SPDR公用事业,XLU,XLU,ETF_INDEX,Utilities
+소재 셀렉트 섹터 SPDR,Materials Select Sector SPDR,XLB,SPDR材料,XLB,XLB,ETF_INDEX,Materials
+부동산 셀렉트 섹터 SPDR,Real Estate Select Sector SPDR,XLRE,SPDR房地产,XLRE,XLRE,ETF_INDEX,Real Estate
+커뮤니케이션 서비스 SPDR,Communication Services Select Sector SPDR,XLC,SPDR通信,XLC,XLC,ETF_INDEX,Communication Services
+VanEck 반도체 ETF,VanEck Semiconductor ETF,SMH,VanEck半导体,SMH,SMH,ETF_THEMATIC,Semiconductors
+iShares 반도체 ETF,iShares Semiconductor ETF,SOXX,安硕半导体,SOXX,SOXX,ETF_THEMATIC,Semiconductors
+ARK 이노베이션 ETF,ARK Innovation ETF,ARKK,ARK创新,ARKK,ARKK,ETF_THEMATIC,Innovation
+ARK 게놈 혁명 ETF,ARK Genomic Revolution ETF,ARKG,ARK基因,ARKG,ARKG,ETF_THEMATIC,Genomics
+ARK 차세대 인터넷 ETF,ARK Next Generation Internet ETF,ARKW,ARK互联网,ARKW,ARKW,ETF_THEMATIC,Internet
+ARK 자율 기술 ETF,ARK Autonomous Technology & Robotics ETF,ARKQ,ARK自主,ARKQ,ARKQ,ETF_THEMATIC,Robotics
+Global X 로보틱스 & AI ETF,Global X Robotics & AI ETF,BOTZ,Global X机器人,BOTZ,BOTZ,ETF_THEMATIC,Robotics
+iShares 글로벌 클린 에너지 ETF,iShares Global Clean Energy ETF,ICLN,安硕清洁能源,ICLN,ICLN,ETF_THEMATIC,Clean Energy
+Global X 리튬 배터리 ETF,Global X Lithium & Battery Tech ETF,LIT,Global X锂电,LIT,LIT,ETF_THEMATIC,Battery
+Amplify 블록체인 ETF,Amplify Transformational Data Sharing ETF,BLOK,Amplify区块链,BLOK,BLOK,ETF_THEMATIC,Blockchain
+VanEck 와이드 모트 ETF,VanEck Morningstar Wide Moat ETF,MOAT,VanEck宽护城河,MOAT,MOAT,ETF_THEMATIC,Quality
+ProShares 비트코인 전략 ETF,ProShares Bitcoin Strategy ETF,BITO,ProShares比特币,BITO,BITO,ETF_THEMATIC,Bitcoin
+iShares 비트코인 트러스트,iShares Bitcoin Trust ETF,IBIT,安硕比特币,IBIT,IBIT,ETF_THEMATIC,Bitcoin
+피델리티 비트코인 펀드,Fidelity Wise Origin Bitcoin Fund,FBTC,富达比特币,FBTC,FBTC,ETF_THEMATIC,Bitcoin
+iShares 이더리움 트러스트,iShares Ethereum Trust ETF,ETHA,安硕以太坊,ETHA,ETHA,ETF_THEMATIC,Ethereum
+SPDR 골드 셰어즈,SPDR Gold Shares,GLD,SPDR黄金,GLD,GLD,ETF_THEMATIC,Gold
+iShares 골드 트러스트,iShares Gold Trust,IAU,安硕黄金,IAU,IAU,ETF_THEMATIC,Gold
+iShares 실버 트러스트,iShares Silver Trust,SLV,安硕白银,SLV,SLV,ETF_THEMATIC,Silver
+미국 오일 펀드,United States Oil Fund,USO,美国石油,USO,USO,ETF_THEMATIC,Oil
+미국 천연가스 펀드,United States Natural Gas Fund,UNG,美国天然气,UNG,UNG,ETF_THEMATIC,Natural Gas
+Global X 우라늄 ETF,Global X Uranium ETF,URA,Global X铀,URA,URA,ETF_THEMATIC,Uranium
+iPath VIX 단기 선물 ETN,iPath S&P 500 VIX Short-Term Futures ETN,VXX,iPath VIX,VXX,VXX,ETF_THEMATIC,Volatility
+슈왑 미국 배당주 ETF,Schwab U.S. Dividend Equity ETF,슈드,嘉信美国股息,SCHD,SCHD,ETF_DIVIDEND,Dividend
+뱅가드 배당 성장 ETF,Vanguard Dividend Appreciation ETF,VIG,先锋股息增长,VIG,VIG,ETF_DIVIDEND,Dividend Growth
+뱅가드 고배당 ETF,Vanguard High Dividend Yield ETF,VYM,先锋高股息,VYM,VYM,ETF_DIVIDEND,High Dividend
+iShares 코어 배당 성장 ETF,iShares Core Dividend Growth ETF,DGRO,安硕股息增长,DGRO,DGRO,ETF_DIVIDEND,Dividend Growth
+위즈덤트리 미국 배당 성장,WisdomTree U.S. Quality Dividend Growth Fund,DGRW,智慧树质量股息,DGRW,DGRW,ETF_DIVIDEND,Dividend Growth
+iShares 코어 고배당 ETF,iShares Core High Dividend ETF,HDV,安硕高股息,HDV,HDV,ETF_DIVIDEND,High Dividend
+ProShares S&P 배당귀족 ETF,ProShares S&P 500 Dividend Aristocrats ETF,NOBL,ProShares股息贵族,NOBL,NOBL,ETF_DIVIDEND,Dividend Aristocrats
+SPDR S&P 500 고배당 ETF,SPDR Portfolio S&P 500 High Dividend ETF,SPYD,SPDR标普高股息,SPYD,SPYD,ETF_DIVIDEND,High Dividend
+JP모건 에쿼티 프리미엄 인컴 ETF,JPMorgan Equity Premium Income ETF,제피,摩根大通股票溢价,JEPI,JEPI,ETF_DIVIDEND,Covered Call
+JP모건 나스닥 에쿼티 프리미엄,JPMorgan Nasdaq Equity Premium Income ETF,제프큐,摩根大通纳指溢价,JEPQ,JEPQ,ETF_DIVIDEND,Covered Call
+Global X 나스닥 100 커버드 콜,Global X NASDAQ 100 Covered Call ETF,QYLD,Global X纳指备兑,QYLD,QYLD,ETF_DIVIDEND,Covered Call
+Global X S&P 500 커버드 콜,Global X S&P 500 Covered Call ETF,XYLD,Global X标普备兑,XYLD,XYLD,ETF_DIVIDEND,Covered Call
+Global X 러셀 2000 커버드 콜,Global X Russell 2000 Covered Call ETF,RYLD,Global X罗素备兑,RYLD,RYLD,ETF_DIVIDEND,Covered Call
+Amplify CWP 인핸스드 배당 ETF,Amplify CWP Enhanced Dividend Income ETF,DIVO,Amplify强化股息,DIVO,DIVO,ETF_DIVIDEND,Enhanced Dividend
+Global X 슈퍼디비던드 ETF,Global X SuperDividend ETF,SDIV,Global X超级股息,SDIV,SDIV,ETF_DIVIDEND,High Yield
+ProShares 울트라프로 QQQ,ProShares UltraPro QQQ,티큐,ProShares纳指3X,TQQQ,TQQQ,ETF_LEVERAGE,NASDAQ-100 3x
+Direxion 데일리 반도체 불 3X,Direxion Daily Semiconductor Bull 3X,속슬,Direxion半导体3X,SOXL,SOXL,ETF_LEVERAGE,Semiconductor 3x
+Direxion 데일리 S&P 500 불 3X,Direxion Daily S&P 500 Bull 3X,SPXL,Direxion标普3X,SPXL,SPXL,ETF_LEVERAGE,S&P 500 3x
+ProShares 울트라프로 S&P 500,ProShares UltraPro S&P 500,UPRO,ProShares标普3X,UPRO,UPRO,ETF_LEVERAGE,S&P 500 3x
+MicroSectors FANG+ 3X 레버리지 ETN,MicroSectors FANG+ 3X Leveraged ETN,FNGU,FANG+3X,FNGU,FNGU,ETF_LEVERAGE,FANG 3x
+Direxion 데일리 스몰캡 불 3X,Direxion Daily Small Cap Bull 3X,TNA,Direxion小盘3X,TNA,TNA,ETF_LEVERAGE,Russell 2000 3x
+Direxion 데일리 파이낸셜 불 3X,Direxion Daily Financial Bull 3X,FAS,Direxion金融3X,FAS,FAS,ETF_LEVERAGE,Financials 3x
+Direxion 데일리 바이오테크 불 3X,Direxion Daily S&P Biotech Bull 3X,LABU,Direxion生物科技3X,LABU,LABU,ETF_LEVERAGE,Biotech 3x
+ProShares 울트라프로 다우 30,ProShares UltraPro Dow30,UDOW,ProShares道指3X,UDOW,UDOW,ETF_LEVERAGE,Dow Jones 3x
+Direxion 데일리 헬스케어 불 3X,Direxion Daily Healthcare Bull 3X,CURE,Direxion医疗3X,CURE,CURE,ETF_LEVERAGE,Healthcare 3x
+Direxion 데일리 지역은행 불 3X,Direxion Daily Regional Banks Bull 3X,DPST,Direxion区域银行3X,DPST,DPST,ETF_LEVERAGE,Regional Banks 3x
+ProShares 울트라 QQQ,ProShares Ultra QQQ,QLD,ProShares纳指2X,QLD,QLD,ETF_LEVERAGE,NASDAQ-100 2x
+ProShares 울트라 S&P 500,ProShares Ultra S&P 500,SSO,ProShares标普2X,SSO,SSO,ETF_LEVERAGE,S&P 500 2x
+ProShares 울트라 다우 30,ProShares Ultra Dow30,DDM,ProShares道指2X,DDM,DDM,ETF_LEVERAGE,Dow Jones 2x
+ProShares 울트라 반도체,ProShares Ultra Semiconductors,USD,ProShares半导体2X,USD,USD,ETF_LEVERAGE,Semiconductor 2x
+ProShares 울트라 테크놀로지,ProShares Ultra Technology,ROM,ProShares科技2X,ROM,ROM,ETF_LEVERAGE,Technology 2x
+ProShares 울트라 파이낸셜,ProShares Ultra Financials,UYG,ProShares金融2X,UYG,UYG,ETF_LEVERAGE,Financials 2x
+Direxion TSLA 불 2X,Direxion Daily TSLA Bull 2X,테슬엘,Direxion特斯拉2X,TSLL,TSLL,ETF_LEVERAGE,Tesla 2x
+GraniteShares 2x 롱 NVDA,GraniteShares 2x Long NVDA Daily ETF,엔디엘,GraniteShares英伟达2X,NVDL,NVDL,ETF_LEVERAGE,NVIDIA 2x
+GraniteShares 2x 롱 COIN,GraniteShares 2x Long COIN Daily ETF,코늘,GraniteShares Coinbase2X,CONL,CONL,ETF_LEVERAGE,Coinbase 2x
+T-Rex 2X 롱 MSTR,T-Rex 2X Long MSTR Daily Target ETF,마스튀,T-Rex微策略2X,MSTU,MSTU,ETF_LEVERAGE,Strategy 2x
+Direxion AMZN 불 2X,Direxion Daily AMZN Bull 2X,아마즈,Direxion亚马逊2X,AMZU,AMZU,ETF_LEVERAGE,Amazon 2x
+Direxion AAPL 불 2X,Direxion Daily AAPL Bull 2X,애플유,Direxion苹果2X,AAPU,AAPU,ETF_LEVERAGE,Apple 2x
+Direxion META 불 2X,Direxion Daily META Bull 2X,메툐,Direxion Meta2X,METU,METU,ETF_LEVERAGE,Meta 2x
+Direxion MSFT 불 2X,Direxion Daily MSFT Bull 2X,마쇼,Direxion微软2X,MSFU,MSFU,ETF_LEVERAGE,Microsoft 2x
+GraniteShares 2x 롱 PLTR,GraniteShares 2x Long PLTR Daily ETF,팔튀,GraniteShares Palantir2X,PLTU,PLTU,ETF_LEVERAGE,Palantir 2x
+GraniteShares 2x 롱 AMD,GraniteShares 2x Long AMD Daily ETF,에엠디엘,GraniteShares AMD2X,AMDL,AMDL,ETF_LEVERAGE,AMD 2x
+ProShares 울트라 VIX 단기 선물,ProShares Ultra VIX Short-Term Futures ETF,UVXY,ProShares VIX1.5X,UVXY,UVXY,ETF_LEVERAGE,Volatility 1.5x
+ProShares 울트라프로 숏 QQQ,ProShares UltraPro Short QQQ,에스큐,ProShares纳指反3X,SQQQ,SQQQ,ETF_INVERSE,NASDAQ-100 -3x
+Direxion 데일리 반도체 베어 3X,Direxion Daily Semiconductor Bear 3X,속스,Direxion半导体反3X,SOXS,SOXS,ETF_INVERSE,Semiconductor -3x
+Direxion 데일리 S&P 500 베어 3X,Direxion Daily S&P 500 Bear 3X,SPXS,Direxion标普反3X,SPXS,SPXS,ETF_INVERSE,S&P 500 -3x
+ProShares 울트라프로 숏 S&P 500,ProShares UltraPro Short S&P 500,SPXU,ProShares标普反3X,SPXU,SPXU,ETF_INVERSE,S&P 500 -3x
+Direxion 데일리 스몰캡 베어 3X,Direxion Daily Small Cap Bear 3X,TZA,Direxion小盘反3X,TZA,TZA,ETF_INVERSE,Russell 2000 -3x
+Direxion 데일리 파이낸셜 베어 3X,Direxion Daily Financial Bear 3X,FAZ,Direxion金融反3X,FAZ,FAZ,ETF_INVERSE,Financials -3x
+Direxion 데일리 바이오테크 베어 3X,Direxion Daily S&P Biotech Bear 3X,LABD,Direxion生物科技反3X,LABD,LABD,ETF_INVERSE,Biotech -3x
+Direxion 데일리 차이나 베어 3X,Direxion Daily FTSE China Bear 3X,YANG,Direxion中国反3X,YANG,YANG,ETF_INVERSE,China -3x
+ProShares 숏 QQQ,ProShares Short QQQ,PSQ,ProShares纳指反1X,PSQ,PSQ,ETF_INVERSE,NASDAQ-100 -1x
+ProShares 숏 S&P 500,ProShares Short S&P 500,SH,ProShares标普反1X,SH,SH,ETF_INVERSE,S&P 500 -1x
+ProShares 숏 다우 30,ProShares Short Dow30,DOG,ProShares道指反1X,DOG,DOG,ETF_INVERSE,Dow Jones -1x
+ProShares 숏 러셀 2000,ProShares Short Russell2000,RWM,ProShares罗素反1X,RWM,RWM,ETF_INVERSE,Russell 2000 -1x
+ProShares 울트라숏 QQQ,ProShares UltraShort QQQ,QID,ProShares纳指反2X,QID,QID,ETF_INVERSE,NASDAQ-100 -2x
+ProShares 울트라숏 S&P 500,ProShares UltraShort S&P 500,SDS,ProShares标普反2X,SDS,SDS,ETF_INVERSE,S&P 500 -2x
+T-Rex 2X 인버스 TSLA,T-Rex 2X Inverse Tesla Daily Target ETF,테슬즈,T-Rex特斯拉反2X,TSLZ,TSLZ,ETF_INVERSE,Tesla -2x
+GraniteShares 2x 숏 NVDA,GraniteShares 2x Short NVDA Daily ETF,엔디에스,GraniteShares英伟达反2X,NVDS,NVDS,ETF_INVERSE,NVIDIA -2x
+Direxion 데일리 NVDA 베어 1X,Direxion Daily NVDA Bear 1X,NVD,Direxion英伟达反1X,NVD,NVD,ETF_INVERSE,NVIDIA -1x
+ProShares 단기 VIX 숏,ProShares Short VIX Short-Term Futures ETF,SVXY,ProShares VIX反0.5X,SVXY,SVXY,ETF_INVERSE,Volatility -0.5x
+iShares 코어 미국 종합 채권 ETF,iShares Core U.S. Aggregate Bond ETF,AGG,安硕综合债券,AGG,AGG,ETF_BOND,Aggregate Bond
+뱅가드 토탈 채권 시장 ETF,Vanguard Total Bond Market ETF,BND,先锋债券市场,BND,BND,ETF_BOND,Aggregate Bond
+iShares 투자등급 회사채 ETF,iShares iBoxx $ Investment Grade Corporate Bond ETF,LQD,安硕投资级公司债,LQD,LQD,ETF_BOND,Corporate Bond
+iShares 고수익 회사채 ETF,iShares iBoxx $ High Yield Corporate Bond ETF,HYG,安硕高收益公司债,HYG,HYG,ETF_BOND,High Yield Bond
+SPDR 블룸버그 고수익 채권 ETF,SPDR Bloomberg High Yield Bond ETF,JNK,SPDR高收益债,JNK,JNK,ETF_BOND,High Yield Bond
+iShares 20년+ 국채 ETF,iShares 20+ Year Treasury Bond ETF,TLT,安硕20年国债,TLT,TLT,ETF_BOND,Treasury 20Y+
+iShares 7-10년 국채 ETF,iShares 7-10 Year Treasury Bond ETF,IEF,安硕中期国债,IEF,IEF,ETF_BOND,Treasury 7-10Y
+iShares 1-3년 국채 ETF,iShares 1-3 Year Treasury Bond ETF,SHY,安硕短期国债,SHY,SHY,ETF_BOND,Treasury 1-3Y
+SPDR 1-3개월 단기 국채 ETF,SPDR Bloomberg 1-3 Month T-Bill ETF,BIL,SPDR短期国债,BIL,BIL,ETF_BOND,T-Bill
+iShares 20+ 국채 BuyWrite ETF,iShares 20+ Year Treasury Bond BuyWrite Strategy ETF,TLTW,安硕20年国债备兑,TLTW,TLTW,ETF_BOND,Treasury Covered Call
+iShares MSCI 한국 ETF,iShares MSCI South Korea ETF,EWY,安硕韩国,EWY,EWY,ETF_INDEX,South Korea
+iShares MSCI 일본 ETF,iShares MSCI Japan ETF,EWJ,安硕日本,EWJ,EWJ,ETF_INDEX,Japan
+iShares 차이나 라지캡 ETF,iShares China Large-Cap ETF,FXI,安硕中国大盘,FXI,FXI,ETF_INDEX,China
+iShares MSCI 차이나 ETF,iShares MSCI China ETF,MCHI,安硕中国,MCHI,MCHI,ETF_INDEX,China
+KraneShares 차이나 인터넷 ETF,KraneShares CSI China Internet ETF,KWEB,KraneShares中国互联网,KWEB,KWEB,ETF_INDEX,China Internet
+iShares MSCI 인도 ETF,iShares MSCI India ETF,INDA,安硕印度,INDA,INDA,ETF_INDEX,India
+iShares MSCI 브라질 ETF,iShares MSCI Brazil ETF,EWZ,安硕巴西,EWZ,EWZ,ETF_INDEX,Brazil
+iShares MSCI 독일 ETF,iShares MSCI Germany ETF,EWG,安硕德国,EWG,EWG,ETF_INDEX,Germany
+iShares MSCI 영국 ETF,iShares MSCI United Kingdom ETF,EWU,安硕英国,EWU,EWU,ETF_INDEX,UK
+iShares MSCI 대만 ETF,iShares MSCI Taiwan ETF,EWT,安硕台湾,EWT,EWT,ETF_INDEX,Taiwan
