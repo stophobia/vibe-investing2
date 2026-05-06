@@ -398,12 +398,28 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         persona = get_persona(profile.persona_key)
         try:
             snapshot = deps.stock_service.get_snapshot(ticker)
-            reply = await deps.persona_engine.generate(
-                persona=persona, snapshot=snapshot, language=lang,
-                interests=[_localize_tag(tag, lang) for tag in profile.interest_tags] + profile.watchlist_tickers,
+            interests = [_localize_tag(tag, lang) for tag in profile.interest_tags] + profile.watchlist_tickers
+            reply = await deps.persona_engine.generate_deep(
+                persona=persona, snapshot=snapshot, language=lang, interests=interests,
             )
-            header = f"[{persona.name(lang)} · {ticker} · 전문 분석]" if lang == "ko" else f"[{persona.name(lang)} · {ticker} · deep]"
-            await query.message.reply_text(f"{header}\n\n{_strip_md(reply)}\n\n{s.short_disclaimer}")
+            header_label = {
+                "ko": "전문 분석",
+                "en": "deep dive",
+                "ja": "詳細分析",
+                "zh": "深度分析",
+            }.get(lang, "deep dive")
+            header = f"[{persona.name(lang)} · {ticker} · {header_label}]"
+            # Telegram message limit is 4096 chars — long deep analyses may need split
+            body = f"{header}\n\n{_strip_md(reply)}\n\n{s.short_disclaimer}"
+            if len(body) <= 4000:
+                await query.message.reply_text(body)
+            else:
+                # Split at paragraph boundary close to 3500 chars
+                cut = body.rfind("\n\n", 0, 3500)
+                if cut == -1:
+                    cut = 3500
+                await query.message.reply_text(body[:cut])
+                await query.message.reply_text(body[cut:].lstrip())
         except StockServiceError:
             await query.message.reply_text(s.ticker_not_found.format(q=ticker))
         except Exception:

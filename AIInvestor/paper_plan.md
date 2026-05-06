@@ -40,6 +40,7 @@ AI Investor는 **유명 투자자 페르소나로 미국 시황(NASDAQ / S&P 500
 14. [지역별 지연 분석 — 콜드 스타트·레이턴시 (참고)](#14-지역별-지연-분석--콜드-스타트레이턴시-참고)
 15. [진행 현황 (2026-05-05 23:10 KST 기준)](#15-진행-현황-2026-05-05-2310-kst-기준)
 16. [사전 캐싱 데몬 — 인기 종목·ETF Blob/CDN 사전 적재](#16-사전-캐싱-데몬--인기-종목etf-blobcdn-사전-적재)
+17. [대화형 UX 강화 — 섹터 추적 / Daily Limit / 구독 / 통계 대시보드](#17-대화형-ux-강화--섹터-추적--daily-limit--구독--통계-대시보드)
 
 ---
 
@@ -1504,3 +1505,221 @@ container "prewarm" (private + CDN origin)
 **End of Document**
 
 *수정·제안·재현 요청은 GitHub Issue로 부탁드립니다.*
+
+---
+
+## 17. 대화형 UX 강화 — 섹터 추적 / Daily Limit / 구독 / 통계 대시보드
+
+> **상태**: 작업 명세 (구현 미착수). 사용자 피드백에서 도출된 후속 작업.
+
+### 17.1 섹터 follow-up 프로세스
+
+**시나리오**: 사용자가 같은 섹터 (예: 반도체) 주식을 3회 이상 연속 조회 → 봇이 자연스럽게 follow-up.
+
+```
+사용자: NVDA → AMD → INTC → MU
+봇 (4번째 조회 후 자동):
+  📊 반도체와 AI 인프라 섹터에 관심이 많으시네요.
+  관련 ETF (SOXX, SMH, SOXL) 와 살펴보신 종목과 유사한 회사 (TSM, AVGO, QCOM)
+  를 비교해 드려도 될까요?
+  [✅ 비교해 줘]  [아니요]
+```
+
+**[비교해 줘]** 클릭 → 짧은 비교표 (3~5개 종목 × 2~3개 지표) → "추가로 세부 분석이 필요하세요? (5~10초 소요)" → [✅ 받기 / 아니요].
+
+#### 구현 — `services/sector_tracker.py`
+
+```python
+@dataclass
+class UserSectorActivity:
+    user_key: str
+    recent_tickers: list[str]      # 최근 10개 (LRU)
+    sector_count: dict[str, int]   # {"Technology": 4, "Energy": 1, ...}
+    last_followup_at: str          # ISO timestamp — 같은 follow-up 1시간 내 재발화 방지
+
+class SectorTracker:
+    def record(self, user_key: str, ticker: str, snapshot: StockSnapshot) -> None: ...
+    def should_offer_followup(self, user_key: str) -> tuple[bool, str | None]:
+        """Returns (should_offer, dominant_sector). 같은 sector 3회 + 1시간 내 미발화 시."""
+```
+
+저장: 사용자 프로필에 `sector_activity` 필드 추가 (Blob 통합 시 영속).
+
+### 17.2 Daily Limit + 구독 예약
+
+**무료 한도**: 하루 **세부 분석 5회**. 그 이상은 구독 필요.
+
+#### 카운터
+
+```python
+@dataclass
+class UserProfile:
+    # 기존 필드 ...
+    daily_deep_count: int = 0
+    daily_deep_reset_at: str = ""    # ISO timestamp — 다음 자정 KST
+```
+
+핸들러에서 `deeper:` 콜백 진입 시:
+
+```python
+if profile.daily_deep_count >= 5:
+    await query.message.reply_text(
+        s.daily_limit_reached.format(reset=profile.daily_deep_reset_at)
+    )
+    await _offer_subscription(...)  # 구독 안내 인라인 키보드
+    return
+profile.daily_deep_count += 1
+```
+
+매일 자정 KST 에 모든 프로필 카운터 리셋 — Timer Trigger `reset_daily_limits` (`0 0 15 * * *` UTC = 자정 KST).
+
+#### 구독 예약 플로우
+
+```
+[봇] 오늘의 세부 분석 5회를 모두 사용하셨습니다.
+     무제한 구독을 예약하시면 출시 시 알림 + 베타 우선 제공.
+     [✅ 예약하기]  [나중에]
+
+→ [예약하기] 클릭:
+  봇: 이름과 이메일을 알려주세요.
+       예: 홍길동 / hong@example.com
+  사용자: 김호광 / dennis@example.com
+
+→ 봇:
+  ✓ 이메일로 인증 링크를 보냈습니다.
+  링크 클릭 후 구독 예약 완료됩니다.
+  (24시간 내 미인증 시 자동 취소)
+```
+
+#### 구현 모듈
+
+- `services/email_verification.py` — 인증 토큰 발급 + Azure Communication Services Email 또는 SendGrid free tier
+- 새 컨테이너 `subscriptions/` — `subscriptions/<anon_user_id>.json` (이름, 이메일 해시, 인증 상태, 발급 시각)
+- HTTP function `email_verify` — 클릭 시 토큰 검증 후 구독 활성화 + 텔레그램 봇이 사용자에게 confirm 메시지
+
+### 17.3 통계 대시보드
+
+**의도**: 운영자가 cache hit rate / LLM 사용량 / 인기 검색어를 바로 볼 수 있는 단일 페이지. 난독화된 16자리 키로 인증.
+
+#### URL 스키마
+
+```
+https://func-aiinvestor-prod.azurewebsites.net/api/dashboard?key=<16-hex>
+  ↳ 키 일치 → 대시보드 페이지 (HTML + Chart.js)
+  ↳ 키 부재/불일치 → 일반 소개 페이지 (서비스 설명 + Telegram 봇 CTA)
+```
+
+키는 Key Vault 시크릿 `dashboard-access-key` (`openssl rand -hex 8`).
+
+#### 대시보드 페이지 (`/api/dashboard`) HTML 구성
+
+```
+┌────────────────────────────────────────────────────────┐
+│ AI Investor — Operations Dashboard                     │
+│ 마지막 갱신: 2026-05-06 16:42 KST                       │
+├────────────────────────────────────────────────────────┤
+│  📊 응답 분류 (지난 24h)                                 │
+│  ┌──────────────────────────────────────────┐          │
+│  │ Tier 1 (commentary cache) | 412 (68%)     │          │
+│  │ Tier 2 (snapshot cache)   |  78 (13%)     │          │
+│  │ Live (yfinance + LLM)     | 105 (17%)     │          │
+│  │ Intent unrecognized       |  12 (2%)      │          │
+│  └──────────────────────────────────────────┘          │
+│                                                         │
+│  ⏱ p50 응답시간                                          │
+│  Tier 1: 1.1s   Tier 2: 3.6s   Live: 5.4s              │
+│                                                         │
+│  🔝 인기 ticker (지난 24h)                              │
+│  NVDA 88, AAPL 64, TSLA 51, SPY 40, QQQ 33...          │
+│                                                         │
+│  💬 페르소나 분포     🌐 언어 분포                       │
+│  buffett 47%         ko 71%                            │
+│  wood    32%         en 18%                            │
+│  dalio   21%         ja 7% / zh 4%                     │
+│                                                         │
+│  [📥 CSV 다운로드 (24h)] [📥 CSV 다운로드 (7d)]          │
+└────────────────────────────────────────────────────────┘
+```
+
+CSV 다운로드 — `/api/dashboard/export.csv?key=<key>&window=24h`. 컬럼:
+
+```
+timestamp,anon_user_id_short,channel,language,persona,ticker,
+  tier(commentary_hit|snapshot_hit|live|intent_unrecognized),
+  duration_ms, llm_tokens_in, llm_tokens_out
+```
+
+`anon_user_id_short` 는 본 anon_user_id 의 처음 8자만 노출 (이미 익명화된 ID 추가 절단). 익명화 원칙 유지.
+
+#### 메인 페이지 (`/api/dashboard?key=missing-or-wrong`) HTML
+
+```
+┌──────────────────────────────────────────────────────┐
+│         증권당 — 투자의 대가 페르소나 텔레그램 챗봇    │
+│                                                      │
+│  당신만의 투자 멘토가 되어드릴 페르소나를 선택하고,    │
+│  매일의 미국 시황을 자연어로 만나 보세요.              │
+│                                                      │
+│  • 워렌 버핏 — 장기 가치 투자                          │
+│  • 레이 달리오 — 매크로 / 올웨더                       │
+│  • 캐시 우드 — 혁신 성장                              │
+│                                                      │
+│  지원 언어: 한국어 / English / 日本語 / 中文            │
+│                                                      │
+│  ⚠ 본 서비스는 투자 자문이 아닙니다. AI는 환각·오류    │
+│     가 있을 수 있으며, 실제 투자는 전문가의 조언이     │
+│     필요합니다.                                       │
+│                                                      │
+│  ▶ 텔레그램에서 시작하기: @AI_vibe_investor_bot       │
+└──────────────────────────────────────────────────────┘
+```
+
+웹 챗봇 / 로그인 / 멀티턴은 후속 (4차 작업 / Phase 4).
+
+#### 구현 모듈
+
+- `services/usage_logger.py` — 모든 webhook handler에서 outcome 기록 (NDJSON append-blob `logs/yyyy/mm/dd/HH.ndjson`)
+- `services/dashboard_aggregator.py` — Timer Trigger (15분마다) 가 logs/ 의 데이터 → `dashboard/24h.json` `dashboard/7d.json` 으로 집계
+- `function_app.py:dashboard` — HTTP trigger, 키 검증 → HTML 또는 소개 페이지
+- `function_app.py:dashboard_export_csv` — HTTP trigger, 키 검증 → CSV streaming
+
+### 17.4 BlobUserProfileRepo 활성화 (의존 작업)
+
+§17.1 (sector activity), §17.2 (daily counter), §17.3 (구독) 모두 사용자 프로필에 새 필드를 추가한다. 그러나 현재 `STORAGE_BACKEND=blob` 환경변수만 설정되어 있고 코드는 여전히 SQLite 사용. **선결 작업**:
+
+- [ ] `bot/telegram_handler.py` 의 모든 `deps.profile_repo.get_or_create()` 등을 await 처리
+- [ ] `function_app.py:_bootstrap` 에서 `services.profile_factory.build_repo(config)` 사용
+- [ ] `BotDependencies.profile_repo` 타입을 sync/async 호환으로 wrap
+- [ ] 통합 테스트: 콜드 스타트 → Blob 데이터 회상 정상 동작
+
+### 17.5 작업 분할 — 2차-I
+
+paper_plan §11 의 **2차-I** 로 추가:
+
+#### 2차-I 작업 항목
+
+- [ ] **선결**: `BlobUserProfileRepo` 핸들러 통합 (§17.4)
+- [ ] §17.1 sector tracker — `services/sector_tracker.py` + 핸들러 hook
+- [ ] §17.2 daily limit — UserProfile 필드 추가 + 자정 reset Timer + 구독 예약 인라인 keyboard
+- [ ] `services/email_verification.py` + Azure Communication Services / SendGrid 통합
+- [ ] subscriptions/ 컨테이너 + email_verify HTTP trigger
+- [ ] §17.3 usage logger NDJSON 적재 (postmortem §7.2 미해결 항목과 통합)
+- [ ] dashboard_aggregator Timer (15분 주기)
+- [ ] dashboard HTTP trigger + Chart.js 페이지
+- [ ] CSV export endpoint + 익명화 (anon_user_id 8자 절단)
+- [ ] App Insights 커스텀 메트릭 — `dashboard.kqr_runtime`, `subscription.signup`
+
+#### 2차-I 일정 가이드
+
+| 단계 | 예상 소요 |
+|---|---|
+| 선결 — Blob async 통합 | 1일 |
+| §17.1 sector tracker | 0.5일 |
+| §17.2 daily limit + 구독 + 이메일 인증 | 1.5일 |
+| §17.3 usage logger + dashboard aggregator | 1일 |
+| dashboard HTML/CSV endpoints | 1일 |
+| **합계** | **약 5일** |
+
+### 17.6 §13 학술 작업과의 시너지
+
+§17.3 의 `usage_logger.py` 는 §13.3 의 `research_query_embeddings` / `research_cache_events` / `research_latency` 와 **거의 동일한 데이터 모델**. §17 구현 시 §13 의 4개 컨테이너 스키마를 reuse 하면 학술 데이터 수집과 운영 대시보드가 같은 파이프라인을 공유 → 중복 작업 0.

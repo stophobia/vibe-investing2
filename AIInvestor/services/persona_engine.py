@@ -158,5 +158,77 @@ class PersonaEngine:
         content = response.choices[0].message.content or ""
         return content.strip()
 
+    async def generate_deep(
+        self,
+        persona: Persona,
+        snapshot: StockSnapshot,
+        language: str,
+        interests: list[str] | None = None,
+    ) -> str:
+        """Long-form professional analysis. ~3-4× the tokens of generate(),
+        with multi-perspective: persona's own view + counter-view from a
+        different persona + sector/peer context."""
+        lang_instruction = PERSONA_LANGUAGE_INSTRUCTION.get(language, PERSONA_LANGUAGE_INSTRUCTION["en"])
+        interest_block = ""
+        if interests:
+            interest_block = (
+                "\nUser's known interests: "
+                + ", ".join(interests)
+                + ". Reference these only when naturally relevant.\n"
+            )
+
+        # Pick a contrasting persona for the counter-view section
+        counter_personas = {
+            "buffett": "Cathie Wood (disruptive growth)",
+            "dalio":   "Warren Buffett (long-term value)",
+            "wood":    "Ray Dalio (macro / risk parity)",
+        }
+        counter = counter_personas.get(persona.key, "a different investor archetype")
+
+        user_prompt = (
+            f"You are giving a DEEP professional analysis of {snapshot.name} ({snapshot.ticker}).\n"
+            f"{interest_block}\n"
+            f"Use ONLY the data block below — do not invent figures.\n\n"
+            f"```\n{snapshot.to_prompt_block()}\n```\n\n"
+            "Produce a structured, multi-section analysis. Aim for ~800–1100 tokens.\n"
+            "Use clear section headers with emoji. Each section needs concrete numbers from the data block.\n\n"
+            "📊 1. Business model & moat (2–4 sentences) — what they actually sell, "
+            "competitive position, recent strategic moves\n\n"
+            "💰 2. Fundamentals deep-dive (4–6 sentences) — PE / forward PE / PB / margins / "
+            "ROE / debt-to-equity / earnings growth / revenue growth — interpret each, "
+            "not just list them\n\n"
+            "📈 3. Price action & technicals (2–3 sentences) — 1M / 6M / 1Y trends, "
+            "52-week range positioning, what the recent move suggests\n\n"
+            f"🎯 4. Your persona ({persona.display_name['en']}) stance (3–5 sentences) — "
+            f"your strongest single thesis, the price level you'd want to act at, "
+            f"the metric you'd watch most\n\n"
+            f"⚖️  5. Counter-view from {counter} (2–3 sentences) — argue the opposite case "
+            f"honestly. What would they criticize? What metric supports their concern?\n\n"
+            "🛑 6. Top 2 risks (1–2 sentences each) — name the specific risk, link it to a "
+            "number from the data block\n\n"
+            "💡 7. What you'd watch next (1–2 sentences) — the one earnings-call line item or "
+            "macro indicator that would change the thesis\n\n"
+            "End with the mandatory disclaimer line.\n"
+            "Do not use bullet markdown ** ** for emphasis — use the section headers instead.\n"
+        )
+
+        logger.info(
+            "Calling DEEP LLM model=%s persona=%s ticker=%s lang=%s",
+            self._model, persona.key, snapshot.ticker, language,
+        )
+
+        response = await self._client.chat.completions.create(
+            model=self._model,
+            temperature=0.5,
+            max_tokens=1500,
+            timeout=45.0,
+            messages=[
+                {"role": "system", "content": f"{persona.system_prompt}\n\n{lang_instruction}"},
+                {"role": "user", "content": user_prompt},
+            ],
+        )
+        content = response.choices[0].message.content or ""
+        return content.strip()
+
     async def aclose(self) -> None:
         await self._client.close()
