@@ -3,160 +3,467 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Investor — Operations Dashboard</title>
+<title>증권당 — Operations Dashboard V2</title>
+<meta name="robots" content="noindex,nofollow">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-         max-width: 1100px; margin: 24px auto; padding: 0 24px; color: #222; }
-  h1 { font-size: 22px; margin-bottom: 4px; }
-  .gen { color: #888; font-size: 13px; margin-bottom: 24px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .card { border: 1px solid #e2e2e2; border-radius: 8px; padding: 16px;
-          background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
-  .card h3 { margin: 0 0 12px 0; font-size: 14px; color: #555; }
-  .big-number { font-size: 28px; font-weight: 700; color: #1976d2; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #f0f0f0; }
-  th { background: #fafafa; color: #666; font-weight: 600; }
-  .download { margin-top: 24px; }
-  .download a { background: #1976d2; color: white; padding: 8px 14px; border-radius: 4px;
-                text-decoration: none; margin-right: 8px; font-size: 13px; }
-  canvas { max-height: 220px; }
-  #lock-screen { text-align: center; padding: 80px 20px; color: #888; font-size: 14px; }
-  #lock-screen a { color: #1976d2; text-decoration: none; }
+:root { --bg:#151521; --card:#2a2a3c; --border:#3a3a4a;
+        --accent:#f7931a; --good:#4caf50; --bad:#e57373; --info:#74b9ff;
+        --c-llm-call:#e57373; --c-llm-cache:#4caf50; --c-obj-cache:#ffb74d;
+        --c-cdn:#64b5f6; --c-other:#9e9e9e; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+       background:var(--bg); color:#e0e0e0; }
+.container-xl { max-width:1280px; }
+h1 { font-weight:700; font-size:1.6rem; }
+.muted { color:#888; font-size:13px; }
+.card { background:var(--card); border:none; border-radius:12px; }
+.card-header { background:transparent; border-bottom:1px solid var(--border);
+               font-weight:700; padding:14px 18px; font-size:14px; color:#ddd; }
+.kpi { padding:18px; }
+.kpi .label { font-size:12px; color:#aaa; text-transform:uppercase; letter-spacing:.5px; }
+.kpi .num { font-size:1.9rem; font-weight:800; line-height:1.1; margin-top:4px; }
+.kpi .sub { font-size:12px; color:#999; margin-top:4px; }
+.kpi.llm-call  .num { color:var(--c-llm-call); }
+.kpi.llm-cache .num { color:var(--c-llm-cache); }
+.kpi.obj-cache .num { color:var(--c-obj-cache); }
+.kpi.cdn       .num { color:var(--c-cdn); }
+.kpi.total     .num { color:var(--accent); }
+.section-title { font-size:1.1rem; font-weight:700; margin:30px 0 12px; padding-left:8px;
+                 border-left:4px solid var(--accent); }
+.table { color:#e0e0e0; --bs-table-bg:transparent; }
+.table thead { color:#aaa; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+.table tbody tr:hover { background:#33334a; }
+.heatmap-cell { display:inline-block; width:34px; height:34px; line-height:34px;
+                text-align:center; font-size:11px; border-radius:4px; margin:1px; color:#eee; }
+.heatmap-row { display:flex; flex-wrap:wrap; gap:0; align-items:center; }
+.legend-pill { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; margin-right:6px; }
+.lp-llm-call  { background:rgba(229,115,115,.18); color:var(--c-llm-call); }
+.lp-llm-cache { background:rgba(76,175,80,.18);  color:var(--c-llm-cache); }
+.lp-obj-cache { background:rgba(255,183,77,.18); color:var(--c-obj-cache); }
+.lp-cdn       { background:rgba(100,181,246,.18); color:var(--c-cdn); }
+.signif-card.good { border-left:4px solid var(--good); }
+.signif-card.bad  { border-left:4px solid var(--bad); }
+.signif-card { background:var(--card); padding:12px 16px; border-radius:8px;
+               margin-bottom:10px; font-size:14px; line-height:1.5; }
+.cohort-table td { vertical-align:top; }
+.cohort-pill { background:#3a3a4a; padding:2px 8px; border-radius:10px;
+               font-size:11px; margin-right:4px; display:inline-block; margin-bottom:3px; }
+.csv-link { background:var(--accent); color:#1a1a2a; padding:4px 10px;
+            border-radius:6px; text-decoration:none; font-size:12px; font-weight:600; }
+.csv-link:hover { background:#e08415; color:#1a1a2a; }
+.pagination .page-item.active .page-link { background:var(--accent); border-color:var(--accent); color:#1a1a2a; }
+.pagination .page-link { background:var(--card); border:1px solid var(--border); color:#ccc; }
+.pagination .page-link:hover { background:#3a3a4a; color:#fff; }
+.error-box { background:#3a1f1f; border-left:4px solid var(--bad);
+             padding:14px 18px; border-radius:8px; color:#ffb4b4; }
+canvas { max-height: 240px; }
 </style>
 </head>
 <body>
 
-<div id="lock-screen" style="display:none">
-  <h2>증권당 운영자 대시보드</h2>
-  <p>접근 키가 필요합니다.</p>
-  <p><a href="/">← 메인 페이지로</a></p>
-</div>
-
-<div id="dashboard-content" style="display:none">
-  <h1>AI Investor — Operations Dashboard</h1>
-  <div class="gen" id="gen-info">Loading…</div>
-
-  <div class="grid">
-    <div class="card">
-      <h3>📊 응답 분류 (24h)</h3>
-      <canvas id="tierChart"></canvas>
+<div class="container-xl py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1><i class="fa-solid fa-chart-line" style="color:var(--accent)"></i>
+          Operations Dashboard <span class="muted">v2</span></h1>
+      <div class="muted" id="meta">로딩 중…</div>
     </div>
-    <div class="card">
-      <h3>⏱ p50 응답시간 (ms, 24h)</h3>
-      <canvas id="latencyChart"></canvas>
-    </div>
-    <div class="card">
-      <h3>🌐 언어 분포 (24h)</h3>
-      <canvas id="langChart"></canvas>
-    </div>
-    <div class="card">
-      <h3>👤 페르소나 분포 (24h)</h3>
-      <canvas id="personaChart"></canvas>
-    </div>
-    <div class="card" style="grid-column: span 2;">
-      <h3>🔝 Top 20 ticker (24h)</h3>
-      <table id="topTickers"><thead><tr><th>#</th><th>Ticker</th><th>Hits</th></tr></thead><tbody></tbody></table>
-    </div>
-    <div class="card" style="grid-column: span 2;">
-      <h3>💸 LLM 토큰 사용량 (24h)</h3>
-      <div>입력: <span class="big-number" id="llmIn">—</span> 토큰
-           &nbsp;&nbsp;&nbsp; 출력: <span class="big-number" id="llmOut">—</span> 토큰</div>
+    <div>
+      <a href="/페르소나" class="btn btn-sm btn-outline-warning me-2"
+         id="persona-link">📊 페르소나 대시보드</a>
+      <a href="/" class="btn btn-sm btn-outline-secondary">← 메인</a>
     </div>
   </div>
 
-  <div class="download">
-    <a id="csv-24h" href="#">📥 CSV (24h)</a>
-    <a id="csv-7d" href="#">📥 CSV (7d)</a>
+  <p class="muted">
+    <strong>대 명제:</strong> 비슷한 관심사 cohort가 비슷한 시간에 비슷한 질문을 한다 →
+    캐시로 LLM 호출 절감 가능. 본 대시보드는 이를 4가지 캐시 단계로 나누어 검증합니다.
+  </p>
+
+  <div id="error-area"></div>
+
+  <!-- KPI Cards: 4-way cache breakdown -->
+  <h2 class="section-title">캐시 단계별 호출 (KST 기준)</h2>
+  <div class="row g-3">
+    <div class="col-md-3 col-6"><div class="card kpi llm-call">
+      <div class="label">🔥 LLM 직접 호출</div>
+      <div class="num" id="kpi-llm-call-today">—</div>
+      <div class="sub">오늘 · 누적 <span id="kpi-llm-call-total">—</span></div>
+    </div></div>
+    <div class="col-md-3 col-6"><div class="card kpi llm-cache">
+      <div class="label">✨ LLM 캐시 히트</div>
+      <div class="num" id="kpi-llm-cache-today">—</div>
+      <div class="sub">오늘 · 누적 <span id="kpi-llm-cache-total">—</span></div>
+    </div></div>
+    <div class="col-md-3 col-6"><div class="card kpi obj-cache">
+      <div class="label">💾 Object Storage 캐시</div>
+      <div class="num" id="kpi-obj-cache-today">—</div>
+      <div class="sub">오늘 · 누적 <span id="kpi-obj-cache-total">—</span></div>
+    </div></div>
+    <div class="col-md-3 col-6"><div class="card kpi total">
+      <div class="label">📈 캐시 적중률</div>
+      <div class="num" id="kpi-cache-pct">—</div>
+      <div class="sub" id="kpi-cache-pct-note">캐시 / 전체</div>
+    </div></div>
   </div>
+
+  <p class="muted mt-2"><i class="fa-solid fa-circle-info"></i>
+    CDN 엣지 캐시는 Cache-Control 헤더로 자동 처리되며 NDJSON 로그에 별도 기록되지 않습니다 (브라우저/SWA 측 트래킹).
+  </p>
+
+  <!-- Statistical interpretation -->
+  <h2 class="section-title">통계적 유의성 — 가설 검증</h2>
+  <div id="signif-area"></div>
+
+  <!-- Daily series stacked bar -->
+  <h2 class="section-title">일별 호출 추이 (최근 30일, KST 기준)</h2>
+  <div class="card p-3">
+    <div class="mb-2">
+      <span class="legend-pill lp-llm-call">🔥 LLM 직접</span>
+      <span class="legend-pill lp-llm-cache">✨ LLM 캐시</span>
+      <span class="legend-pill lp-obj-cache">💾 Object 캐시</span>
+    </div>
+    <canvas id="dailyChart"></canvas>
+  </div>
+
+  <!-- Hourly heatmap -->
+  <h2 class="section-title">시간대별 루틴 (KST 0~23시, 30일 누적)</h2>
+  <div class="card p-3">
+    <p class="muted mb-2"><i class="fa-solid fa-circle-info"></i>
+      셀이 진할수록 해당 시간대에 호출 누적이 많음. 피크 시간 직전에 사전 캐싱하면 첫 사용자 응답시간을 절감할 수 있다는 가설의 근거.
+    </p>
+    <div class="muted small mb-1">LLM 직접 호출</div>
+    <div class="heatmap-row" id="heat-llm-call"></div>
+    <div class="muted small mb-1 mt-2">LLM 캐시 히트</div>
+    <div class="heatmap-row" id="heat-llm-cache"></div>
+    <div class="muted small mb-1 mt-2">Object Storage 캐시</div>
+    <div class="heatmap-row" id="heat-obj-cache"></div>
+  </div>
+
+  <!-- Cohort & ticker concentration -->
+  <h2 class="section-title">Cohort 그룹화 (신규/활성/휴면) + 티커 집중도</h2>
+  <div class="row g-3">
+    <div class="col-md-7">
+      <div class="card">
+        <div class="card-header">Cohort별 인기 티커 (각 그룹의 top 10)</div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 cohort-table">
+            <thead>
+              <tr><th>그룹</th><th>유저</th><th>이벤트</th><th>top tickers</th></tr>
+            </thead>
+            <tbody id="cohort-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-5">
+      <div class="card">
+        <div class="card-header">Cohort 간 ticker 유사도 (Jaccard)</div>
+        <div class="p-3" id="overlap-area"></div>
+      </div>
+      <div class="card mt-3">
+        <div class="card-header">티커 집중도 지표</div>
+        <div class="p-3">
+          <div>Top 10 점유율: <strong id="conc-top10">—</strong>%</div>
+          <div>HHI 지수: <strong id="conc-hhi">—</strong> <span class="muted">(0~1, 높을수록 집중)</span></div>
+          <div>시간 Gini: <strong id="conc-gini">—</strong> <span class="muted">(0~1, 높을수록 시간 편중)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-persona ticker breakdown -->
+  <h2 class="section-title">페르소나별 티커 통계 (30일)</h2>
+  <div class="row g-3">
+    <div class="col-md-4"><div class="card">
+      <div class="card-header" style="color:var(--info)">🎩 워렌 버핏</div>
+      <table class="table table-sm mb-0" id="persona-buffett-table"><tbody></tbody></table>
+    </div></div>
+    <div class="col-md-4"><div class="card">
+      <div class="card-header" style="color:#a29bfe">📐 레이 달리오</div>
+      <table class="table table-sm mb-0" id="persona-dalio-table"><tbody></tbody></table>
+    </div></div>
+    <div class="col-md-4"><div class="card">
+      <div class="card-header" style="color:#fd79a8">🚀 캐시 우드</div>
+      <table class="table table-sm mb-0" id="persona-wood-table"><tbody></tbody></table>
+    </div></div>
+  </div>
+
+  <!-- CSV download per date with pagination -->
+  <h2 class="section-title">일별 CSV 다운로드</h2>
+  <div class="card">
+    <div class="card-header">날짜별 (페이지당 최대 10일)</div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>날짜 (KST)</th>
+            <th class="text-end">유저</th>
+            <th class="text-end">총 호출</th>
+            <th class="text-end" style="color:var(--c-llm-call)">LLM 직접</th>
+            <th class="text-end" style="color:var(--c-llm-cache)">LLM 캐시</th>
+            <th class="text-end" style="color:var(--c-obj-cache)">Object 캐시</th>
+            <th class="text-end">캐시%</th>
+            <th class="text-end">p50 ms</th>
+            <th>다운로드</th>
+          </tr>
+        </thead>
+        <tbody id="dates-body"></tbody>
+      </table>
+    </div>
+  </div>
+  <nav class="mt-3"><ul class="pagination justify-content-center" id="dates-pagination"></ul></nav>
+
+  <p class="muted text-center mt-4">
+    ⚠ 본 페이지는 운영자 전용. 키 없이 새로고침하면 403 반환.
+  </p>
 </div>
 
 <script>
-// Build-time-injected SHA-256 hash of the operator key.
-const KEY_HASH = "__KEY_HASH__";
-
-// Function App API base. Dashboard JSON + CSV both served here so the
-// Storage Account can stay fully private.
 const FUNC_BASE = "https://func-aiinvestor-prod.azurewebsites.net/api";
 
-async function sha256Hex(text) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+function getKey() {
+  return new URL(location.href).searchParams.get("key") || "";
+}
+function fmtTs(iso) {
+  if (!iso) return '—';
+  return iso.replace('T',' ').replace(/\+00:00$/,' UTC').replace(/\.\d+$/,'');
+}
+function escapeHtml(s) {
+  return (s||'').toString().replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+function fmtNum(n) {
+  return (n || 0).toLocaleString();
 }
 
-async function gateOrRender() {
-  const params = new URLSearchParams(location.search);
-  const key = params.get('key') || '';
-  if (!key) {
-    document.getElementById('lock-screen').style.display = 'block';
-    return;
-  }
-  const provided = await sha256Hex(key);
-  if (provided !== KEY_HASH) {
-    document.getElementById('lock-screen').style.display = 'block';
-    return;
-  }
-  document.getElementById('dashboard-content').style.display = 'block';
-  await loadStats(key);
+const KEY = getKey();
+if (!KEY) {
+  document.getElementById('error-area').innerHTML =
+    '<div class="error-box">🔒 ?key=&lt;DASHBOARD_ACCESS_KEY&gt; 필요</div>';
+} else {
+  // Propagate key to persona link
+  document.getElementById('persona-link').href = '/페르소나?key=' + encodeURIComponent(KEY);
+  loadAll();
 }
 
-async function loadStats(key) {
-  const k = encodeURIComponent(key);
-  let stats24, stats7;
+async function loadAll() {
+  await loadV2();
+  await loadDates(1);
+}
+
+async function loadV2() {
   try {
-    const r24 = await fetch(`${FUNC_BASE}/dashboard_stats?key=${k}&window=24h`, { mode: 'cors' });
-    stats24 = r24.ok ? await r24.json() : {};
-  } catch (e) { stats24 = {}; }
-  try {
-    const r7 = await fetch(`${FUNC_BASE}/dashboard_stats?key=${k}&window=7d`, { mode: 'cors' });
-    stats7 = r7.ok ? await r7.json() : {};
-  } catch (e) { stats7 = {}; }
-
-  document.getElementById('gen-info').textContent =
-    `24h total: ${stats24.total || 0} · 7d total: ${stats7.total || 0} · 갱신: ${stats24.generated_at || '—'}`;
-
-  document.getElementById('csv-24h').href = `${FUNC_BASE}/dashboard_export?key=${encodeURIComponent(key)}&window=24h`;
-  document.getElementById('csv-7d').href = `${FUNC_BASE}/dashboard_export?key=${encodeURIComponent(key)}&window=7d`;
-
-  const palette = ['#1976d2', '#388e3c', '#f57c00', '#7b1fa2', '#c62828', '#0097a7', '#5d4037'];
-
-  function pieFromObj(canvasId, obj) {
-    const labels = Object.keys(obj || {});
-    const data = labels.map(k => obj[k]);
-    new Chart(document.getElementById(canvasId), {
-      type: 'doughnut',
-      data: { labels, datasets: [{ data, backgroundColor: palette }] },
-      options: { plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
-    });
+    const r = await fetch(`${FUNC_BASE}/dashboard_v2?key=${encodeURIComponent(KEY)}`,
+                          { mode: 'cors' });
+    if (r.status === 403) {
+      document.getElementById('error-area').innerHTML =
+        '<div class="error-box">🔒 잘못된 키입니다 (403).</div>';
+      return;
+    }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    if (d.error) {
+      document.getElementById('meta').textContent = d.error;
+      return;
+    }
+    renderV2(d);
+  } catch (e) {
+    document.getElementById('error-area').innerHTML =
+      `<div class="error-box">대시보드 로딩 실패: ${escapeHtml(e.message)}</div>`;
   }
-  function barFromObj(canvasId, obj, label) {
-    const labels = Object.keys(obj || {});
-    const data = labels.map(k => obj[k]);
-    new Chart(document.getElementById(canvasId), {
-      type: 'bar',
-      data: { labels, datasets: [{ data, label, backgroundColor: '#1976d2' }] },
-      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-    });
+}
+
+function renderV2(d) {
+  document.getElementById('meta').textContent =
+    '갱신: ' + fmtTs(d.generated_at) + ' · 30일 윈도우';
+
+  // KPI
+  const t = d.totals || {};
+  const today = t.today || {};
+  const cum   = t.cumulative || {};
+  document.getElementById('kpi-llm-call-today').textContent = fmtNum(today.llm_call);
+  document.getElementById('kpi-llm-call-total').textContent = fmtNum(cum.llm_call);
+  document.getElementById('kpi-llm-cache-today').textContent = fmtNum(today.llm_cache);
+  document.getElementById('kpi-llm-cache-total').textContent = fmtNum(cum.llm_cache);
+  document.getElementById('kpi-obj-cache-today').textContent = fmtNum(today.obj_cache);
+  document.getElementById('kpi-obj-cache-total').textContent = fmtNum(cum.obj_cache);
+
+  const cacheTotal = (cum.llm_cache || 0) + (cum.obj_cache || 0);
+  const allTotal   = cacheTotal + (cum.llm_call || 0);
+  const cachePct   = allTotal ? (cacheTotal / allTotal * 100).toFixed(1) : '—';
+  document.getElementById('kpi-cache-pct').textContent = cachePct + '%';
+  document.getElementById('kpi-cache-pct-note').textContent =
+    `캐시 ${fmtNum(cacheTotal)} / 전체 ${fmtNum(allTotal)}`;
+
+  // Significance bullets
+  const sig = document.getElementById('signif-area');
+  const items = d.interpretation || [];
+  if (items.length === 0) {
+    sig.innerHTML = '<div class="signif-card">데이터 부족 — 누적 이벤트가 늘어나면 자동으로 통계 해석이 표시됩니다.</div>';
+  } else {
+    sig.innerHTML = items.map(i =>
+      `<div class="signif-card ${i.good ? 'good':'bad'}">
+        <i class="fa-solid ${i.good?'fa-circle-check':'fa-triangle-exclamation'}"
+           style="color:${i.good?'var(--good)':'var(--bad)'}"></i>
+        ${escapeHtml(i.msg)}
+      </div>`
+    ).join('');
   }
 
-  pieFromObj('tierChart', stats24.tier_counts);
-  barFromObj('latencyChart', stats24.p50_by_tier, 'p50 ms');
-  pieFromObj('langChart', stats24.language_dist);
-  pieFromObj('personaChart', stats24.persona_dist);
-
-  const tbody = document.querySelector('#topTickers tbody');
-  (stats24.top_tickers || []).forEach(([t, n], i) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${i + 1}</td><td>${t}</td><td>${n}</td>`;
-    tbody.appendChild(tr);
+  // Daily series stacked bar
+  const daily = (d.daily_series || []).slice().reverse(); // chronological
+  const labels = daily.map(x => x.date);
+  if (window._dailyChart) window._dailyChart.destroy();
+  window._dailyChart = new Chart(document.getElementById('dailyChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'🔥 LLM 직접', data:daily.map(x=>x.llm_call),
+          backgroundColor:'#e57373', stack:'a' },
+        { label:'✨ LLM 캐시', data:daily.map(x=>x.llm_cache),
+          backgroundColor:'#4caf50', stack:'a' },
+        { label:'💾 Object 캐시', data:daily.map(x=>x.obj_cache),
+          backgroundColor:'#ffb74d', stack:'a' },
+      ],
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ color:'#ddd' } } },
+      scales:{
+        x:{ stacked:true, ticks:{ color:'#888' }, grid:{ color:'#333' } },
+        y:{ stacked:true, beginAtZero:true, ticks:{ color:'#888' }, grid:{ color:'#333' } },
+      },
+    },
   });
 
-  document.getElementById('llmIn').textContent = (stats24.llm_total_in || 0).toLocaleString();
-  document.getElementById('llmOut').textContent = (stats24.llm_total_out || 0).toLocaleString();
+  // Hourly heatmaps (one row per cache type)
+  const hourly = d.hourly_routine || [];
+  const maxByType = {
+    llm_call:  Math.max(1, ...hourly.map(h=>h.llm_call)),
+    llm_cache: Math.max(1, ...hourly.map(h=>h.llm_cache)),
+    obj_cache: Math.max(1, ...hourly.map(h=>h.obj_cache)),
+  };
+  function renderHeatRow(elemId, key, color) {
+    const el = document.getElementById(elemId);
+    el.innerHTML = hourly.map(h => {
+      const v = h[key] || 0;
+      const intensity = v / maxByType[key];
+      const alpha = 0.18 + 0.65 * intensity;
+      return `<div class="heatmap-cell" title="${h.hour}시: ${v}건"
+                   style="background:rgba(${color},${alpha})">${h.hour}</div>`;
+    }).join('');
+  }
+  renderHeatRow('heat-llm-call',  'llm_call',  '229,115,115');
+  renderHeatRow('heat-llm-cache', 'llm_cache', '76,175,80');
+  renderHeatRow('heat-obj-cache', 'obj_cache', '255,183,77');
+
+  // Cohorts
+  const cohorts = d.cohorts || {};
+  const order = ['new', 'active', 'casual', 'dormant'];
+  const labelMap = { new:'🆕 신규 (≤7일)', active:'🟢 활성 (≥3건/14일)',
+                     casual:'🔵 가벼운 사용', dormant:'🌙 휴면 (≥14일)' };
+  const tbody = document.getElementById('cohort-body');
+  tbody.innerHTML = order.filter(k => cohorts[k]).map(k => {
+    const c = cohorts[k];
+    const pills = (c.top_tickers || []).map(([t,n]) =>
+      `<span class="cohort-pill">${escapeHtml(t)} <strong>${n}</strong></span>`
+    ).join('');
+    return `<tr>
+      <td><strong>${labelMap[k]}</strong></td>
+      <td>${fmtNum(c.users)}</td>
+      <td>${fmtNum(c.events)}</td>
+      <td>${pills || '<span class="muted">—</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  // Cohort overlap (Jaccard)
+  const ov = d.cohort_overlap_jaccard || {};
+  const ovLabels = {
+    new_vs_active:     '신규 ↔ 활성',
+    active_vs_dormant: '활성 ↔ 휴면',
+    new_vs_dormant:    '신규 ↔ 휴면',
+  };
+  document.getElementById('overlap-area').innerHTML =
+    Object.entries(ovLabels).map(([k, lbl]) => {
+      const v = ov[k];
+      if (v === undefined) return '';
+      const pct = (v * 100).toFixed(1);
+      return `<div class="mb-2">
+        <div class="d-flex justify-content-between"><span>${lbl}</span><strong>${pct}%</strong></div>
+        <div class="bar-wrap" style="background:#1e1e2a;border-radius:4px;height:8px;">
+          <div style="width:${pct}%;background:var(--accent);height:100%;border-radius:4px;"></div>
+        </div>
+      </div>`;
+    }).join('') ||
+    '<span class="muted">데이터 부족</span>';
+
+  // Concentration
+  const c = d.concentration || {};
+  document.getElementById('conc-top10').textContent = c.top10_share_pct ?? '—';
+  document.getElementById('conc-hhi').textContent = c.hhi ?? '—';
+  document.getElementById('conc-gini').textContent = c.gini_temporal ?? '—';
+
+  // Persona × ticker tables
+  const pt = d.persona_ticker || {};
+  ['buffett','dalio','wood'].forEach(p => {
+    const rows = (pt[p] || []).map(([t,n], i) =>
+      `<tr><td>${i+1}</td><td><strong>${escapeHtml(t)}</strong></td><td class="text-end">${n}</td></tr>`
+    ).join('');
+    document.querySelector(`#persona-${p}-table tbody`).innerHTML =
+      rows || '<tr><td colspan="3" class="muted text-center">데이터 없음</td></tr>';
+  });
 }
 
-gateOrRender();
+async function loadDates(page) {
+  try {
+    const r = await fetch(
+      `${FUNC_BASE}/dashboard_dates?key=${encodeURIComponent(KEY)}&page=${page}`,
+      { mode: 'cors' });
+    if (!r.ok) return;
+    const d = await r.json();
+    renderDates(d);
+  } catch (e) {
+    console.error('dates load failed', e);
+  }
+}
+
+function renderDates(d) {
+  const body = document.getElementById('dates-body');
+  body.innerHTML = (d.dates || []).map(row => {
+    const dl = `${FUNC_BASE}/dashboard_export_daily?key=${encodeURIComponent(KEY)}&date=${row.date}`;
+    return `<tr>
+      <td><strong>${escapeHtml(row.date)}</strong></td>
+      <td class="text-end">${fmtNum(row.users)}</td>
+      <td class="text-end">${fmtNum(row.total)}</td>
+      <td class="text-end" style="color:var(--c-llm-call)">${fmtNum(row.llm_call)}</td>
+      <td class="text-end" style="color:var(--c-llm-cache)">${fmtNum(row.llm_cache)}</td>
+      <td class="text-end" style="color:var(--c-obj-cache)">${fmtNum(row.obj_cache)}</td>
+      <td class="text-end">${row.cache_hit_pct}%</td>
+      <td class="text-end">${fmtNum(row.p50_ms)}</td>
+      <td><a class="csv-link" href="${dl}" target="_blank">📥 CSV</a></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="9" class="muted text-center">데이터 없음</td></tr>';
+
+  // Pagination
+  const pag = document.getElementById('dates-pagination');
+  const tp = d.total_pages || 1;
+  if (tp <= 1) { pag.innerHTML = ''; return; }
+  let html = '';
+  const cur = d.page || 1;
+  for (let i = 1; i <= tp; i++) {
+    html += `<li class="page-item ${i===cur?'active':''}">
+              <a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+  }
+  pag.innerHTML = html;
+  pag.querySelectorAll('a').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    loadDates(parseInt(a.dataset.page));
+    window.scrollTo({ top: pag.offsetTop - 80, behavior: 'smooth' });
+  }));
+}
 </script>
 </body>
 </html>

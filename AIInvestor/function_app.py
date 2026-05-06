@@ -403,6 +403,28 @@ async def aggregate_dashboard(timer: func.TimerRequest) -> None:
 
 
 # ---------------------------------------------------------------------
+# 5b) V2 dashboard aggregator — heavier, runs every 30 min
+#     Builds dashboard/v2.json (4-way cache + cohorts + significance)
+# ---------------------------------------------------------------------
+
+@app.timer_trigger(
+    schedule="0 5,35 * * * *",   # 5 min after 24h job to avoid overlap
+    arg_name="timer",
+    run_on_startup=False,
+    use_monitor=True,
+)
+async def aggregate_dashboard_v2(timer: func.TimerRequest) -> None:
+    await _bootstrap()
+    if not _config or not _config.storage_account_name:
+        return
+    from services.dashboard_aggregator import run_aggregation_v2
+    try:
+        await run_aggregation_v2(_config.storage_account_name, days=30)
+    except Exception:
+        logger.exception("v2 dashboard aggregation failed")
+
+
+# ---------------------------------------------------------------------
 # 6) Public landing + Operator dashboard (key-gated)
 # ---------------------------------------------------------------------
 
@@ -570,6 +592,117 @@ async def dashboard_stats_persona(req: func.HttpRequest) -> func.HttpResponse:
     return func.HttpResponse(
         json.dumps(data, ensure_ascii=False),
         status_code=200, mimetype="application/json", headers=headers,
+    )
+
+
+@app.route(route="dashboard_v2", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def dashboard_v2(req: func.HttpRequest) -> func.HttpResponse:
+    """V2 observability dashboard JSON. Read pre-computed dashboard/v2.json.
+    Falls back to live aggregation if cache miss (slow but functional).
+    """
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    if not _check_dashboard_key(req):
+        return func.HttpResponse(
+            json.dumps({"error": "forbidden"}),
+            status_code=403, mimetype="application/json", headers=_CORS_HEADERS,
+        )
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse(
+            json.dumps({"error": "not configured"}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS,
+        )
+    from services.dashboard_aggregator import fetch_dashboard_v2, run_aggregation_v2
+    data = await fetch_dashboard_v2(_config.storage_account_name)
+    if data is None:
+        # Lazy first-build — kick off then return a shell so UI doesn't break
+        try:
+            await run_aggregation_v2(_config.storage_account_name, days=30)
+            data = await fetch_dashboard_v2(_config.storage_account_name)
+        except Exception:
+            logger.exception("v2 lazy aggregation failed")
+        if data is None:
+            data = {"error": "no data yet — aggregator will build on next tick"}
+
+    headers = dict(_CORS_HEADERS)
+    headers["Cache-Control"] = "public, max-age=600"
+    return func.HttpResponse(
+        json.dumps(data, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=headers,
+    )
+
+
+@app.route(route="dashboard_dates", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def dashboard_dates(req: func.HttpRequest) -> func.HttpResponse:
+    """Paginated list of dates with daily traffic counts. Max 10 dates per page.
+    Query: ?key=...&page=1   (1-indexed)
+    """
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    if not _check_dashboard_key(req):
+        return func.HttpResponse(
+            json.dumps({"error": "forbidden"}),
+            status_code=403, mimetype="application/json", headers=_CORS_HEADERS,
+        )
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse(
+            json.dumps({"error": "not configured"}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS,
+        )
+
+    try:
+        page = max(1, int(req.params.get("page", "1")))
+    except ValueError:
+        page = 1
+    PER_PAGE = 10
+
+    from services.dashboard_aggregator import fetch_dashboard_v2
+    data = await fetch_dashboard_v2(_config.storage_account_name)
+    daily = (data or {}).get("daily_series", [])
+    total_pages = max(1, (len(daily) + PER_PAGE - 1) // PER_PAGE)
+    start = (page - 1) * PER_PAGE
+    end = start + PER_PAGE
+    payload = {
+        "page": page,
+        "per_page": PER_PAGE,
+        "total_pages": total_pages,
+        "total_dates": len(daily),
+        "dates": daily[start:end],   # already sorted desc by date
+    }
+    headers = dict(_CORS_HEADERS)
+    headers["Cache-Control"] = "public, max-age=600"
+    return func.HttpResponse(
+        json.dumps(payload, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=headers,
+    )
+
+
+@app.route(route="dashboard_export_daily", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET"])
+async def dashboard_export_daily(req: func.HttpRequest) -> func.HttpResponse:
+    """CSV download for one specific KST day. Query: ?key=...&date=YYYY-MM-DD"""
+    await _bootstrap()
+    if not _check_dashboard_key(req):
+        return func.HttpResponse("Forbidden", status_code=403)
+    date_str = (req.params.get("date") or "").strip()
+    # Strict YYYY-MM-DD validation
+    import re
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+        return func.HttpResponse("Bad date (expected YYYY-MM-DD)", status_code=400)
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse("Not configured", status_code=500)
+
+    from services.dashboard_aggregator import export_daily_csv
+    csv_body = await export_daily_csv(_config.storage_account_name, date_str)
+    return func.HttpResponse(
+        csv_body,
+        mimetype="text/csv",
+        status_code=200,
+        headers={
+            "Content-Disposition": f'attachment; filename="ai_investor_{date_str}.csv"',
+            "Cache-Control": "private, max-age=300",
+        },
     )
 
 
