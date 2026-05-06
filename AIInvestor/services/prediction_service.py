@@ -164,6 +164,13 @@ async def submit_daily_prediction(
         usage_logger=usage_logger,
     )
 
+    # §T2E-C — first-mission completion may unlock inviter's verified bonus
+    try:
+        from .invite_service import maybe_validate_first_mission
+        await maybe_validate_first_mission(repo, user_key, usage_logger=usage_logger)
+    except Exception:
+        logger.exception("invite validation hook failed (non-fatal)")
+
     return True, "", {
         "market": market, "window_id": window_id, "direction": direction,
         "participation_points": POINTS[p_key],
@@ -231,6 +238,13 @@ async def submit_btc_hourly_prediction(
         reason="predict_btc_participate", ref=f"btc-{window_id}",
         usage_logger=usage_logger,
     )
+
+    # §T2E-C — first-mission completion may unlock inviter's verified bonus
+    try:
+        from .invite_service import maybe_validate_first_mission
+        await maybe_validate_first_mission(repo, user_key, usage_logger=usage_logger)
+    except Exception:
+        logger.exception("invite validation hook failed (non-fatal)")
 
     return True, "", {
         "market": "btc", "window_id": window_id,

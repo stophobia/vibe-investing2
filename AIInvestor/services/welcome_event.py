@@ -167,6 +167,13 @@ async def submit_welcome_prediction(
         usage_logger=usage_logger,
     )
 
+    # §T2E-C — first-mission completion may unlock inviter's verified bonus
+    try:
+        from .invite_service import maybe_validate_first_mission
+        await maybe_validate_first_mission(repo, user_key, usage_logger=usage_logger)
+    except Exception:
+        logger.exception("invite validation hook failed (non-fatal)")
+
     return True, "", {
         "event_id": evt.event_id,
         "started_btc_price": evt.started_btc_price,

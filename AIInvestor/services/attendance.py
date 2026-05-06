@@ -85,6 +85,13 @@ async def daily_check_in(
     else:
         profile = update_res
 
+    # §T2E-C — first-mission completion may unlock the inviter's verified bonus
+    try:
+        from .invite_service import maybe_validate_first_mission
+        await maybe_validate_first_mission(repo, user_key, usage_logger=usage_logger)
+    except Exception:
+        logger.exception("invite validation hook failed (non-fatal)")
+
     return AttendanceResult(
         success=True, base_points=base, streak_bonus=streak_bonus,
         streak_days=new_streak, profile=profile, reason="ok",
