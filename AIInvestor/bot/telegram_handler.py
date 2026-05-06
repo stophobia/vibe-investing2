@@ -28,7 +28,8 @@ from services.i18n import SUPPORTED, normalize_language, t
 from services.market_report import MarketReportService
 from services.persona_engine import PersonaEngine, get_persona, list_personas
 from services.stock_service import StockService, StockServiceError
-from services.user_profile import UserProfile, UserProfileRepo
+from services.profile_factory import AsyncUserProfileRepo
+from services.user_profile import UserProfile
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ TICKER_RE = re.compile(r"^[A-Z]{1,5}(?:[.\-][A-Z]{1,3})?$")
 class BotDependencies:
     persona_engine: PersonaEngine
     stock_service: StockService
-    profile_repo: UserProfileRepo
+    profile_repo: AsyncUserProfileRepo  # Blob native async or SQLite-wrapped
     market_report_service: MarketReportService
     default_persona_key: str
 
@@ -94,10 +95,10 @@ def _user_key(update: Update) -> str:
     return f"tg:{update.effective_user.id}"
 
 
-def _profile(update: Update, context: ContextTypes.DEFAULT_TYPE) -> UserProfile:
+async def _profile(update: Update, context: ContextTypes.DEFAULT_TYPE) -> UserProfile:
     deps = _deps(context)
     detected = normalize_language(update.effective_user.language_code)
-    return deps.profile_repo.get_or_create(
+    return await deps.profile_repo.get_or_create(
         user_key=_user_key(update),
         default_language=detected,
         default_persona=deps.default_persona_key,
@@ -166,7 +167,7 @@ def _localize_tag(tag: str, lang: str) -> str:
 
 async def _cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     deps = _deps(context)
-    profile = _profile(update, context)
+    profile = await _profile(update, context)
     lang = profile.language
     s = t(lang)
 
@@ -176,15 +177,15 @@ async def _cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     # [2] Intro (once per user)
     if not profile.intro_seen:
         await update.message.reply_text(s.intro)
-        deps.profile_repo.update(profile.user_key, intro_seen=True)
+        await deps.profile_repo.update(profile.user_key, intro_seen=True)
 
     # [3] Persona keyboard
-    deps.profile_repo.update(profile.user_key, onboarding_step=STEP_PERSONA)
+    await deps.profile_repo.update(profile.user_key, onboarding_step=STEP_PERSONA)
     await update.message.reply_text(s.persona_prompt, reply_markup=_persona_keyboard(lang))
 
 
 async def _cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    profile = _profile(update, context)
+    profile = await _profile(update, context)
     s = t(profile.language)
     await update.message.reply_text(
         "/start — onboarding\n"
@@ -201,7 +202,7 @@ async def _cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def _cmd_personas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    profile = _profile(update, context)
+    profile = await _profile(update, context)
     lang = profile.language
     lines = []
     for persona in list_personas():
@@ -211,7 +212,7 @@ async def _cmd_personas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 
 async def _cmd_persona(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    profile = _profile(update, context)
+    profile = await _profile(update, context)
     s = t(profile.language)
     await update.message.reply_text(s.persona_prompt, reply_markup=_persona_keyboard(profile.language))
 
@@ -224,7 +225,7 @@ async def _cmd_lang(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def _cmd_forget(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    profile = _profile(update, context)
+    profile = await _profile(update, context)
     s = t(profile.language)
     keyboard = InlineKeyboardMarkup([[
         InlineKeyboardButton(s.forget_yes, callback_data="forget:confirm"),
@@ -234,7 +235,7 @@ async def _cmd_forget(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 
 async def _cmd_policy(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    profile = _profile(update, context)
+    profile = await _profile(update, context)
     await update.message.reply_text(t(profile.language).policy)
 
 
@@ -260,7 +261,7 @@ async def _cmd_whoami(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 async def _cmd_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Forward the user's feedback to the operator's Telegram chat."""
-    profile = _profile(update, context)
+    profile = await _profile(update, context)
     s = t(profile.language)
     body = " ".join(context.args or []).strip()
     if not body:
@@ -318,7 +319,7 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     data = query.data or ""
     deps = _deps(context)
     user_key = f"tg:{query.from_user.id}"
-    profile = deps.profile_repo.get_or_create(
+    profile = await deps.profile_repo.get_or_create(
         user_key=user_key,
         default_language=normalize_language(query.from_user.language_code),
         default_persona=deps.default_persona_key,
@@ -328,7 +329,7 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         new_lang = data.split(":", 1)[1]
         if new_lang not in SUPPORTED:
             return
-        profile = deps.profile_repo.update(user_key, language=new_lang)
+        profile = await deps.profile_repo.update(user_key, language=new_lang)
         await query.message.reply_text(t(new_lang).lang_changed)
         return
 
@@ -336,14 +337,14 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         persona_key = data.split(":", 1)[1]
         persona = get_persona(persona_key)
         previous_step = profile.onboarding_step
-        profile = deps.profile_repo.update(user_key, persona_key=persona.key)
+        profile = await deps.profile_repo.update(user_key, persona_key=persona.key)
         lang = profile.language
         s = t(lang)
         await query.message.reply_text(s.persona_set.format(persona=persona.name(lang)))
 
         # If still in onboarding, advance to [4] report offer.
         if previous_step in {STEP_GREETING, STEP_PERSONA}:
-            deps.profile_repo.update(user_key, onboarding_step=STEP_REPORT_OFFER)
+            await deps.profile_repo.update(user_key, onboarding_step=STEP_REPORT_OFFER)
             await query.message.reply_text(s.report_offer, reply_markup=_report_keyboard(lang))
         else:
             # Mid-session persona swap — preserve interests, just re-confirm.
@@ -376,7 +377,7 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     logger.exception("Daily report generation failed")
                     await query.message.reply_text(s.error_market_data)
 
-        deps.profile_repo.update(user_key, onboarding_step=STEP_INTEREST)
+        await deps.profile_repo.update(user_key, onboarding_step=STEP_INTEREST)
         await query.message.reply_text(
             s.interest_prompt,
             reply_markup=_interest_keyboard(lang, set(profile.interest_tags)),
@@ -432,7 +433,7 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         lang = profile.language
         s = t(lang)
         if choice == "confirm":
-            deps.profile_repo.delete(user_key)
+            await deps.profile_repo.delete(user_key)
             await query.message.reply_text(s.forget_done)
         else:
             await query.message.reply_text(s.forget_cancelled)
@@ -450,7 +451,7 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 )
             else:
                 msg = s.interest_saved.format(tags=tags_localized)
-            deps.profile_repo.update(user_key, onboarding_step=STEP_READY)
+            await deps.profile_repo.update(user_key, onboarding_step=STEP_READY)
             await query.message.reply_text(msg)
             await query.message.reply_text(s.free_query_invite)
         else:
@@ -459,7 +460,7 @@ async def _on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 tags.remove(token)
             else:
                 tags.append(token)
-            profile = deps.profile_repo.update(user_key, interest_tags=tags)
+            profile = await deps.profile_repo.update(user_key, interest_tags=tags)
             try:
                 await query.message.edit_reply_markup(
                     reply_markup=_interest_keyboard(lang, set(profile.interest_tags))
@@ -479,7 +480,7 @@ async def _on_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         return
 
     deps = _deps(context)
-    profile = _profile(update, context)
+    profile = await _profile(update, context)
     lang = profile.language
     s = t(lang)
 
@@ -534,7 +535,7 @@ async def _ingest_interest_text(
             if token not in tags:
                 tags.append(token)
 
-    profile = deps.profile_repo.update(
+    profile = await deps.profile_repo.update(
         profile.user_key,
         interest_tags=tags,
         watchlist_tickers=tickers,

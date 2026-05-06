@@ -30,8 +30,8 @@ from bot.telegram_handler import BotDependencies, build_application
 from config import Config, configure_logging
 from services.market_report import MarketReportService
 from services.persona_engine import PersonaEngine, get_persona
+from services.profile_factory import build_repo
 from services.stock_service import StockService
-from services.user_profile import UserProfileRepo
 
 logger = logging.getLogger("ai_investor.function_app")
 
@@ -44,7 +44,7 @@ app = func.FunctionApp()
 _config: Config | None = None
 _ptb_app = None
 _market_report_service: MarketReportService | None = None
-_profile_repo: UserProfileRepo | None = None
+_profile_repo = None
 _persona_engine = None
 _stock_service = None
 
@@ -70,9 +70,9 @@ async def _bootstrap() -> None:
         base_url=_config.deepseek_base_url,
     )
     _stock_service = StockService()
-    # 2차-B: BlobUserProfileRepo will replace SQLite. Until then SQLite path
-    # points at a writable mount (Functions /home is persistent across restarts).
-    _profile_repo = UserProfileRepo(db_path=_config.sqlite_path, salt=_config.user_id_salt)
+    # profile_factory picks Blob (production) or SQLite-async-wrapped (dev)
+    # based on STORAGE_BACKEND env. Both expose the same async surface.
+    _profile_repo = build_repo(_config)
     _market_report_service = MarketReportService(persona_engine=_persona_engine)
 
     deps = BotDependencies(

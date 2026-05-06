@@ -8,8 +8,8 @@ from bot.telegram_handler import BotDependencies, build_application
 from config import Config, configure_logging
 from services.market_report import MarketReportService
 from services.persona_engine import PersonaEngine, get_persona
+from services.profile_factory import build_repo
 from services.stock_service import StockService
-from services.user_profile import UserProfileRepo
 
 logger = logging.getLogger("ai_investor")
 
@@ -24,7 +24,7 @@ def main() -> None:
         base_url=config.deepseek_base_url,
     )
     stock_service = StockService()
-    profile_repo = UserProfileRepo(db_path=config.sqlite_path, salt=config.user_id_salt)
+    profile_repo = build_repo(config)  # Blob (prod) or SQLite-async-wrapped (dev)
     market_report_service = MarketReportService(persona_engine=persona_engine)
 
     deps = BotDependencies(
