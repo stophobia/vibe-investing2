@@ -76,6 +76,13 @@ class _Bundle:
     search_in_progress: str
     search_failed: str
     search_cancelled: str
+    # §T2E-A — gamification
+    points_balance: str
+    tier_status: str
+    attendance_first_today: str
+    attendance_already: str
+    attendance_streak: str
+    tier_up_celebration: str
 
 
 _KO = _Bundle(
@@ -175,6 +182,12 @@ _KO = _Bundle(
     search_in_progress="🔎 검색 중",
     search_failed="'{q}' 에 해당하는 종목을 찾지 못했어요. 다른 표현(예: 005930.KS, Samsung)을 시도해 주세요.",
     search_cancelled="검색을 취소했습니다.",
+    points_balance="💰 보유 포인트: {balance:,} P\n📈 누적: {cumulative:,} P · 시즌: {seasonal:,} P",
+    tier_status="🏆 현재 티어: {tier} {stage}\n다음 등급까지 {to_next:,} P 남았어요.",
+    attendance_first_today="✅ 출석 체크 완료! +{points} P (연속 {streak}일째)",
+    attendance_already="이미 오늘 출석했어요. 내일 KST 00:00에 다시 받을 수 있어요.",
+    attendance_streak="🔥 {streak}일 연속 출석! 보너스 +{bonus} P",
+    tier_up_celebration="🎉 축하합니다! {tier} 티어로 승급했습니다.",
 )
 
 _EN = _Bundle(
@@ -274,6 +287,12 @@ _EN = _Bundle(
     search_in_progress="🔎 Searching",
     search_failed="Couldn't find a match for '{q}'. Try a different form (e.g. 005930.KS, Samsung).",
     search_cancelled="Search cancelled.",
+    points_balance="💰 Balance: {balance:,} P\n📈 Lifetime: {cumulative:,} P · Season: {seasonal:,} P",
+    tier_status="🏆 Tier: {tier} {stage}\n{to_next:,} P to next tier.",
+    attendance_first_today="✅ Daily check-in! +{points} P (streak: {streak} days)",
+    attendance_already="You already checked in today. Next claim at KST 00:00.",
+    attendance_streak="🔥 {streak}-day streak! Bonus +{bonus} P",
+    tier_up_celebration="🎉 Congratulations! Promoted to {tier} tier.",
 )
 
 _JA = _Bundle(
@@ -373,6 +392,12 @@ _JA = _Bundle(
     search_in_progress="🔎 検索中",
     search_failed="'{q}' の該当銘柄が見つかりませんでした。別の表現(例: 005930.KS, Samsung)をお試しください。",
     search_cancelled="検索をキャンセルしました。",
+    points_balance="💰 残高: {balance:,} P\n📈 累計: {cumulative:,} P · シーズン: {seasonal:,} P",
+    tier_status="🏆 ティア: {tier} {stage}\n次のティアまで {to_next:,} P。",
+    attendance_first_today="✅ 出席チェック完了! +{points} P (連続 {streak} 日目)",
+    attendance_already="本日は既に出席済みです。次は KST 00:00 から。",
+    attendance_streak="🔥 {streak} 日連続! ボーナス +{bonus} P",
+    tier_up_celebration="🎉 おめでとうございます! {tier} ティアに昇格しました。",
 )
 
 _ZH = _Bundle(
@@ -472,6 +497,12 @@ _ZH = _Bundle(
     search_in_progress="🔎 搜索中",
     search_failed="未找到 '{q}' 对应的股票。请尝试其他形式(例如 005930.KS, Samsung)。",
     search_cancelled="已取消搜索。",
+    points_balance="💰 余额: {balance:,} P\n📈 累计: {cumulative:,} P · 赛季: {seasonal:,} P",
+    tier_status="🏆 等级: {tier} {stage}\n距下一等级还差 {to_next:,} P。",
+    attendance_first_today="✅ 签到完成! +{points} P (连续 {streak} 天)",
+    attendance_already="今日已签到。下次 KST 00:00 后。",
+    attendance_streak="🔥 连续 {streak} 天! 奖励 +{bonus} P",
+    tier_up_celebration="🎉 恭喜! 晋级至 {tier} 等级。",
 )
 
 _BUNDLES: dict[str, _Bundle] = {"ko": _KO, "en": _EN, "ja": _JA, "zh": _ZH}

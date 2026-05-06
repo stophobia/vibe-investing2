@@ -78,6 +78,10 @@ def build_application(token: str, deps: BotDependencies) -> Application:
     app.add_handler(CommandHandler("whoami", _cmd_whoami))
     app.add_handler(CommandHandler("recommend", _cmd_recommend))
     app.add_handler(CommandHandler("compare", _cmd_compare))
+    # §T2E-A — gamification commands
+    app.add_handler(CommandHandler("points", _cmd_points))
+    app.add_handler(CommandHandler("tier", _cmd_tier))
+    app.add_handler(CommandHandler("attend", _cmd_attend))
     # Owner-only operator commands (gated by TELEGRAM_OWNER_CHAT_ID)
     app.add_handler(CommandHandler("total_user", _cmd_total_user))
     app.add_handler(CommandHandler("today_user", _cmd_today_user))
@@ -230,6 +234,9 @@ async def _cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "/lang — switch language (ko / en / ja / zh)\n"
         "/recommend [sector] — top tickers in a sector (no LLM call)\n"
         "/compare T1 T2 [T3 T4] — side-by-side fundamentals (no LLM call)\n"
+        "/points — show your Point balance\n"
+        "/tier — show your tier + stage + points to next tier\n"
+        "/attend — daily attendance check-in (+10 P, +streak bonus)\n"
         "/feedback <message> — send feedback to dev (피드백 alias works too)\n"
         "/policy — data handling & disclaimer\n"
         "/forget — delete all my stored data\n"
@@ -714,6 +721,77 @@ def _fmt_pct(v):
 def _fmt_pct_signed(v):
     if v is None: return "—"
     return f"{v:+.1f}%"
+
+
+# ────────────────────────────────────────────────────────────
+# §T2E-A — Gamification commands: /points /tier /attend
+# ────────────────────────────────────────────────────────────
+
+async def _cmd_points(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show user's current Point balance + cumulative + season."""
+    profile = await _profile(update, context)
+    s = t(profile.language)
+    msg = s.points_balance.format(
+        balance=profile.points_balance,
+        cumulative=profile.points_cumulative,
+        seasonal=profile.points_this_season,
+    )
+    await update.message.reply_text(msg)
+
+
+async def _cmd_tier(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show tier + stage + points to next tier."""
+    from services.tier_calculator import compute_tier_stage, points_to_next_tier
+    profile = await _profile(update, context)
+    s = t(profile.language)
+    tier, stage, label = compute_tier_stage(profile.points_cumulative, profile.points_this_season)
+    to_next = points_to_next_tier(profile.points_cumulative, profile.points_this_season)
+    msg = s.tier_status.format(
+        tier=tier.upper(), stage=label, to_next=to_next,
+    )
+    await update.message.reply_text(msg)
+
+
+async def _cmd_attend(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Daily attendance check-in. Idempotent per KST day; +5/day streak bonus capped at +50."""
+    from services.attendance import daily_check_in
+    profile = await _profile(update, context)
+    s = t(profile.language)
+    deps = _deps(context)
+
+    result = await daily_check_in(
+        deps.profile_repo, profile.user_key,
+        usage_logger=deps.usage_logger,
+    )
+
+    if not result.success:
+        await update.message.reply_text(s.attendance_already)
+        return
+
+    msg = s.attendance_first_today.format(
+        points=result.base_points + result.streak_bonus,
+        streak=result.streak_days,
+    )
+    await update.message.reply_text(msg)
+
+    # Streak bonus celebration (only if non-zero)
+    if result.streak_bonus > 0 and result.streak_days % 5 == 0:
+        await update.message.reply_text(
+            s.attendance_streak.format(streak=result.streak_days, bonus=result.streak_bonus)
+        )
+
+    # Tier-up celebration
+    if result.profile and result.profile.tier_updated_at:
+        # Compare to before — simple heuristic: tier_updated_at == _now_iso() means just changed
+        from datetime import datetime, timezone, timedelta
+        try:
+            tu = datetime.fromisoformat(result.profile.tier_updated_at.replace("Z", "+00:00"))
+            if (datetime.now(timezone.utc) - tu) < timedelta(seconds=10):
+                await update.message.reply_text(
+                    s.tier_up_celebration.format(tier=result.profile.tier.upper())
+                )
+        except (ValueError, AttributeError):
+            pass
 
 
 async def _cmd_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

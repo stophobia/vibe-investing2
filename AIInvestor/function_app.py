@@ -102,6 +102,9 @@ async def _bootstrap() -> None:
             BotCommand("lang",      "Switch language (ko/en/ja/zh)"),
             BotCommand("recommend", "Top tickers in a sector"),
             BotCommand("compare",   "Side-by-side ticker fundamentals"),
+            BotCommand("points",    "Show your Point balance"),
+            BotCommand("tier",      "Show your tier + progress"),
+            BotCommand("attend",    "Daily attendance check-in"),
             BotCommand("feedback",  "Send feedback to the dev"),
             BotCommand("policy",    "Data handling & disclaimer"),
             BotCommand("forget",    "Delete all my data"),
@@ -343,6 +346,141 @@ async def keepalive(timer: func.TimerRequest) -> None:
 
 
 # ---------------------------------------------------------------------
+# §T2E-A — Gamification HTTP endpoints (consumed by Mini App)
+# ---------------------------------------------------------------------
+
+async def _verify_telegram_init_data_get_userkey(req: func.HttpRequest) -> str | None:
+    """Verify the Telegram WebApp `init_data` HMAC and return our internal user_key.
+
+    Returns None if missing/invalid. Init data is sent in the
+    X-Telegram-Init-Data header by Mini App calls.
+    """
+    init_data = req.headers.get("X-Telegram-Init-Data", "").strip()
+    if not init_data:
+        return None
+    bot_token = (_config.telegram_token if _config else os.getenv("TELEGRAM_BOT_TOKEN", "")).strip()
+    if not bot_token:
+        return None
+
+    import hashlib, hmac
+    from urllib.parse import parse_qsl
+
+    parsed = dict(parse_qsl(init_data))
+    received_hash = parsed.pop("hash", "")
+    if not received_hash:
+        return None
+
+    data_check = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
+    secret_key = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
+    computed = hmac.new(secret_key, data_check.encode(), hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(received_hash, computed):
+        return None
+
+    try:
+        user = json.loads(parsed.get("user", "{}"))
+        tg_user_id = user.get("id")
+        if not tg_user_id:
+            return None
+        return f"tg:{tg_user_id}"
+    except (json.JSONDecodeError, KeyError):
+        return None
+
+
+@app.route(route="gamification/profile", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def gamification_profile(req: func.HttpRequest) -> func.HttpResponse:
+    """Return the user's gamification snapshot (points, tier, attendance, invites)."""
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    if not user_key:
+        return func.HttpResponse(
+            json.dumps({"error": "unauthorized — missing or invalid Telegram WebApp init_data"}),
+            status_code=401, mimetype="application/json", headers=_CORS_HEADERS,
+        )
+
+    from services.tier_calculator import compute_tier_stage, points_to_next_tier
+    from services.gamification_config import current_season_id
+
+    try:
+        profile = await _profile_repo.get_or_create(
+            user_key=user_key,
+            default_language="ko",
+            default_persona="buffett",
+        )
+    except AttributeError:
+        # Sync repo (SQLite)
+        profile = _profile_repo.get_or_create(user_key=user_key, default_language="ko", default_persona="buffett")
+
+    tier, stage, label = compute_tier_stage(profile.points_cumulative, profile.points_this_season)
+    payload = {
+        "anon_user_id": profile.anon_user_id,
+        "display_name": profile.display_name or f"User_{profile.anon_user_id[:4]}",
+        "language": profile.language,
+        "persona_key": profile.persona_key,
+        "points": {
+            "balance": profile.points_balance,
+            "cumulative": profile.points_cumulative,
+            "this_season": profile.points_this_season,
+            "season_id": profile.season_id or current_season_id(),
+        },
+        "tier": {
+            "name": tier,
+            "stage": stage,
+            "label": label,
+            "to_next": points_to_next_tier(profile.points_cumulative, profile.points_this_season),
+        },
+        "attendance": {
+            "consecutive_days": profile.consecutive_login_days,
+            "last_kst": profile.last_attendance_kst,
+        },
+        "invite": {
+            "code": profile.invite_code,
+            "validated": profile.invite_validated_count,
+            "landings": profile.invite_landings_count,
+            "zombies": profile.invite_zombie_count,
+        },
+        "opt_in_leaderboard": profile.opt_in_leaderboard,
+    }
+    headers = dict(_CORS_HEADERS)
+    headers["Cache-Control"] = "private, max-age=10"
+    return func.HttpResponse(
+        json.dumps(payload, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=headers,
+    )
+
+
+@app.route(route="gamification/attend", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST", "OPTIONS"])
+async def gamification_attend(req: func.HttpRequest) -> func.HttpResponse:
+    """Daily attendance check-in. Idempotent per KST day."""
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS_POST)
+    await _bootstrap()
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    if not user_key:
+        return func.HttpResponse(
+            json.dumps({"error": "unauthorized"}),
+            status_code=401, mimetype="application/json", headers=_CORS_HEADERS_POST,
+        )
+
+    from services.attendance import daily_check_in
+    result = await daily_check_in(
+        _profile_repo, user_key, usage_logger=_usage_logger,
+    )
+    payload = {
+        "success": result.success,
+        "reason": result.reason,
+        "base_points": result.base_points,
+        "streak_bonus": result.streak_bonus,
+        "streak_days": result.streak_days,
+    }
+    return func.HttpResponse(
+        json.dumps(payload, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=_CORS_HEADERS_POST,
+    )
+
+
+# ---------------------------------------------------------------------
 # 7) Public ticker price feed — /api/data/{ticker}
 #     3-tier cache: memory → Blob → yfinance origin
 # ---------------------------------------------------------------------
@@ -505,6 +643,12 @@ _CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
+}
+
+_CORS_HEADERS_POST = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, X-Telegram-Init-Data",
 }
 
 
