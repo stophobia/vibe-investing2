@@ -38,15 +38,29 @@ DEFAULT_TTL_SECONDS = 1800   # 30분 — hot tickers
 LONG_TTL_SECONDS = 14400     # 4시간 — long-tail tickers
 WEEKEND_TTL_SECONDS = 86400  # 24시간 — markets closed
 
-# §4.2 핫 티커 (Korean retail bias). yfinance symbol form.
+# §4.2 핫 티커 — 한국 retail 선호 14종(data/korean_favorite_tickers.csv) +
+# 글로벌 인기 + 한국 대표주. 매일 KST 02:00 hot_ticker_resolver가 logs/ 빈도와
+# 결합하여 동적 갱신할 수 있지만, 시작 default는 정적 리스트.
 HOT_TICKERS = (
-    "NVDA", "TSLA", "AAPL", "MSFT", "GOOGL", "AMZN", "META", "AVGO",
-    "QQQ", "SPY",
+    # 한국 retail 선호 14종 (CSV 순)
+    "TSLA", "NVDA", "GOOGL", "PLTR", "AAPL", "QQQ", "IONQ", "VOO",
+    "TQQQ", "MSFT", "SOXL", "TSLL", "MU", "SLV",
+    # 추가 글로벌 인기 + 한국 대표
+    "AMZN", "META", "AVGO", "SPY",
     "BTC-USD", "ETH-USD",
     "005930.KS",   # Samsung Electronics
     "000660.KS",   # SK Hynix
 )
 HOT_TICKER_SET = frozenset(HOT_TICKERS)
+
+
+def update_hot_tickers(new_list: Iterable[str]) -> None:
+    """Replace the runtime hot ticker set. Called by the daily rotation timer
+    after combining static favorites with last-7-days frequency."""
+    global HOT_TICKERS, HOT_TICKER_SET
+    HOT_TICKERS = tuple(t.upper() for t in new_list)
+    HOT_TICKER_SET = frozenset(HOT_TICKERS)
+    logger.info("HOT_TICKERS updated — %d entries", len(HOT_TICKERS))
 
 
 # ──────────────────────────────────────────────────────────

@@ -157,16 +157,59 @@ PERSONA_SLOT_TOKEN_BUDGET = {
 | 롱테일 (252 priority pool 나머지) | 250 | 10% |
 | 롱테일 외 (yfinance 가능한 모든 종목) | 수만 | 5% |
 
-### 5.2 빈도 기반 hot ticker 동적 갱신
+### 5.2 선호도 + 빈도 결합 hot ticker 결정 (구현됨)
 
-`paper_plan.md §16` 의 사전 캐싱 데몬 + 사용 통계 (`logs/` NDJSON) 결합:
+[../services/hot_ticker_resolver.py](../services/hot_ticker_resolver.py) 가 두 신호를 결합:
+
+**신호 1 — 정적 선호도** ([../data/korean_favorite_tickers.csv](../data/korean_favorite_tickers.csv))
+
+editorial 한국인 retail 선호 14종 (rank 부여):
+
+| Rank | Ticker | 종목 | 선호 이유 |
+|---|---|---|---|
+| 1 | TSLA | 테슬라 | 서학개미 최다 보유 |
+| 2 | NVDA | 엔비디아 | AI 반도체 |
+| 3 | GOOGL | 알파벳 | 검색·AI |
+| 4 | PLTR | 팔란티어 | 빅데이터/군사 AI |
+| 5 | AAPL | 애플 | 프리미엄 생태계 |
+| 6 | QQQ | 인베스코 | 나스닥100 ETF |
+| 7 | IONQ | 아이온큐 | 양자 컴퓨팅 |
+| 8 | VOO | 뱅가드 | S&P500 ETF |
+| 9 | TQQQ | 프로쉐어즈 | 나스닥100 3배 |
+| 10 | MSFT | MS | 클라우드/AI |
+| 11 | SOXL | Direxion | 반도체 3배 |
+| 12 | TSLL | Direxion | 테슬라 2배 |
+| 13 | MU | 마이크론 | HBM 메모리 |
+| 14 | SLV | iShares | 은 ETF |
+
+**신호 2 — 동적 빈도** (last 7d webhook count from `logs/yyyy/mm/dd/HH.ndjson`)
+
+**결합 점수**:
 
 ```
-매일 KST 02:00 (양 시장 모두 휴장 직후 직전):
-  1. logs/ 의 직전 24시간 ticker count 집계
-  2. 상위 50개를 새 HOT_TICKERS 로 교체
-  3. 새 HOT_TICKERS 로 prewarm/snapshots/ + commentary 갱신
+preference_score(rank) = 14 − rank + 1     (rank 1 → 14, rank 14 → 1, 미수록 → 0)
+frequency_score(count) = (count / max_count) × 14
+score = 0.5 × preference_score + 0.5 × frequency_score
 ```
+
+50 : 50 가중치로 두 신호가 동등하게 작용 — favorites 만 있어도 base 점수 보장, 트래픽이 많은 비-favorites도 진입 가능.
+
+**갱신 주기 (구현됨)**:
+
+- KST 02:00 매일 (UTC 17:00) — `rotate_hot_tickers` Timer Trigger ([../function_app.py](../function_app.py))
+- logs 가 비어있으면 favorites 만으로 fallback (cold-start 대응)
+- top-50 결과를 `services/ticker_data_cache.py` 의 `HOT_TICKERS` 로 in-memory 교체 (다음 30분 prewarm 사이클부터 적용)
+
+**예시 결과** (가상 트래픽 NVDA=80건, AAPL=100건, AMZN=50건일 때):
+
+| Rank | Ticker | Score | 출처 |
+|---|---|---|---|
+| 1 | NVDA | 12.10 | 선호(2) + 빈도 80 |
+| 2 | AAPL | 12.00 | 선호(5) + 빈도 100 |
+| 3 | TSLA | 7.00 | 선호(1) only |
+| 4 | GOOGL | 6.00 | 선호(3) only |
+| ... | | | |
+| 9 | AMZN | 3.50 | 빈도 50 only (선호 미수록이지만 트래픽 진입) |
 
 이로써 사용자 트래픽 변화에 자동 적응 — 어떤 ticker가 갑자기 hot 해지면 다음날부터 사전 캐싱 대상으로.
 

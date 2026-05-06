@@ -350,6 +350,32 @@ async def refresh_hot_ticker_data(timer: func.TimerRequest) -> None:
 
 
 # ---------------------------------------------------------------------
+# 9) Daily HOT_TICKERS rotation — KST 02:00 (UTC 17:00) every day
+#    Combines static Korean favorites with last-7-day traffic frequency
+# ---------------------------------------------------------------------
+
+@app.timer_trigger(
+    schedule="0 0 17 * * *",   # UTC 17:00 = KST 02:00
+    arg_name="timer",
+    run_on_startup=False,
+    use_monitor=True,
+)
+async def rotate_hot_tickers(timer: func.TimerRequest) -> None:
+    await _bootstrap()
+    if not _config or not _config.storage_account_name:
+        return
+    from services.hot_ticker_resolver import resolve_hot_tickers
+    from services.ticker_data_cache import update_hot_tickers
+    try:
+        new_hot = await resolve_hot_tickers(_config.storage_account_name, top_k=50)
+        if new_hot:
+            update_hot_tickers(new_hot)
+            logger.info("rotate_hot_tickers — top 5: %s", new_hot[:5])
+    except Exception:
+        logger.exception("rotate_hot_tickers failed")
+
+
+# ---------------------------------------------------------------------
 # 5) Dashboard aggregator — every 15 minutes builds dashboard/24h.json + 7d.json
 # ---------------------------------------------------------------------
 
