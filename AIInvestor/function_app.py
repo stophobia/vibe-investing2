@@ -105,6 +105,7 @@ async def _bootstrap() -> None:
             BotCommand("points",    "Show your Point balance"),
             BotCommand("tier",      "Show your tier + progress"),
             BotCommand("attend",    "Daily attendance check-in"),
+            BotCommand("today",     "Latest market report (시황)"),
             BotCommand("invite",    "Show your referral link + stats"),
             BotCommand("miniapp",   "Open the mini app"),
             BotCommand("feedback",  "Send feedback to the dev"),
@@ -576,6 +577,145 @@ async def gamification_profile(req: func.HttpRequest) -> func.HttpResponse:
         json.dumps(payload, ensure_ascii=False),
         status_code=200, mimetype="application/json", headers=headers,
     )
+
+
+@app.route(route="gamification/invite_pack", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def gamification_invite_pack(req: func.HttpRequest) -> func.HttpResponse:
+    """§T2E-E Mini App invite tab — full referral pack (link + 4 message templates + stats).
+    init_data HMAC gated. Lazy-generates the invite_code if missing.
+    """
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    if not user_key:
+        return func.HttpResponse(json.dumps({"error": "unauthorized"}),
+            status_code=401, mimetype="application/json", headers=_CORS_HEADERS)
+
+    from services.invite_service import get_or_create_invite_code
+
+    # Generate invite code if missing
+    try:
+        invite_code = await get_or_create_invite_code(_profile_repo, user_key)
+    except Exception:
+        logger.exception("invite code generation failed")
+        return func.HttpResponse(json.dumps({"error": "code_generation_failed"}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS)
+
+    # Re-read profile to get fresh stats
+    profile_get = _profile_repo.get(user_key) if hasattr(_profile_repo, "get") else None
+    profile = profile_get if not (profile_get and hasattr(profile_get, "__await__")) else await profile_get
+
+    # Bot username (cached at bootstrap)
+    bot_username = "AI_vibe_investor_bot"
+    try:
+        if _ptb_app:
+            me = await _ptb_app.bot.get_me()
+            bot_username = me.username
+    except Exception:
+        pass
+
+    invite_link = f"https://t.me/{bot_username}?start=ref_{invite_code}"
+    earned_p = profile.invite_landings_count * 30 + profile.invite_validated_count * 470
+
+    # 4 message templates (mirrors §6.9.2 of t2e v2.0 spec)
+    templates = {
+        "casual": {
+            "label_ko": "친근한 톤",
+            "label_en": "Casual",
+            "text_ko": (
+                f"증권당이라는 AI 챗봇 써봤어?\n"
+                f"워렌 버핏, 캐시 우드, 레이 달리오 페르소나가 시황 알려줘.\n"
+                f"내 추천 링크로 가입하면 200 P 받아.\n{invite_link}"
+            ),
+            "text_en": (
+                f"Tried this AI investor chatbot?\n"
+                f"Buffett, Wood, Dalio personas explain market moves.\n"
+                f"Sign up via my link for 200 P.\n{invite_link}"
+            ),
+        },
+        "professional": {
+            "label_ko": "전문가 톤",
+            "label_en": "Professional",
+            "text_ko": (
+                f"AI 투자 챗봇 증권당을 추천합니다.\n"
+                f"NASDAQ·KOSPI·암호화폐를 4개 언어로 분석하는 페르소나 봇입니다.\n"
+                f"추천 링크: {invite_link}\n"
+                f"가입 시 200 Point 환영 보너스가 즉시 지급됩니다."
+            ),
+            "text_en": (
+                f"I recommend AI investor chatbot 증권당.\n"
+                f"NASDAQ·KOSPI·crypto analysis in 4 languages by persona bots.\n"
+                f"Referral link: {invite_link}\n"
+                f"200 Point welcome bonus on signup."
+            ),
+        },
+        "fomo": {
+            "label_ko": "FOMO 자극",
+            "label_en": "FOMO",
+            "text_ko": (
+                f"오늘 코스피·나스닥 시황 예측해서 Point 받았어.\n"
+                f"AI 페르소나가 종목 분석해주는데 진짜 신기함.\n"
+                f"먼저 들어가면 이달의 랭킹도 노릴 만함:\n{invite_link}"
+            ),
+            "text_en": (
+                f"Predicted KOSPI·NASDAQ today and earned Points.\n"
+                f"AI personas explain tickers — surprisingly good.\n"
+                f"Get in early for monthly rankings:\n{invite_link}"
+            ),
+        },
+        "minimal": {
+            "label_ko": "초간단",
+            "label_en": "Minimal",
+            "text_ko": f"AI 투자 챗봇 추천 → 200 P 환영 보너스\n{invite_link}",
+            "text_en": f"AI investor chatbot referral — 200 P welcome bonus\n{invite_link}",
+        },
+    }
+
+    payload = {
+        "invite_code": invite_code,
+        "invite_link": invite_link,
+        "bot_username": bot_username,
+        "stats": {
+            "landings": profile.invite_landings_count,
+            "validated": profile.invite_validated_count,
+            "zombies": profile.invite_zombie_count,
+            "points_earned": earned_p,
+        },
+        "milestones": {
+            # next milestone shows the user what to push toward
+            "next_count": _next_invite_milestone(profile.invite_validated_count),
+            "next_reward": _next_invite_reward(profile.invite_validated_count),
+        },
+        "templates": templates,
+        "language": profile.language,
+    }
+    headers = dict(_CORS_HEADERS)
+    headers["Cache-Control"] = "private, max-age=10"
+    return func.HttpResponse(
+        json.dumps(payload, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=headers,
+    )
+
+
+def _next_invite_milestone(current: int) -> int:
+    for n in (2, 3, 5, 10, 20, 50):
+        if current < n:
+            return n
+    return 100
+
+
+def _next_invite_reward(current: int) -> str:
+    rewards = {
+        2:  "프리미엄 3일 + 200 P",
+        3:  "프리미엄 7일 + 500 P",
+        5:  "프리미엄 30일 + 1,000 P",
+        10: "프리미엄 90일 + 5,000 P",
+        20: "프리미엄 영구 + 다이아몬드",
+        50: "명예의 전당 + 챔피언 페르소나",
+    }
+    nxt = _next_invite_milestone(current)
+    return rewards.get(nxt, "")
 
 
 @app.route(route="gamification/welcome_event/predict", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST", "OPTIONS"])

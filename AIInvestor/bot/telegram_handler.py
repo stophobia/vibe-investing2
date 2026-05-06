@@ -82,6 +82,9 @@ def build_application(token: str, deps: BotDependencies) -> Application:
     app.add_handler(CommandHandler("points", _cmd_points))
     app.add_handler(CommandHandler("tier", _cmd_tier))
     app.add_handler(CommandHandler("attend", _cmd_attend))
+    # §6-slot — latest market report entry (English `today` / `market` aliases)
+    app.add_handler(CommandHandler("today", _cmd_today_market))
+    app.add_handler(CommandHandler("market", _cmd_today_market))
     # §T2E-C — invite / referral
     app.add_handler(CommandHandler("invite", _cmd_invite))
     # §T2E-E — Mini App launcher
@@ -378,6 +381,7 @@ async def _cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "/points — show your Point balance\n"
         "/tier — show your tier + stage + points to next tier\n"
         "/attend — daily attendance check-in (+10 P, +streak bonus)\n"
+        "/today | /market | 시황 — latest 6-slot market report (cached)\n"
         "/invite — show your referral link + stats (+30/+470 P split reward)\n"
         "/miniapp — open the gamification mini app (Telegram WebApp)\n"
         "/feedback <message> — send feedback to dev (피드백 alias works too)\n"
@@ -935,6 +939,46 @@ async def _cmd_attend(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 )
         except (ValueError, AttributeError):
             pass
+
+
+async def _cmd_today_market(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Surface the latest of the 6 KST slot reports for the user's persona+lang.
+    Cache-first: walks back through today's slots → yesterday's last slot → live build."""
+    profile = await _profile(update, context)
+    deps = _deps(context)
+    lang = profile.language
+    s = t(lang)
+    persona = get_persona(profile.persona_key)
+
+    await context.bot.send_chat_action(
+        chat_id=update.effective_chat.id, action=ChatAction.TYPING,
+    )
+
+    # Try the cached slot report first (zero LLM cost on hit)
+    rendered = await _try_blob_cached_report(persona.key, lang)
+
+    if rendered:
+        await update.message.reply_text(rendered)
+        # Log a usage event so dashboard sees this as a cache hit
+        try:
+            import time as _time
+            await _log_usage(deps, profile, "", "slot_cache_hit", 0)
+        except Exception:
+            pass
+        return
+
+    # Cache miss → build live report (legacy fallback path).
+    # This is the same logic the report_yes callback uses.
+    interests = [_localize_tag(tag, lang) for tag in profile.interest_tags]
+    interests.extend(profile.watchlist_tickers)
+    try:
+        report = await deps.market_report_service.build(
+            persona=persona, language=lang, interests=interests,
+        )
+        await update.message.reply_text(report.render(lang, persona.name(lang)))
+    except Exception:
+        logger.exception("on-demand market report build failed")
+        await update.message.reply_text(s.error_market_data)
 
 
 async def _cmd_miniapp(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -1527,6 +1571,13 @@ async def _on_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             await update.message.reply_text(s.feedback_usage)
         else:
             await _forward_feedback(update, context, profile, body, s)
+        return
+
+    # Korean text shortcuts that Telegram won't accept as slash commands —
+    # "시황" / "오늘 시황" → /today_market equivalent.
+    stripped = text.strip()
+    if stripped in ("시황", "오늘 시황", "오늘시황", "오늘의 시황", "今日の市況", "市况", "today", "Today"):
+        await _cmd_today_market(update, context)
         return
 
     # During interest step, free text is parsed as additional interest input.
