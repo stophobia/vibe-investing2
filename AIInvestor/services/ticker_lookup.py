@@ -18,6 +18,23 @@ _DEFAULT_PATH = Path(__file__).resolve().parent.parent / "data" / "ticker_aliase
 
 _TICKER_RE = re.compile(r"^[A-Z]{1,5}(?:[.\-][A-Z]{1,3})?$")
 
+# Words to strip when the user types natural-language phrases like
+# '아마존 주가', '테슬라 어때', "what's the AAPL price", etc.
+# Sorted longest-first so multi-word phrases peel off before single words.
+_NOISE_WORDS = sorted([
+    # Korean
+    "주가", "가격", "시세", "주식", "정보", "분석", "어때", "어때요", "어떄",
+    "어떻게", "어떤가", "알려줘", "알려주세요", "보여줘", "괜찮아", "어떨까",
+    # English
+    "what is", "what's", "tell me about", "info on", "info",
+    "price", "stock", "shares", "share", "current", "today",
+    "how is", "how's", "right now", "now",
+    # Japanese
+    "株価", "価格", "情報", "教えて", "どう",
+    # Chinese
+    "股价", "价格", "怎么样", "信息", "如何",
+], key=len, reverse=True)
+
 
 class TickerLookup:
     def __init__(self, csv_path: Path | str | None = None) -> None:
@@ -42,24 +59,60 @@ class TickerLookup:
         logger.info("loaded %d ticker aliases covering %d unique tickers", len(self._aliases), unique_tickers)
 
     def resolve(self, query: str) -> str:
-        """Return a ticker symbol for the query, or the upper-cased query if no match."""
+        """Return a ticker symbol for the query, or the upper-cased query if no match.
+
+        Resolution order (most-specific first):
+          1. Whole-string alias match  ('테슬라' → TSLA)
+          2. Whitespace-collapsed alias ('  apple  ' → AAPL)
+          3. Strip noise words like '주가/가격/어때/price/stock' then re-try alias
+             ('아마존 주가' → '아마존' → AMZN)
+          4. Word-by-word alias scan, first hit wins
+             ('what is NVDA price' → 'NVDA' → NVDA)
+          5. Already-uppercase ticker pattern → trust as-is
+          6. Fallback: upper-cased first token (yfinance will fail if unknown)
+        """
         cleaned = query.strip()
         if not cleaned:
             return ""
 
-        # 1. Multilingual alias table — case-insensitive, covers '애플', 'tesla', etc.
         key = cleaned.lower()
+
+        # 1. Whole-string alias
         if key in self._aliases:
             return self._aliases[key]
 
+        # 2. Collapse whitespace
         compact = re.sub(r"\s+", " ", key)
         if compact in self._aliases:
             return self._aliases[compact]
 
-        # 2. Already-uppercase ticker (the user typed it in caps): trust it
+        # 3. Strip noise words then retry — handles '아마존 주가', '테슬라 어때'
+        stripped = compact
+        for w in _NOISE_WORDS:
+            if w in stripped:
+                stripped = stripped.replace(w, " ")
+        stripped = re.sub(r"\s+", " ", stripped).strip(" ?!.,~")
+        if stripped and stripped != compact:
+            if stripped in self._aliases:
+                return self._aliases[stripped]
+
+        # 4. Word-by-word alias scan
+        # Splits on whitespace AND CJK punctuation. First match wins.
+        for token in re.split(r"[\s,/·]+", stripped or compact):
+            token = token.strip(" ?!.,~()[]")
+            if not token:
+                continue
+            if token in self._aliases:
+                return self._aliases[token]
+            # bare uppercase ticker pattern inside the token
+            up = token.upper()
+            if up == token.upper() and _TICKER_RE.match(up):
+                return up
+
+        # 5. Already-uppercase ticker (user typed in caps)
         first_token = cleaned.split()[0]
         if first_token == first_token.upper() and _TICKER_RE.match(first_token):
             return first_token
 
-        # 3. Fallback: yfinance gets the upper-cased first token; it will raise if unknown
+        # 6. Fallback
         return first_token.upper()
