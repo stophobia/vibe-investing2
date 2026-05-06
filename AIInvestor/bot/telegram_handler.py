@@ -82,6 +82,8 @@ def build_application(token: str, deps: BotDependencies) -> Application:
     app.add_handler(CommandHandler("points", _cmd_points))
     app.add_handler(CommandHandler("tier", _cmd_tier))
     app.add_handler(CommandHandler("attend", _cmd_attend))
+    # §T2E-C — invite / referral
+    app.add_handler(CommandHandler("invite", _cmd_invite))
     # Owner-only operator commands (gated by TELEGRAM_OWNER_CHAT_ID)
     app.add_handler(CommandHandler("total_user", _cmd_total_user))
     app.add_handler(CommandHandler("today_user", _cmd_today_user))
@@ -211,6 +213,12 @@ async def _cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     lang = profile.language
     s = t(lang)
 
+    # §T2E-C — parse `/start ref_<code>` referral parameter, if present.
+    # context.args holds tokens after /start — Telegram delivers payload as args[0].
+    if context.args:
+        payload = (context.args[0] or "").strip()
+        await _maybe_apply_referral(update, context, profile, payload)
+
     # [1] Greeting + language hint
     await update.message.reply_text(f"{s.greeting}\n\n{s.language_switch_hint}")
 
@@ -222,6 +230,58 @@ async def _cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     # [3] Persona keyboard
     await deps.profile_repo.update(profile.user_key, onboarding_step=STEP_PERSONA)
     await update.message.reply_text(s.persona_prompt, reply_markup=_persona_keyboard(lang))
+
+
+async def _maybe_apply_referral(
+    update: Update, context: ContextTypes.DEFAULT_TYPE,
+    profile, payload: str,
+) -> None:
+    """Apply ref_XXXXXXXX referral if the payload matches and the invitee
+    hasn't been credited yet. Silent on failure (no UX disruption)."""
+    if not payload.startswith("ref_"):
+        return
+    code = payload[4:].split("_")[0].upper()  # ref_ABCD1234_q_NVDA → "ABCD1234"
+    if len(code) != 8 or profile.invited_by_anon:
+        return  # malformed or already invited
+
+    deps = _deps(context)
+    from services.invite_service import (
+        find_inviter_by_code, setup_invitee_with_referral,
+        reward_inviter_immediate,
+    )
+    try:
+        inviter = await find_inviter_by_code(deps.profile_repo, code)
+    except Exception:
+        logger.exception("referral lookup failed")
+        return
+    if not inviter or inviter.user_key == profile.user_key:
+        return  # invalid or self-invite
+
+    # Tag invitee + welcome bonus
+    try:
+        ok, _new_profile, _err = await setup_invitee_with_referral(
+            deps.profile_repo, profile.user_key, inviter.anon_user_id,
+            usage_logger=deps.usage_logger,
+        )
+    except Exception:
+        logger.exception("invitee setup failed")
+        return
+    if not ok:
+        return
+
+    # Inviter immediate reward (+30 P, daily-capped at 10)
+    try:
+        from services.config import _config_global as _cfg  # not always present
+        account = None
+    except ImportError:
+        account = os.getenv("STORAGE_ACCOUNT_NAME", "").strip() or None
+    try:
+        await reward_inviter_immediate(
+            deps.profile_repo, inviter.user_key, profile.anon_user_id,
+            usage_logger=deps.usage_logger, blob_account=account,
+        )
+    except Exception:
+        logger.exception("inviter immediate reward failed")
 
 
 async def _cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -237,6 +297,7 @@ async def _cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "/points — show your Point balance\n"
         "/tier — show your tier + stage + points to next tier\n"
         "/attend — daily attendance check-in (+10 P, +streak bonus)\n"
+        "/invite — show your referral link + stats (+30/+470 P split reward)\n"
         "/feedback <message> — send feedback to dev (피드백 alias works too)\n"
         "/policy — data handling & disclaimer\n"
         "/forget — delete all my stored data\n"
@@ -792,6 +853,60 @@ async def _cmd_attend(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 )
         except (ValueError, AttributeError):
             pass
+
+
+async def _cmd_invite(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show the user's referral link + current invite stats."""
+    profile = await _profile(update, context)
+    lang = profile.language
+    deps = _deps(context)
+    from services.invite_service import get_or_create_invite_code
+
+    code = profile.invite_code
+    if not code:
+        try:
+            code = await get_or_create_invite_code(deps.profile_repo, profile.user_key)
+        except Exception:
+            logger.exception("invite code generation failed")
+            await update.message.reply_text("초대 코드 생성에 실패했어요. 잠시 후 다시 시도해 주세요.")
+            return
+
+    # Bot username — use the bot's identity (cached in PTB)
+    bot_username = (await context.bot.get_me()).username
+    invite_link = f"https://t.me/{bot_username}?start=ref_{code}"
+
+    if lang == "ko":
+        msg = (
+            f"🤝 내 초대 링크\n\n"
+            f"{invite_link}\n\n"
+            f"📊 초대 현황\n"
+            f"  · 링크 클릭: {profile.invite_landings_count}명\n"
+            f"  · 검증된 가입: {profile.invite_validated_count}명\n"
+            f"  · 적립된 포인트: {profile.invite_landings_count * 30 + profile.invite_validated_count * 470:,} P\n\n"
+            f"보상 구조: 클릭 즉시 30 P + 친구 첫 미션 완료 시 470 P"
+        )
+    elif lang == "ja":
+        msg = (
+            f"🤝 招待リンク\n\n{invite_link}\n\n"
+            f"クリック: {profile.invite_landings_count} / 検証: {profile.invite_validated_count}名\n"
+            f"クリックで30 P + 友達の初ミッション完了で470 P"
+        )
+    elif lang == "zh":
+        msg = (
+            f"🤝 邀请链接\n\n{invite_link}\n\n"
+            f"点击: {profile.invite_landings_count} / 验证: {profile.invite_validated_count}名\n"
+            f"点击立得30 P + 好友完成首个任务再得470 P"
+        )
+    else:
+        msg = (
+            f"🤝 Your invite link\n\n{invite_link}\n\n"
+            f"📊 Stats\n"
+            f"  · Clicks: {profile.invite_landings_count}\n"
+            f"  · Verified signups: {profile.invite_validated_count}\n"
+            f"  · Points earned: {profile.invite_landings_count * 30 + profile.invite_validated_count * 470:,} P\n\n"
+            f"Reward: +30 P on click, +470 P when friend completes first mission"
+        )
+    await update.message.reply_text(msg)
 
 
 async def _cmd_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

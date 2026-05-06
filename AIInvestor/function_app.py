@@ -105,6 +105,7 @@ async def _bootstrap() -> None:
             BotCommand("points",    "Show your Point balance"),
             BotCommand("tier",      "Show your tier + progress"),
             BotCommand("attend",    "Daily attendance check-in"),
+            BotCommand("invite",    "Show your referral link + stats"),
             BotCommand("feedback",  "Send feedback to the dev"),
             BotCommand("policy",    "Data handling & disclaimer"),
             BotCommand("forget",    "Delete all my data"),
@@ -398,6 +399,21 @@ async def resolve_nasdaq_predictions(timer: func.TimerRequest) -> None:
         logger.info("NASDAQ resolve: %d users awarded", len(awarded))
     except Exception:
         logger.exception("NASDAQ resolve failed")
+
+
+@app.timer_trigger(
+    schedule="0 0 3 * * *",   # KST 12:00 = UTC 03:00 daily
+    arg_name="timer", run_on_startup=False, use_monitor=True,
+)
+async def detect_invite_zombies(timer: func.TimerRequest) -> None:
+    """§T2E-C — Daily KST 12:00, find 7-day idle invitees and penalize their inviter."""
+    await _bootstrap()
+    from services.invite_service import detect_zombies
+    try:
+        n = await detect_zombies(_profile_repo, usage_logger=_usage_logger, days_threshold=7)
+        logger.info("zombie detection: %d processed", n)
+    except Exception:
+        logger.exception("zombie detection failed")
 
 
 @app.timer_trigger(
