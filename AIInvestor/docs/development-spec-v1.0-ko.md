@@ -23,12 +23,12 @@
 
 | 차원 | 선택 | 장점 |
 |---|---|---|
-| 컴퓨트 | **Azure Functions Flex Consumption** | 사용량 기반 과금, 24h 가동 부담 없음, 자동 스케일아웃, Always Ready 1로 콜드 스타트 완화 가능 |
-| 프런트 | **Azure Static Web Apps Free** | 글로벌 edge CDN 자동, $0/월, GitHub Actions 자동 배포, HTTPS 무료 |
+| 서버리스 | **Azure Functions Flex Consumption** | 사용량 기반 과금, 24h 가동 부담 없음, 자동 스케일아웃, Always Ready 1로 콜드 스타트 완화 가능 |
+| 프론트 | **Azure Static Web Apps Free** | 글로벌 edge CDN 자동, $0/월, GitHub Actions 자동 배포, HTTPS 무료 |
 | 저장소 | **Azure Blob Storage 단일 계층** | Cosmos DB 미사용 → RU 관리 부담 0, 컨테이너 7종으로 책임 분리 |
 | LLM | **DeepSeek (OpenAI 호환)** | GPT-4 대비 1/35 비용, OpenAI SDK 그대로 사용 (drop-in), 한국어 품질 우수 |
 | 가격 데이터 | **yfinance** | 무료, NASDAQ/S&P/한국주/암호화폐 모두 지원, rate limit 만 주의 |
-| 관측 | **Application Insights + OpenTelemetry** | Functions 자동 통합, KQL 쿼리, 커스텀 메트릭 |
+| 모니터링 | **Application Insights + OpenTelemetry** | Functions 자동 통합, KQL 쿼리, 커스텀 메트릭 |
 | 배포 | **GitHub Actions + Bicep** | Infrastructure as Code, 1 push = 1 배포, 환경 분리 (prod/dev) |
 
 ### 1.2 운영 원칙
@@ -37,7 +37,7 @@
 - **인프라 코드화**: Bicep + workflow secret sync — 손으로 클릭하는 작업 0
 - **익명화 기본**: SHA-256 + 90일 salt rotation, 원시 식별자 절대 저장 안 함
 - **점진적 도입**: 1차(로컬 SQLite) → 2차(Azure Blob) → 3차(학술 데이터) 단계별
-- **문서 단일 진실원본**: 코드 변경 시 paper_plan / postmortem / spec 동시 업데이트
+- **문서 단일 원본**: 코드 변경 시 paper_plan / postmortem / spec 동시 업데이트
 
 ### 1.3 사용자 경험
 
