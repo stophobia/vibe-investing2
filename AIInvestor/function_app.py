@@ -283,6 +283,73 @@ async def keepalive(timer: func.TimerRequest) -> None:
 
 
 # ---------------------------------------------------------------------
+# 7) Public ticker price feed — /api/data/{ticker}
+#     3-tier cache: memory → Blob → yfinance origin
+# ---------------------------------------------------------------------
+
+@app.route(route="data/{ticker}", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def ticker_data(req: func.HttpRequest) -> func.HttpResponse:
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse(
+            json.dumps({"error": "not configured"}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS,
+        )
+
+    ticker = (req.route_params.get("ticker") or "").strip()
+    if not ticker or len(ticker) > 12 or not ticker.replace(".", "").replace("-", "").isalnum():
+        return func.HttpResponse(
+            json.dumps({"error": "invalid ticker"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS,
+        )
+
+    from services.ticker_data_cache import get_or_fetch, get_ttl_seconds
+    try:
+        data, source = await get_or_fetch(ticker, _config.storage_account_name)
+    except Exception:
+        logger.exception("ticker_data fetch failed for %s", ticker)
+        return func.HttpResponse(
+            json.dumps({"error": "fetch failed", "ticker": ticker.upper()}),
+            status_code=502, mimetype="application/json", headers=_CORS_HEADERS,
+        )
+
+    ttl = get_ttl_seconds(ticker.upper())
+    headers = dict(_CORS_HEADERS)
+    headers["Cache-Control"] = f"public, max-age={ttl}, stale-while-revalidate=60"
+    headers["X-Cache-Source"] = source
+
+    return func.HttpResponse(
+        json.dumps(data, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=headers,
+    )
+
+
+# ---------------------------------------------------------------------
+# 8) Hot ticker pre-warm — every 30 min (skips weekends + KST closed window)
+# ---------------------------------------------------------------------
+
+@app.timer_trigger(
+    schedule="0 */30 * * * *",
+    arg_name="timer",
+    run_on_startup=False,
+    use_monitor=True,
+)
+async def refresh_hot_ticker_data(timer: func.TimerRequest) -> None:
+    await _bootstrap()
+    if not _config or not _config.storage_account_name:
+        return
+    from services.ticker_data_cache import refresh_hot_tickers
+    try:
+        results = await refresh_hot_tickers(_config.storage_account_name)
+        ok = sum(1 for v in results.values() if v == "ok")
+        logger.info("refresh_hot_ticker_data — %d/%d ok", ok, len(results))
+    except Exception:
+        logger.exception("refresh_hot_ticker_data failed")
+
+
+# ---------------------------------------------------------------------
 # 5) Dashboard aggregator — every 15 minutes builds dashboard/24h.json + 7d.json
 # ---------------------------------------------------------------------
 

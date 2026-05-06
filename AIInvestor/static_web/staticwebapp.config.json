@@ -7,6 +7,10 @@
     {
       "route": "/dashboard",
       "rewrite": "/dashboard.html"
+    },
+    {
+      "route": "/data/*",
+      "rewrite": "https://func-aiinvestor-prod.azurewebsites.net/api/data/{*path}"
     }
   ],
   "responseOverrides": {
