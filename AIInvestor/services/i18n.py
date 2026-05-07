@@ -200,9 +200,12 @@ _KO = _Bundle(
     attendance_streak="🔥 {streak}일 연속 출석! 보너스 +{bonus} P",
     tier_up_celebration="🎉 축하합니다! {tier} 티어로 승급했습니다.",
     saju_hook=(
-        "🔮 당신의 사주로 투자가 잘 풀리는 주식·코인을 추천해드립니다.\n"
-        "오늘의 운세 · 5운(재물·사업·학업·연애·건강) · 매시간 매치업까지\n"
-        "미니앱에서 한 번에 확인하실까요?"
+        "🎯 증권당 — 미니앱에서 만나요\n\n"
+        "🎩 투자의 대가 페르소나(버핏 · 달리오 · 우드)로 주식을 깊이 분석하고\n"
+        "⚡ 나만의 인사이트로 주식 vs 코인 시장의 등락을 예측해보세요\n"
+        "🔮 내 사주에 어떤 주식과 코인이 맞는지도 한눈에 확인\n"
+        "🎁 친구를 초대하면 더 많은 분석 + 초대 왕에게는 최대 1,000 USDT 리워드!\n\n"
+        "지금 바로 미니앱을 열어볼까요?"
     ),
     miniapp_open_btn="🚀 미니앱 열기",
     miniapp_promo=(
@@ -321,9 +324,12 @@ _EN = _Bundle(
     attendance_streak="🔥 {streak}-day streak! Bonus +{bonus} P",
     tier_up_celebration="🎉 Congratulations! Promoted to {tier} tier.",
     saju_hook=(
-        "🔮 We'll match stocks & coins to your Saju (Four Pillars) reading.\n"
-        "Today's fortune · 5 axes (wealth · business · study · love · health) · hourly matchups\n"
-        "Open the mini app to see them all?"
+        "🎯 Jeunggwondang — meet us in the mini app\n\n"
+        "🎩 Deep stock analyses through the lens of legendary investors (Buffett · Dalio · Wood)\n"
+        "⚡ Predict stock vs coin market moves with your own insight\n"
+        "🔮 Find which stocks and coins match YOUR Saju (Four Pillars) reading\n"
+        "🎁 Invite friends for more unlocks — top inviter wins up to 1,000 USDT!\n\n"
+        "Open the mini app now?"
     ),
     miniapp_open_btn="🚀 Open mini app",
     miniapp_promo=(
@@ -442,9 +448,12 @@ _JA = _Bundle(
     attendance_streak="🔥 {streak} 日連続! ボーナス +{bonus} P",
     tier_up_celebration="🎉 おめでとうございます! {tier} ティアに昇格しました。",
     saju_hook=(
-        "🔮 あなたの四柱推命に合う株・コインを推薦します。\n"
-        "今日の運勢 · 5運(財・事業・学業・恋愛・健康)· 毎時マッチアップ\n"
-        "ミニアプリで一括チェックしませんか?"
+        "🎯 증권당 — ミニアプリで出会いましょう\n\n"
+        "🎩 投資の達人ペルソナ(バフェット · ダリオ · ウッド)で銘柄を深く分析\n"
+        "⚡ あなたの洞察で株 vs コイン市場の値動きを予測\n"
+        "🔮 あなたの四柱推命に合う株とコインを一目で確認\n"
+        "🎁 友達招待で分析が増え、招待王には最大 1,000 USDT のリワード!\n\n"
+        "今すぐミニアプリを開きますか?"
     ),
     miniapp_open_btn="🚀 ミニアプリを開く",
     miniapp_promo=(
@@ -563,9 +572,12 @@ _ZH = _Bundle(
     attendance_streak="🔥 连续 {streak} 天! 奖励 +{bonus} P",
     tier_up_celebration="🎉 恭喜! 晋级至 {tier} 等级。",
     saju_hook=(
-        "🔮 根据您的四柱命理推荐适合的股票与币种。\n"
-        "今日运势 · 五运(财·事业·学业·恋爱·健康)· 每小时对决\n"
-        "在迷你应用中一键查看?"
+        "🎯 증권당 — 在迷你应用中相遇\n\n"
+        "🎩 用投资大师人设(巴菲特 · 达利欧 · 伍德)深度分析股票\n"
+        "⚡ 用您的洞察预测股票 vs 币市的涨跌\n"
+        "🔮 一眼看出适合您八字命理的股票与币种\n"
+        "🎁 邀请好友解锁更多分析 — 邀请王最高可得 1,000 USDT 奖励!\n\n"
+        "现在打开迷你应用?"
     ),
     miniapp_open_btn="🚀 打开迷你应用",
     miniapp_promo=(
