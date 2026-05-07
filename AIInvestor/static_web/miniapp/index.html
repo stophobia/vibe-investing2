@@ -465,9 +465,17 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     <div class="meta" style="margin:6px 0 12px;">
       양력 기준. 시(時)는 모르면 비워두세요. 첫 입력 후 5일 동안 모든 추천이 무료입니다.
     </div>
-    <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-      <label style="min-width:70px; font-size:13px;">생년월일</label>
-      <input type="date" id="saju-birth-date" style="flex:1; padding:8px; border-radius:6px; border:1px solid var(--border); background:#1f1f2e; color:#e8e8e8;">
+    <div style="margin-bottom:8px;">
+      <label style="font-size:13px; display:block; margin-bottom:6px;">생년월일</label>
+      <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:6px;">
+        <input type="number" id="saju-birth-year" inputmode="numeric"
+               min="1900" max="2030" value="1988" placeholder="YYYY"
+               style="padding:10px; border-radius:6px; border:1px solid var(--border); background:#1f1f2e; color:#e8e8e8; font-size:15px; text-align:center;">
+        <select id="saju-birth-month"
+                style="padding:10px; border-radius:6px; border:1px solid var(--border); background:#1f1f2e; color:#e8e8e8; font-size:15px;"></select>
+        <select id="saju-birth-day"
+                style="padding:10px; border-radius:6px; border:1px solid var(--border); background:#1f1f2e; color:#e8e8e8; font-size:15px;"></select>
+      </div>
     </div>
     <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
       <label style="min-width:70px; font-size:13px;">출생 시각</label>
@@ -1778,11 +1786,55 @@ document.querySelectorAll(".saju-fortune-tab").forEach(t => {
   });
 });
 
+// Populate month/day selects + clamp day count to month length
+function _daysInMonth(year, month1to12) {
+  return new Date(year, month1to12, 0).getDate();
+}
+
+function _populateSajuMonth() {
+  const sel = document.getElementById("saju-birth-month");
+  if (sel.options.length) return;
+  for (let m = 1; m <= 12; m++) {
+    const o = document.createElement("option");
+    o.value = String(m);
+    o.textContent = `${m}월`;
+    sel.appendChild(o);
+  }
+  sel.value = "1";
+}
+
+function _populateSajuDay() {
+  const sel = document.getElementById("saju-birth-day");
+  const year = parseInt(document.getElementById("saju-birth-year").value, 10) || 1988;
+  const month = parseInt(document.getElementById("saju-birth-month").value, 10) || 1;
+  const max = _daysInMonth(year, month);
+  const prev = sel.value;
+  sel.innerHTML = "";
+  for (let d = 1; d <= max; d++) {
+    const o = document.createElement("option");
+    o.value = String(d);
+    o.textContent = `${d}일`;
+    sel.appendChild(o);
+  }
+  // Restore previous selection if still valid; else default 1
+  sel.value = (prev && parseInt(prev, 10) <= max) ? prev : "1";
+}
+
+_populateSajuMonth();
+_populateSajuDay();
+
+document.getElementById("saju-birth-year").addEventListener("input", _populateSajuDay);
+document.getElementById("saju-birth-month").addEventListener("change", _populateSajuDay);
+
 // Wire save birth-data button
 document.getElementById("saju-save-btn").addEventListener("click", async () => {
-  const dt = document.getElementById("saju-birth-date").value;
+  const y = parseInt(document.getElementById("saju-birth-year").value, 10);
+  const m = parseInt(document.getElementById("saju-birth-month").value, 10);
+  const d = parseInt(document.getElementById("saju-birth-day").value, 10);
   const hr = document.getElementById("saju-birth-hour").value;
-  if (!dt) { notify("생년월일을 입력하세요."); return; }
+  if (!y || y < 1900 || y > 2030) { notify("연도를 1900~2030 사이로 입력하세요."); return; }
+  if (!m || !d) { notify("월/일을 선택하세요."); return; }
+  const dt = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
   try {
     await api("/saju/profile", {
       method: "POST",
@@ -1804,7 +1856,11 @@ document.getElementById("saju-edit-btn").addEventListener("click", () => {
   document.getElementById("saju-input-card").style.display = "block";
   document.getElementById("saju-result-area").style.display = "none";
   if (_sajuCache?.saju?.birth_date) {
-    document.getElementById("saju-birth-date").value = _sajuCache.saju.birth_date;
+    const [yy, mm, dd] = _sajuCache.saju.birth_date.split("-").map(s => parseInt(s, 10));
+    if (yy) document.getElementById("saju-birth-year").value = String(yy);
+    if (mm) document.getElementById("saju-birth-month").value = String(mm);
+    _populateSajuDay();
+    if (dd) document.getElementById("saju-birth-day").value = String(dd);
     if (_sajuCache.saju.birth_hour !== undefined && _sajuCache.saju.birth_hour !== null) {
       document.getElementById("saju-birth-hour").value = String(_sajuCache.saju.birth_hour);
     }
