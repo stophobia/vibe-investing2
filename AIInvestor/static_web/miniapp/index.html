@@ -227,6 +227,13 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     <div class="history-area" data-market="btc" style="margin-top:10px; font-size:11px; color:#aaa;"></div>
   </div>
 
+  <!-- §MATCHUP — hourly mover-pair predictions -->
+  <div class="section-title" style="margin-top:18px;">⚡ 매치업 예측 (전일 상승률 기반)</div>
+  <div class="meta" style="margin-bottom:8px;">
+    매시간 자동 생성 · 30분 단위 게이지 갱신 · 정답 +30 P
+  </div>
+  <div id="matchup-list">로딩 중…</div>
+
   <div class="section-title" style="margin-top:18px;">📈 내 예측 성적</div>
   <div class="card" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; text-align:center;">
     <div>
@@ -317,6 +324,55 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
                 display:inline-block; padding:7px 14px;">
         💾 이미지 저장
       </a>
+    </div>
+  </div>
+
+  <!-- §DONATION — TON/TRON USDT donation → points -->
+  <div class="section-title" style="margin-top:24px;">💎 도네이션 (USDT)</div>
+  <div class="meta" style="margin-bottom:10px;">
+    TON · TRON 둘 다 USDT 지원. 입금 확인 시 자동으로 포인트 적립 (1 USDT = 100 P).
+  </div>
+
+  <div class="card">
+    <!-- Step 1: chain pick -->
+    <div style="display:flex; gap:8px; margin-bottom:10px;">
+      <button class="btn-mission donate-chain-btn active" data-chain="ton" style="flex:1;">⚡ TON</button>
+      <button class="btn-mission donate-chain-btn" data-chain="tron" style="flex:1; background:#555;">🔴 TRON</button>
+    </div>
+
+    <!-- Step 2: amount tiers -->
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px;">
+      <button class="btn-mission donate-amount-btn" data-amount="1">1 USDT<br><span style="font-size:10px;">100 P</span></button>
+      <button class="btn-mission donate-amount-btn" data-amount="10">10 USDT<br><span style="font-size:10px;">1,000 P</span></button>
+      <button class="btn-mission donate-amount-btn" data-amount="50">50 USDT<br><span style="font-size:10px;">5,000 P</span></button>
+      <button class="btn-mission donate-amount-btn" data-amount="100">100 USDT<br><span style="font-size:10px;">10,000 P</span></button>
+      <button class="btn-mission donate-amount-btn" data-amount="500">500 USDT<br><span style="font-size:10px;">50,000 P</span></button>
+      <button class="btn-mission donate-amount-btn" data-amount="1000">1000 USDT<br><span style="font-size:10px;">100,000 P</span></button>
+    </div>
+
+    <!-- Step 3: result panel -->
+    <div id="donate-result" style="display:none; background:#1f1f2e; padding:12px; border-radius:8px; margin-top:10px;">
+      <div style="font-weight:700; color:var(--accent); margin-bottom:6px;" id="donate-step-title">입금 정보</div>
+      <div style="margin-bottom:8px; font-size:12px;" id="donate-instructions">—</div>
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+        <span style="font-size:11px; color:#aaa; min-width:60px;">금액</span>
+        <code id="donate-amount-display" style="flex:1; font-size:13px;">—</code>
+        <button class="btn-mission" id="donate-copy-amount" style="padding:4px 10px; font-size:11px;">복사</button>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;" id="donate-memo-row">
+        <span style="font-size:11px; color:#aaa; min-width:60px;">메모</span>
+        <code id="donate-memo-display" style="flex:1; font-size:13px; word-break:break-all;">—</code>
+        <button class="btn-mission" id="donate-copy-memo" style="padding:4px 10px; font-size:11px;">복사</button>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+        <span style="font-size:11px; color:#aaa; min-width:60px;">지갑</span>
+        <code id="donate-wallet-display" style="flex:1; font-size:11px; word-break:break-all;">—</code>
+        <button class="btn-mission" id="donate-copy-wallet" style="padding:4px 10px; font-size:11px;">복사</button>
+      </div>
+      <div style="text-align:center; margin:10px 0;">
+        <img id="donate-qr" src="" alt="QR" style="max-width:160px; background:white; padding:6px; border-radius:6px;">
+      </div>
+      <div id="donate-status-line" class="meta" style="text-align:center; color:var(--accent);">대기중 — 5분마다 자동 확인</div>
     </div>
   </div>
 </section>
@@ -1270,6 +1326,300 @@ document.querySelectorAll(".btn-predict-mkt").forEach(btn => {
 // (BTC predict tab UP/DOWN handled by .btn-predict-mkt listener above)
 
 
+// ─────────────── §MATCHUP — hourly mover-pair predictions ───────────────
+
+let _matchupCache = null;
+
+async function loadMatchups() {
+  try {
+    const r = await api("/matchup/active");
+    _matchupCache = r;
+    renderMatchups(r);
+  } catch (e) {
+    document.getElementById("matchup-list").innerHTML =
+      `<div class="card meta">매치업 로딩 실패: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function _fmtPrice(p) {
+  if (p == null || isNaN(p)) return "—";
+  if (p >= 100) return p.toFixed(2);
+  if (p >= 1)   return p.toFixed(4);
+  return p.toFixed(6);
+}
+
+function _fmtPct(pct) {
+  const v = (pct * 100);
+  const sign = v >= 0 ? "+" : "";
+  const cls = v >= 0 ? "color:var(--good);" : "color:var(--bad);";
+  return `<span style="${cls}">${sign}${v.toFixed(2)}%</span>`;
+}
+
+function _kindEmoji(k) { return k === "crypto" ? "₿" : "📈"; }
+
+function _typeLabel(t) {
+  return t === "ss" ? "주식 vs 주식"
+       : t === "cc" ? "코인 vs 코인"
+       : t === "sc" ? "주식 vs 코인" : t;
+}
+
+function _kstHM(iso) {
+  if (!iso) return "";
+  const m = iso.match(/T(\d{2}:\d{2})/);
+  return m ? m[1] : iso.slice(11, 16);
+}
+
+function renderMatchups(r) {
+  const ms = (r.matchups || []).filter(m => m.status === "open" || (m.status === "resolved" && Date.now() - new Date(m.resolve_at_kst).getTime() < 3600_000));
+  if (!ms.length) {
+    document.getElementById("matchup-list").innerHTML =
+      `<div class="card meta">현재 활성 매치업이 없어요. 매시간 :00에 새로 생성됩니다.</div>`;
+    return;
+  }
+
+  const html = ms.map(m => {
+    const ga = m.gauge_a_pct, gb = m.gauge_b_pct;
+    const liveA = m.last && m.asset_a.anchor ? (m.asset_a.last - m.asset_a.anchor) / m.asset_a.anchor : null;
+    const liveB = m.last && m.asset_b.anchor ? (m.asset_b.last - m.asset_b.anchor) / m.asset_b.anchor : null;
+    const livePctA = m.asset_a.anchor > 0 ? (m.asset_a.last - m.asset_a.anchor) / m.asset_a.anchor : 0;
+    const livePctB = m.asset_b.anchor > 0 ? (m.asset_b.last - m.asset_b.anchor) / m.asset_b.anchor : 0;
+
+    const isOpen = m.status === "open";
+    const mySide = m.my_side || "";
+
+    const submitBtnA = isOpen
+      ? (mySide === "a"
+          ? `<button class="btn-mission" disabled style="background:var(--good); width:100%;">✓ 선택됨</button>`
+          : (mySide ? `<button class="btn-mission" disabled style="background:#444; width:100%;">—</button>`
+                    : `<button class="btn-mission btn-matchup-submit" data-id="${escapeHtml(m.id)}" data-side="a" style="width:100%;">⬆ A 선택</button>`))
+      : (m.winner === "a"
+          ? `<div style="text-align:center; color:var(--good); font-weight:700;">🏆 승</div>`
+          : `<div style="text-align:center; color:#888;">패</div>`);
+    const submitBtnB = isOpen
+      ? (mySide === "b"
+          ? `<button class="btn-mission" disabled style="background:var(--good); width:100%;">✓ 선택됨</button>`
+          : (mySide ? `<button class="btn-mission" disabled style="background:#444; width:100%;">—</button>`
+                    : `<button class="btn-mission btn-matchup-submit" data-id="${escapeHtml(m.id)}" data-side="b" style="width:100%;">⬇ B 선택</button>`))
+      : (m.winner === "b"
+          ? `<div style="text-align:center; color:var(--good); font-weight:700;">🏆 승</div>`
+          : `<div style="text-align:center; color:#888;">패</div>`);
+
+    const statusBadge = isOpen
+      ? `<span style="color:var(--accent);">진행중</span> · 마감 ${_kstHM(m.deadline_kst)} · 결산 ${_kstHM(m.resolve_at_kst)}`
+      : `<span style="color:#888;">결산 완료</span>`;
+
+    return `
+      <div class="card" style="border-left:4px solid var(--accent);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div class="title" style="font-size:13px;">${_typeLabel(m.type)} · ${m.predictions_count}명 참여</div>
+          <span class="meta" style="font-size:11px;">${statusBadge}</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+          <div style="background:#1f1f2e; padding:8px; border-radius:6px;">
+            <div style="font-weight:700;">${_kindEmoji(m.asset_a.kind)} ${escapeHtml(m.asset_a.ticker)}</div>
+            <div class="meta" style="margin-top:2px;">${escapeHtml(m.asset_a.name || "")}</div>
+            <div style="margin-top:6px; font-size:13px;">전일 ${_fmtPct(m.asset_a.yesterday_pct)}</div>
+            <div style="font-size:11px; color:#aaa;">진행 ${_fmtPct(livePctA)} · $${_fmtPrice(m.asset_a.last)}</div>
+          </div>
+          <div style="background:#1f1f2e; padding:8px; border-radius:6px;">
+            <div style="font-weight:700;">${_kindEmoji(m.asset_b.kind)} ${escapeHtml(m.asset_b.ticker)}</div>
+            <div class="meta" style="margin-top:2px;">${escapeHtml(m.asset_b.name || "")}</div>
+            <div style="margin-top:6px; font-size:13px;">전일 ${_fmtPct(m.asset_b.yesterday_pct)}</div>
+            <div style="font-size:11px; color:#aaa;">진행 ${_fmtPct(livePctB)} · $${_fmtPrice(m.asset_b.last)}</div>
+          </div>
+        </div>
+
+        <div style="background:#1f1f2e; height:14px; border-radius:7px; overflow:hidden; display:flex; margin-bottom:6px;">
+          <div style="background:linear-gradient(90deg,var(--accent),#ff6b6b); height:100%; width:${ga}%;"></div>
+          <div style="background:linear-gradient(90deg,#3a3a4a,#74b9ff); height:100%; width:${gb}%;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:#aaa; margin-bottom:8px;">
+          <span>A 우세 ${ga}%</span><span>B 우세 ${gb}%</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          ${submitBtnA}${submitBtnB}
+        </div>
+      </div>`;
+  }).join("");
+  document.getElementById("matchup-list").innerHTML = html;
+
+  // Wire submit buttons
+  document.querySelectorAll(".btn-matchup-submit").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id, side = btn.dataset.side;
+      btn.disabled = true;
+      try {
+        const r = await api("/matchup/predict", {
+          method: "POST",
+          body: JSON.stringify({ matchup_id: id, side }),
+        });
+        if (r.success) {
+          tg?.HapticFeedback?.notificationOccurred("success");
+          notify(`${side.toUpperCase()} 선택! +${r.participation_points} P (정답 시 +${r.correct_points} P)`);
+          await Promise.allSettled([loadMatchups(), loadProfile()]);
+        } else {
+          notify(`제출 실패: ${r.reason}`);
+          btn.disabled = false;
+        }
+      } catch (e) {
+        notify("제출 실패: " + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+
+// ─────────────── §DONATION tab logic ───────────────
+
+let _donateSelectedChain = "ton";
+let _donateSelectedAmount = null;
+let _donateActiveIntent = null;
+let _donateStatusPoll = null;
+
+function _setDonateChain(chain) {
+  _donateSelectedChain = chain;
+  document.querySelectorAll(".donate-chain-btn").forEach(b => {
+    b.style.background = b.dataset.chain === chain ? "var(--accent)" : "#555";
+  });
+}
+
+document.querySelectorAll(".donate-chain-btn").forEach(b => {
+  b.addEventListener("click", () => {
+    _setDonateChain(b.dataset.chain);
+    if (_donateSelectedAmount) createDonateIntent();
+  });
+});
+
+document.querySelectorAll(".donate-amount-btn").forEach(b => {
+  b.addEventListener("click", () => {
+    _donateSelectedAmount = parseFloat(b.dataset.amount);
+    document.querySelectorAll(".donate-amount-btn").forEach(x => {
+      x.style.background = x === b ? "var(--accent)" : "var(--accent)";
+      x.style.outline = x === b ? "2px solid #fff" : "none";
+    });
+    createDonateIntent();
+  });
+});
+
+async function createDonateIntent() {
+  if (!_donateSelectedAmount) return;
+  try {
+    const r = await api("/donate/intent", {
+      method: "POST",
+      body: JSON.stringify({
+        amount_usdt: _donateSelectedAmount,
+        chain: _donateSelectedChain,
+      }),
+    });
+    _donateActiveIntent = r;
+    renderDonateIntent(r);
+    startDonateStatusPoll(r.intent_id);
+  } catch (e) {
+    notify("도네이션 의도 생성 실패: " + e.message);
+  }
+}
+
+function renderDonateIntent(r) {
+  document.getElementById("donate-result").style.display = "block";
+  document.getElementById("donate-step-title").textContent =
+    `${r.amount_usdt} USDT (${r.chain.toUpperCase()}) → ${r.points_to_credit} P`;
+
+  const isTron = r.chain === "tron";
+  const isTon = r.chain === "ton";
+
+  // Amount display: show fingerprinted amount for TRON, face for TON
+  const displayAmount = isTron
+    ? r.expected_amount.toFixed(6) + " USDT"
+    : r.amount_usdt + " USDT";
+  document.getElementById("donate-amount-display").textContent = displayAmount;
+
+  // Memo row only for TON
+  const memoRow = document.getElementById("donate-memo-row");
+  if (isTon && r.memo) {
+    memoRow.style.display = "flex";
+    document.getElementById("donate-memo-display").textContent = r.memo;
+  } else {
+    memoRow.style.display = "none";
+  }
+
+  document.getElementById("donate-wallet-display").textContent = r.wallet_address;
+
+  // Instructions
+  if (isTon) {
+    document.getElementById("donate-instructions").innerHTML =
+      `Tonkeeper 등에서 USD₮ 송금 시 <strong>코멘트(memo)</strong>에 위 메모를 반드시 포함해주세요.`;
+  } else {
+    document.getElementById("donate-instructions").innerHTML =
+      `정확히 <strong>${r.expected_amount.toFixed(6)} USDT</strong> (마지막 4자리가 식별자) 만큼 송금해주세요. TRC20 USDT.`;
+  }
+
+  // QR — encode the wallet (with TON deeplink for memo on TON)
+  let qrData = r.wallet_address;
+  if (isTon && r.memo) {
+    qrData = `ton://transfer/${r.wallet_address}?text=${encodeURIComponent(r.memo)}&amount=`;
+  }
+  document.getElementById("donate-qr").src =
+    `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
+
+  document.getElementById("donate-status-line").textContent =
+    "대기중 — 5분마다 자동 확인 (24시간 내 송금)";
+  document.getElementById("donate-status-line").style.color = "var(--accent)";
+}
+
+function _copyText(text, hint) {
+  navigator.clipboard.writeText(text).then(() => {
+    notify(`복사됨: ${hint}`);
+    tg?.HapticFeedback?.impactOccurred("light");
+  }).catch(() => notify("복사 실패"));
+}
+
+document.getElementById("donate-copy-amount").addEventListener("click", () => {
+  if (!_donateActiveIntent) return;
+  const v = _donateActiveIntent.chain === "tron"
+    ? _donateActiveIntent.expected_amount.toFixed(6)
+    : String(_donateActiveIntent.amount_usdt);
+  _copyText(v, "금액");
+});
+document.getElementById("donate-copy-memo").addEventListener("click", () => {
+  if (!_donateActiveIntent || !_donateActiveIntent.memo) return;
+  _copyText(_donateActiveIntent.memo, "메모");
+});
+document.getElementById("donate-copy-wallet").addEventListener("click", () => {
+  if (!_donateActiveIntent) return;
+  _copyText(_donateActiveIntent.wallet_address, "지갑 주소");
+});
+
+function startDonateStatusPoll(intentId) {
+  if (_donateStatusPoll) clearInterval(_donateStatusPoll);
+  _donateStatusPoll = setInterval(async () => {
+    try {
+      const s = await api(`/donate/intent/${intentId}`);
+      if (s.status === "confirmed") {
+        clearInterval(_donateStatusPoll);
+        _donateStatusPoll = null;
+        const line = document.getElementById("donate-status-line");
+        line.textContent = `✅ 입금 확인! +${s.points_to_credit} P 적립`;
+        line.style.color = "var(--good)";
+        tg?.HapticFeedback?.notificationOccurred("success");
+        notify(`도네이션 확인! +${s.points_to_credit} P`);
+        await loadProfile();
+      } else if (s.status === "expired") {
+        clearInterval(_donateStatusPoll);
+        _donateStatusPoll = null;
+        const line = document.getElementById("donate-status-line");
+        line.textContent = "⌛ 24시간 만료 — 다시 시작해주세요.";
+        line.style.color = "var(--bad)";
+      }
+    } catch (e) {
+      // silent
+    }
+  }, 30_000); // 30s polling — server-side cron is 5min
+}
+
+
 // ─────────────── §SAJU tab logic ───────────────
 
 let _sajuCache = null;
@@ -1617,6 +1967,7 @@ document.querySelectorAll(".tab").forEach(t => {
       loadWelcomeEvent();
       loadPredictionHistory();
       fetchBtcCurrent();
+      loadMatchups();
     }
     if (target === "rank") loadBragCards();
     if (target === "saju") loadSaju();

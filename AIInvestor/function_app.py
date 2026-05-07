@@ -48,6 +48,10 @@ _profile_repo = None
 _persona_engine = None
 _stock_service = None
 _usage_logger = None
+_matchup_repo = None
+_donation_repo = None
+_ton_client = None
+_tron_client = None
 
 
 async def _bootstrap() -> None:
@@ -58,7 +62,8 @@ async def _bootstrap() -> None:
     trip the bot performs on entry to its async context manager.
     """
     global _config, _ptb_app, _market_report_service, _profile_repo
-    global _persona_engine, _stock_service, _usage_logger
+    global _persona_engine, _stock_service, _usage_logger, _matchup_repo
+    global _donation_repo, _ton_client, _tron_client
     if _ptb_app is not None:
         return
 
@@ -80,6 +85,13 @@ async def _bootstrap() -> None:
     if _config.storage_account_name:
         from services.usage_logger import UsageLogger
         _usage_logger = UsageLogger(_config.storage_account_name)
+        from services.matchup_service import MatchupRepo
+        _matchup_repo = MatchupRepo(_config.storage_account_name)
+        from services.donation_service import DonationIntentRepo
+        _donation_repo = DonationIntentRepo(_config.storage_account_name)
+        from services.chain_clients import TonClient, TronClient
+        _ton_client = TonClient(api_key=os.getenv("TONAPI_KEY") or None)
+        _tron_client = TronClient(api_key=os.getenv("TRONGRID_API_KEY") or None)
 
     deps = BotDependencies(
         persona_engine=_persona_engine,
@@ -1327,6 +1339,316 @@ async def saju_unlock(req: func.HttpRequest) -> func.HttpResponse:
         json.dumps(payload, ensure_ascii=False),
         status_code=status, mimetype="application/json", headers=_CORS_HEADERS_POST,
     )
+
+
+# ---------------------------------------------------------------------
+# §MATCHUP — hourly mover-pair predictions (stock↔stock, coin↔coin, mixed)
+# ---------------------------------------------------------------------
+
+@app.route(route="gamification/matchup/active", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def matchup_active(req: func.HttpRequest) -> func.HttpResponse:
+    """List today's matchups (open + recently resolved). Returns gauge state."""
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    if _matchup_repo is None:
+        return func.HttpResponse(json.dumps({"matchups": []}),
+            status_code=200, mimetype="application/json", headers=_CORS_HEADERS)
+
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    user_anon = ""
+    if user_key:
+        try:
+            from services.user_profile import make_anon_user_id
+            user_anon = make_anon_user_id(user_key, _config.user_id_salt)
+        except Exception:
+            pass
+
+    from datetime import datetime, timezone, timedelta
+    kst_today = (datetime.now(timezone.utc) + timedelta(hours=9)).date().isoformat()
+
+    matchups = await _matchup_repo.list_for_date(kst_today)
+    matchups.sort(key=lambda m: m.id)
+
+    out = []
+    for m in matchups:
+        gauge_a, gauge_b = m.gauge_pct()
+        my_side = ""
+        if user_key:
+            mine = next((p for p in m.predictions if p.user_key == user_key), None)
+            if mine:
+                my_side = mine.side
+        out.append({
+            "id": m.id,
+            "type": m.type,
+            "asset_a": {"ticker": m.asset_a.ticker, "name": m.asset_a.name,
+                        "kind": m.asset_a.kind, "yesterday_pct": m.asset_a.yesterday_pct,
+                        "anchor": m.anchor_a, "last": m.last_a},
+            "asset_b": {"ticker": m.asset_b.ticker, "name": m.asset_b.name,
+                        "kind": m.asset_b.kind, "yesterday_pct": m.asset_b.yesterday_pct,
+                        "anchor": m.anchor_b, "last": m.last_b},
+            "open_at_kst": m.open_at_kst,
+            "deadline_kst": m.deadline_kst,
+            "resolve_at_kst": m.resolve_at_kst,
+            "gauge_a_pct": round(gauge_a, 1),
+            "gauge_b_pct": round(gauge_b, 1),
+            "last_polled_at": m.last_polled_at,
+            "status": m.status,
+            "winner": m.winner,
+            "predictions_count": len(m.predictions),
+            "my_side": my_side,
+        })
+
+    headers = dict(_CORS_HEADERS)
+    headers["Cache-Control"] = "private, max-age=20"
+    return func.HttpResponse(
+        json.dumps({"matchups": out, "kst_date": kst_today,
+                    "participation_points": 1, "correct_points": 30},
+                   ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=headers,
+    )
+
+
+@app.route(route="gamification/matchup/predict", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST", "OPTIONS"])
+async def matchup_predict(req: func.HttpRequest) -> func.HttpResponse:
+    """Submit a matchup prediction. Body: {matchup_id, side: 'a'|'b'}."""
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS_POST)
+    await _bootstrap()
+    if _matchup_repo is None:
+        return func.HttpResponse(json.dumps({"error": "not_configured"}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    if not user_key:
+        return func.HttpResponse(json.dumps({"error": "unauthorized"}),
+            status_code=401, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    try:
+        body = req.get_json()
+    except ValueError:
+        return func.HttpResponse(json.dumps({"error": "invalid_json"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    matchup_id = (body or {}).get("matchup_id", "").strip()
+    side = (body or {}).get("side", "").strip().lower()
+    if not matchup_id or side not in ("a", "b"):
+        return func.HttpResponse(json.dumps({"error": "invalid_request"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    from services.matchup_service import (
+        PARTICIPATION_POINTS, CORRECT_POINTS, submit_prediction,
+    )
+    from services.point_ledger import add_points
+    from services.user_profile import make_anon_user_id
+
+    anon = make_anon_user_id(user_key, _config.user_id_salt)
+    ok, reason = await submit_prediction(_matchup_repo, matchup_id, user_key,
+                                         anon, side)
+    payload = {"success": ok, "reason": reason}
+
+    if ok:
+        # Credit participation points immediately
+        try:
+            await add_points(_profile_repo, user_key, PARTICIPATION_POINTS,
+                             reason="matchup_participation", ref=matchup_id,
+                             usage_logger=_usage_logger)
+        except Exception:
+            logger.exception("participation credit failed")
+        payload["participation_points"] = PARTICIPATION_POINTS
+        payload["correct_points"] = CORRECT_POINTS
+
+    status = 200 if ok else (409 if reason == "already_submitted"
+                             else 410 if reason == "deadline_passed" else 400)
+    return func.HttpResponse(
+        json.dumps(payload, ensure_ascii=False),
+        status_code=status, mimetype="application/json", headers=_CORS_HEADERS_POST,
+    )
+
+
+# Timer: every hour at :00 KST → generate matchups for the new hour
+@app.timer_trigger(schedule="0 0 * * * *", arg_name="timer",
+                   run_on_startup=False, use_monitor=True)
+async def matchup_hourly_generate(timer: func.TimerRequest) -> None:
+    await _bootstrap()
+    if _matchup_repo is None or not _config.storage_account_name:
+        return
+    from services.matchup_service import ensure_matchups_for_hour
+    try:
+        ms = await ensure_matchups_for_hour(_matchup_repo, _config.storage_account_name)
+        logger.info("matchup_hourly_generate created/loaded %d matchups", len(ms))
+    except Exception:
+        logger.exception("matchup_hourly_generate failed")
+
+
+# Timer: every 30 min → refresh gauge prices
+@app.timer_trigger(schedule="0 */30 * * * *", arg_name="timer",
+                   run_on_startup=False, use_monitor=True)
+async def matchup_gauge_refresh(timer: func.TimerRequest) -> None:
+    await _bootstrap()
+    if _matchup_repo is None:
+        return
+    from services.matchup_service import update_gauges
+    try:
+        n = await update_gauges(_matchup_repo)
+        logger.info("matchup_gauge_refresh updated %d", n)
+    except Exception:
+        logger.exception("matchup_gauge_refresh failed")
+
+
+# Timer: every 5 min → resolve any matchups whose resolve_at_kst has passed
+@app.timer_trigger(schedule="0 */5 * * * *", arg_name="timer",
+                   run_on_startup=False, use_monitor=True)
+async def matchup_resolve_due(timer: func.TimerRequest) -> None:
+    await _bootstrap()
+    if _matchup_repo is None or _profile_repo is None:
+        return
+    from services.matchup_service import resolve_due_matchups
+    try:
+        summary = await resolve_due_matchups(
+            _matchup_repo, _profile_repo, usage_logger=_usage_logger,
+        )
+        if summary:
+            logger.info("matchup_resolve_due resolved %s", summary)
+    except Exception:
+        logger.exception("matchup_resolve_due failed")
+
+
+# ---------------------------------------------------------------------
+# §DONATION — TON/TRON USDT donation intents + on-chain verification
+# ---------------------------------------------------------------------
+
+@app.route(route="gamification/donate/info", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def donate_info(req: func.HttpRequest) -> func.HttpResponse:
+    """Return wallet addresses + amount tiers for the donation UI.
+    No init_data required — public configuration."""
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    from services.donation_service import (
+        AMOUNT_TIERS, POINTS_PER_USDT, WALLET_TON, WALLET_TRON,
+    )
+    payload = {
+        "wallets": {"ton": WALLET_TON, "tron": WALLET_TRON},
+        "amount_tiers": list(AMOUNT_TIERS),
+        "points_per_usdt": POINTS_PER_USDT,
+    }
+    headers = dict(_CORS_HEADERS)
+    headers["Cache-Control"] = "public, max-age=3600"
+    return func.HttpResponse(json.dumps(payload, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=headers)
+
+
+@app.route(route="gamification/donate/intent", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST", "OPTIONS"])
+async def donate_intent(req: func.HttpRequest) -> func.HttpResponse:
+    """Create a donation intent. Body: {amount_usdt: number, chain: 'ton'|'tron'}."""
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS_POST)
+    await _bootstrap()
+    if _donation_repo is None:
+        return func.HttpResponse(json.dumps({"error": "not_configured"}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    if not user_key:
+        return func.HttpResponse(json.dumps({"error": "unauthorized"}),
+            status_code=401, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    try:
+        body = req.get_json()
+    except ValueError:
+        return func.HttpResponse(json.dumps({"error": "invalid_json"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    try:
+        amount = float((body or {}).get("amount_usdt"))
+    except (TypeError, ValueError):
+        return func.HttpResponse(json.dumps({"error": "invalid_amount"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
+    chain = (body or {}).get("chain", "").strip().lower()
+
+    from services.donation_service import build_intent
+    from services.user_profile import make_anon_user_id
+    try:
+        anon = make_anon_user_id(user_key, _config.user_id_salt)
+        intent = build_intent(user_key=user_key, anon_user_id=anon,
+                              amount_usdt=amount, chain=chain)
+    except ValueError as e:
+        return func.HttpResponse(json.dumps({"error": str(e)}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    await _donation_repo.put(intent)
+
+    return func.HttpResponse(json.dumps({
+        "intent_id": intent.intent_id,
+        "wallet_address": intent.wallet_address,
+        "chain": intent.chain,
+        "amount_usdt": intent.amount_usdt,
+        "expected_amount": intent.expected_amount,
+        "memo": intent.memo,
+        "fingerprint_suffix": intent.fingerprint_suffix,
+        "points_to_credit": intent.points_to_credit,
+        "expires_at": intent.expires_at,
+    }, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+
+@app.route(route="gamification/donate/intent/{intent_id}", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def donate_intent_status(req: func.HttpRequest) -> func.HttpResponse:
+    """Poll a single intent's status (pending / confirmed / expired)."""
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    if _donation_repo is None:
+        return func.HttpResponse(json.dumps({"error": "not_configured"}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS)
+
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    if not user_key:
+        return func.HttpResponse(json.dumps({"error": "unauthorized"}),
+            status_code=401, mimetype="application/json", headers=_CORS_HEADERS)
+
+    intent_id = (req.route_params.get("intent_id") or "").strip()
+    intent = await _donation_repo.get(intent_id)
+    if intent is None:
+        return func.HttpResponse(json.dumps({"error": "not_found"}),
+            status_code=404, mimetype="application/json", headers=_CORS_HEADERS)
+    if intent.user_key != user_key:
+        return func.HttpResponse(json.dumps({"error": "forbidden"}),
+            status_code=403, mimetype="application/json", headers=_CORS_HEADERS)
+
+    return func.HttpResponse(json.dumps({
+        "intent_id": intent.intent_id,
+        "status": intent.status,
+        "expected_amount": intent.expected_amount,
+        "chain": intent.chain,
+        "memo": intent.memo,
+        "fingerprint_suffix": intent.fingerprint_suffix,
+        "points_to_credit": intent.points_to_credit,
+        "confirmed_tx_hash": intent.confirmed_tx_hash,
+        "confirmed_at": intent.confirmed_at,
+        "expires_at": intent.expires_at,
+    }, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=_CORS_HEADERS)
+
+
+# Timer: every 5 min → poll TON + TRON for incoming USDT, match against pending
+@app.timer_trigger(schedule="0 */5 * * * *", arg_name="timer",
+                   run_on_startup=False, use_monitor=True)
+async def donate_verify_tick(timer: func.TimerRequest) -> None:
+    await _bootstrap()
+    if _donation_repo is None or _profile_repo is None:
+        return
+    from services.donation_service import verify_tick
+    try:
+        result = await verify_tick(
+            _donation_repo, _profile_repo,
+            ton_client=_ton_client, tron_client=_tron_client,
+            usage_logger=_usage_logger,
+        )
+        if result["confirmed"] or result["expired"]:
+            logger.info("donate_verify_tick %s", result)
+    except Exception:
+        logger.exception("donate_verify_tick failed")
 
 
 # ---------------------------------------------------------------------
