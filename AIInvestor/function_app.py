@@ -1863,6 +1863,54 @@ async def donate_intent_status(req: func.HttpRequest) -> func.HttpResponse:
         status_code=200, mimetype="application/json", headers=_CORS_HEADERS)
 
 
+@app.route(route="gamification/donate/intent/{intent_id}/check", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST", "OPTIONS"])
+async def donate_intent_check(req: func.HttpRequest) -> func.HttpResponse:
+    """Manually check an intent's confirmation NOW (bypasses 5-min cron).
+    Optional body: {"tx_hash": "..."}. If provided, exact tx_hash match wins
+    even if the user forgot the memo or sent a wrong-fingerprint amount."""
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS_POST)
+    await _bootstrap()
+    if _donation_repo is None:
+        return func.HttpResponse(json.dumps({"error": "not_configured"}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    if not user_key:
+        return func.HttpResponse(json.dumps({"error": "unauthorized"}),
+            status_code=401, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    intent_id = (req.route_params.get("intent_id") or "").strip()
+    intent = await _donation_repo.get(intent_id)
+    if intent is None:
+        return func.HttpResponse(json.dumps({"error": "not_found"}),
+            status_code=404, mimetype="application/json", headers=_CORS_HEADERS_POST)
+    if intent.user_key != user_key:
+        return func.HttpResponse(json.dumps({"error": "forbidden"}),
+            status_code=403, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    tx_hash = ""
+    try:
+        body = req.get_json() or {}
+        tx_hash = (body.get("tx_hash") or "").strip()
+    except ValueError:
+        pass  # empty body is fine — just means "check now without hash"
+
+    from services.donation_service import check_intent_now
+    result = await check_intent_now(
+        _donation_repo, _profile_repo, intent,
+        ton_client=_ton_client, tron_client=_tron_client,
+        tx_hash=tx_hash, usage_logger=_usage_logger,
+    )
+    # Re-read the intent for the freshest status/balance
+    intent = await _donation_repo.get(intent_id) or intent
+    result["status"] = intent.status
+    result["confirmed_tx_hash"] = intent.confirmed_tx_hash
+    return func.HttpResponse(json.dumps(result, ensure_ascii=False),
+        status_code=200 if result.get("success") else 200,
+        mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+
 # Timer: every 5 min → poll TON + TRON for incoming USDT, match against pending
 @app.timer_trigger(schedule="0 */5 * * * *", arg_name="timer",
                    run_on_startup=False, use_monitor=True)

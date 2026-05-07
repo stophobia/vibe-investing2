@@ -373,6 +373,20 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
         <img id="donate-qr" src="" alt="QR" style="max-width:160px; background:white; padding:6px; border-radius:6px;">
       </div>
       <div id="donate-status-line" class="meta" style="text-align:center; color:var(--accent);">대기중 — 5분마다 자동 확인</div>
+
+      <!-- Manual check / tx_hash claim path -->
+      <div style="margin-top:12px; border-top:1px solid var(--border); padding-top:10px;">
+        <div class="meta" style="font-size:11px; line-height:1.4; margin-bottom:6px;">
+          송금했는데 확인이 늦으면 직접 확인할 수 있어요. 텔레그램 월렛에서
+          tx_id를 복사해서 붙여넣으면 메모/금액 헷갈렸어도 즉시 매칭됩니다.
+        </div>
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="donate-tx-input" placeholder="tx_hash 붙여넣기 (선택)"
+                 style="flex:1; padding:8px; border-radius:6px; border:1px solid var(--border); background:#1f1f2e; color:#e8e8e8; font-size:12px;">
+          <button class="btn-mission" id="donate-check-btn" style="padding:8px 14px; font-size:12px;">지금 확인</button>
+        </div>
+        <div id="donate-check-result" class="meta" style="margin-top:6px; font-size:11px;"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -1813,6 +1827,53 @@ document.getElementById("donate-copy-memo").addEventListener("click", () => {
 document.getElementById("donate-copy-wallet").addEventListener("click", () => {
   if (!_donateActiveIntent) return;
   _copyText(_donateActiveIntent.wallet_address, "지갑 주소");
+});
+
+document.getElementById("donate-check-btn").addEventListener("click", async () => {
+  if (!_donateActiveIntent) return;
+  const btn = document.getElementById("donate-check-btn");
+  const out = document.getElementById("donate-check-result");
+  const tx = document.getElementById("donate-tx-input").value.trim();
+  btn.disabled = true;
+  btn.textContent = "확인 중…";
+  out.textContent = "";
+  out.style.color = "#aaa";
+  try {
+    const r = await api(`/donate/intent/${_donateActiveIntent.intent_id}/check`, {
+      method: "POST",
+      body: JSON.stringify(tx ? { tx_hash: tx } : {}),
+    });
+    if (r.success) {
+      out.style.color = "var(--good)";
+      out.textContent = `✅ 입금 확인 — +${r.points_credited ?? "?"} P 적립`;
+      tg?.HapticFeedback?.notificationOccurred("success");
+      // Sync the main status line + reload profile
+      const line = document.getElementById("donate-status-line");
+      line.textContent = `✅ 입금 확인! +${r.points_credited ?? "?"} P 적립`;
+      line.style.color = "var(--good)";
+      if (_donateStatusPoll) { clearInterval(_donateStatusPoll); _donateStatusPoll = null; }
+      await loadProfile();
+    } else {
+      out.style.color = "var(--bad)";
+      const reasons = {
+        no_txs_seen_yet: "아직 입금 트랜잭션이 보이지 않아요. 1~3분 후 다시 시도하세요.",
+        no_matching_tx_yet: "메모/금액이 매칭되는 입금이 아직 안 보여요. tx_hash를 직접 붙여넣어보세요.",
+        tx_not_found_on_chain: "체인에서 그 tx_hash를 찾지 못했어요. 정확한지 확인하세요.",
+        tx_already_claimed: "이 tx는 이미 다른 영수증에 사용되었어요.",
+        chain_fetch_failed: "체인 API 일시 오류 — 잠시 후 다시 시도하세요.",
+        already_confirmed: "이미 확인된 입금입니다.",
+        expired: "이 영수증은 24시간 만료되었어요. 다시 생성해주세요.",
+        credit_failed: "포인트 적립 중 오류 — 운영자에게 문의하세요.",
+      };
+      out.textContent = reasons[r.reason] || `실패: ${r.reason || "unknown"}`;
+    }
+  } catch (e) {
+    out.style.color = "var(--bad)";
+    out.textContent = "확인 실패: " + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "지금 확인";
+  }
 });
 
 function startDonateStatusPoll(intentId) {

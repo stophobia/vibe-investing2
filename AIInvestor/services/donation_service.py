@@ -287,6 +287,112 @@ def find_match(pending: list[DonationIntent], tx: IncomingTx) -> DonationIntent 
     return None
 
 
+async def check_intent_now(repo: "DonationIntentRepo", profile_repo,
+                           intent: DonationIntent,
+                           *, ton_client=None, tron_client=None,
+                           tx_hash: str = "",
+                           usage_logger=None) -> dict:
+    """Manually trigger verification for ONE intent. Bypasses the 5-min cron.
+
+    If `tx_hash` is provided, relaxes the matching rules:
+      - We confirm the intent if a recent incoming-USDT TX to our wallet has
+        that exact tx_hash (memo / fingerprint mismatches are tolerated).
+      - This is the user's escape hatch when TRON fingerprint or TON memo
+        was forgotten / mistyped.
+    Without `tx_hash`, the standard memo + amount (TON) or fingerprint-amount
+    (TRON) matching applies — same as the cron path.
+
+    Returns dict: {"success": bool, "reason": str, "points_credited"?: int,
+                   "balance"?: int, "tx_hash"?: str}.
+    """
+    if intent.status == "confirmed":
+        return {"success": True, "reason": "already_confirmed",
+                "tx_hash": intent.confirmed_tx_hash}
+    if intent.status == "expired":
+        return {"success": False, "reason": "expired"}
+
+    # Pull recent TXs for this chain only
+    txs: list["IncomingTx"] = []
+    try:
+        if intent.chain == "ton" and ton_client is not None:
+            txs = await ton_client.recent_incoming_usdt(WALLET_TON, limit=50)
+        elif intent.chain == "tron" and tron_client is not None:
+            txs = await tron_client.recent_incoming_usdt(WALLET_TRON, limit=50)
+    except Exception:
+        logger.exception("check_intent_now fetch failed")
+        return {"success": False, "reason": "chain_fetch_failed"}
+
+    if not txs:
+        return {"success": False, "reason": "no_txs_seen_yet"}
+
+    # Locate the tx that should credit this intent
+    matching_tx = None
+    if tx_hash:
+        # User-supplied hash — exact match wins, regardless of memo/fingerprint
+        h = tx_hash.strip().lower()
+        for tx in txs:
+            if tx.tx_hash.lower() == h:
+                matching_tx = tx
+                break
+        if matching_tx is None:
+            return {"success": False, "reason": "tx_not_found_on_chain"}
+        # Anti-double-claim: refuse if another intent already used this hash
+        if await _is_tx_hash_used(repo, h, exclude_intent_id=intent.intent_id):
+            return {"success": False, "reason": "tx_already_claimed"}
+    else:
+        # Standard matching (same logic as cron find_match)
+        for tx in txs:
+            if find_match([intent], tx) is intent:
+                matching_tx = tx
+                break
+        if matching_tx is None:
+            return {"success": False, "reason": "no_matching_tx_yet"}
+
+    # Confirm + credit
+    confirmed = await confirm_intent(repo, profile_repo, intent,
+                                     matching_tx.tx_hash,
+                                     usage_logger=usage_logger)
+    if not confirmed:
+        return {"success": False, "reason": "credit_failed"}
+    return {
+        "success": True, "reason": "ok",
+        "points_credited": intent.points_to_credit,
+        "tx_hash": matching_tx.tx_hash,
+    }
+
+
+async def _is_tx_hash_used(repo: "DonationIntentRepo", tx_hash: str,
+                           *, exclude_intent_id: str = "") -> bool:
+    """Scan all intents for an existing confirmed_tx_hash collision."""
+    try:
+        from azure.identity.aio import DefaultAzureCredential
+        from azure.storage.blob.aio import BlobServiceClient
+        creds = repo._credential or DefaultAzureCredential()
+        h = tx_hash.strip().lower()
+        try:
+            async with BlobServiceClient(
+                account_url=f"https://{repo._account}.blob.core.windows.net",
+                credential=creds,
+            ) as svc:
+                container = svc.get_container_client(CONTAINER)
+                async for blob in container.list_blobs():
+                    if blob.name.endswith(".json") and not blob.name[:-5].startswith(exclude_intent_id):
+                        bc = container.get_blob_client(blob.name)
+                        try:
+                            body = await (await bc.download_blob()).readall()
+                            d = json.loads(body)
+                            if (d.get("confirmed_tx_hash") or "").lower() == h:
+                                return True
+                        except Exception:
+                            continue
+        finally:
+            if repo._credential is None and hasattr(creds, "close"):
+                await creds.close()
+    except Exception:
+        logger.exception("_is_tx_hash_used scan failed")
+    return False
+
+
 async def confirm_intent(repo: DonationIntentRepo, profile_repo,
                          intent: DonationIntent, tx_hash: str,
                          *, usage_logger=None) -> bool:
