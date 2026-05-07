@@ -44,8 +44,27 @@ _cache: tuple[float, BillingSnapshot] | None = None
 
 
 def _get_subscription_id() -> str:
-    return (os.getenv("AZURE_SUBSCRIPTION_ID")
-            or os.getenv("SUBSCRIPTION_ID") or "").strip()
+    """Resolve the subscription ID, in priority order:
+
+    1. Explicit AZURE_SUBSCRIPTION_ID env var (preferred)
+    2. SUBSCRIPTION_ID alias
+    3. WEBSITE_OWNER_NAME — auto-injected by App Service / Azure Functions.
+       Format: '<subscription-id>+<rg>-<region>webspace[-Linux]'
+       We extract the GUID-shaped prefix before the first '+'.
+    """
+    direct = (os.getenv("AZURE_SUBSCRIPTION_ID")
+              or os.getenv("SUBSCRIPTION_ID") or "").strip()
+    if direct:
+        return direct
+    owner = (os.getenv("WEBSITE_OWNER_NAME") or "").strip()
+    if "+" in owner:
+        prefix = owner.split("+", 1)[0]
+        # GUID format check (8-4-4-4-12 hex)
+        import re
+        if re.match(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    prefix.lower()):
+            return prefix
+    return ""
 
 
 async def _fetch_token() -> str:
@@ -143,9 +162,13 @@ async def fetch_billing_snapshot(force: bool = False) -> BillingSnapshot:
 
     sub_id = _get_subscription_id()
     if not sub_id:
-        snap = BillingSnapshot(subscription_id="", currency="USD",
-                               month_to_date_total=0.0,
-                               error="AZURE_SUBSCRIPTION_ID not set")
+        snap = BillingSnapshot(
+            subscription_id="", currency="USD",
+            month_to_date_total=0.0,
+            error=("AZURE_SUBSCRIPTION_ID 미설정. Azure Functions의 "
+                   "Application Settings에 추가하거나, App Service 환경에서는 "
+                   "WEBSITE_OWNER_NAME 자동 주입을 사용할 수 있어요."),
+        )
         return snap
 
     try:
