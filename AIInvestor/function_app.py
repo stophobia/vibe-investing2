@@ -100,8 +100,8 @@ async def _bootstrap() -> None:
         await _ptb_app.bot.set_my_commands([
             BotCommand("start",    "다시 시작"),
             BotCommand("persona",  "투자 페르소나"),
-            BotCommand("lang",     "언어 변경 (ko / en / ja / zh)"),
             BotCommand("miniapp",  "투자의 전장으로 가자!"),
+            BotCommand("lang",     "언어 변경 (ko / en / ja / zh)"),
             BotCommand("feedback", "개발자에게 한마디"),
             BotCommand("help",     "도움말"),
         ])

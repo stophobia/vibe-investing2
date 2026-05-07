@@ -86,13 +86,19 @@ class _Bundle:
 
 
 _KO = _Bundle(
-    greeting="안녕하세요, AI Investor 입니다.",
+    greeting="🎯 증권당 — 투자의 전장에 오신 것을 환영합니다",
     intro=(
-        "당신만의 투자 멘토 페르소나로 매일 미국 시황(NASDAQ / S&P 500)을 해설해 드립니다.\n\n"
-        "• 데이터 출처: Yahoo Finance (yfinance)\n"
-        "• AI 모델: DeepSeek\n"
-        "• ⚠ 본 챗봇은 실수할 수 있으며, 어떤 응답도 투자 자문이 아닙니다.\n"
-        "• ⚠ 모든 투자 판단과 그 결과에 대한 책임은 전적으로 본인에게 있습니다."
+        "🎯 증권당 — AI 투자 페르소나 챗봇\n"
+        "*The AI investor personas. 4 languages. 1.7s response.*\n\n"
+        "워렌 버핏 · 레이 달리오 · 캐시 우드의 시각으로 시장을 해석.\n"
+        "*Through the lenses of Buffett, Dalio, and Wood.*\n\n"
+        "📊 NASDAQ · S&P 500 · 코스피 · 암호화폐\n"
+        "🤖 DeepSeek (OpenAI 호환, 1/35 비용)\n"
+        "🌐 한국어 / English / 日本語 / 中文\n"
+        "⚡ 사전 캐싱 70% 적중 · 평균 1.7초 응답\n\n"
+        "⚠ 본 챗봇은 실수할 수 있으며 투자 자문이 아닙니다.\n"
+        "⚠ 모든 투자 판단의 책임은 본인에게 있습니다.\n"
+        "*Bot may err. Not advice. Your decisions, your risk.*"
     ),
     language_switch_hint=(
         "현재 한국어로 대화 중입니다. 다른 언어로 전환하려면 /lang 을 입력하세요. "
@@ -191,13 +197,19 @@ _KO = _Bundle(
 )
 
 _EN = _Bundle(
-    greeting="Hello, this is AI Investor.",
+    greeting="🎯 Welcome to Jeunggwondang — the AI investor battleground",
     intro=(
-        "I explain U.S. market action (NASDAQ / S&P 500) in the voice of a famous investor.\n\n"
-        "• Data: Yahoo Finance (yfinance)\n"
-        "• AI: DeepSeek\n"
-        "• ⚠ This chatbot can make mistakes; nothing it says is financial advice.\n"
-        "• ⚠ All investment decisions and their consequences are entirely your own responsibility."
+        "🎯 Jeunggwondang — AI investor persona chatbot\n"
+        "*증권당 · 投資の戦場 · The AI investor personas.*\n\n"
+        "Markets through the lenses of Buffett · Dalio · Wood.\n"
+        "*워렌 버핏 · 레이 달리오 · 캐시 우드의 시각으로.*\n\n"
+        "📊 NASDAQ · S&P 500 · KOSPI · Crypto\n"
+        "🤖 DeepSeek (OpenAI-compatible, 1/35 the cost)\n"
+        "🌐 English · 한국어 · 日本語 · 中文\n"
+        "⚡ 70% cache hit · avg 1.7s response\n\n"
+        "⚠ This bot can err. Not financial advice.\n"
+        "⚠ All investment decisions are entirely your own responsibility.\n"
+        "*투자 자문이 아닙니다 · 모든 책임은 본인에게.*"
     ),
     language_switch_hint=(
         "Speaking English. To switch, send /lang. "
@@ -296,13 +308,19 @@ _EN = _Bundle(
 )
 
 _JA = _Bundle(
-    greeting="こんにちは、AI Investor です。",
+    greeting="🎯 投資の戦場へようこそ — Jeunggwondang",
     intro=(
-        "有名投資家のペルソナで毎日の米国市況（NASDAQ / S&P 500）を解説します。\n\n"
-        "• データ: Yahoo Finance (yfinance)\n"
-        "• AI: DeepSeek\n"
-        "• ⚠ 本チャットボットは誤りを含むことがあり、いかなる応答も投資助言ではありません。\n"
-        "• ⚠ すべての投資判断とその結果については、ご自身が全責任を負うものとします。"
+        "🎯 Jeunggwondang — AI投資家ペルソナ・チャットボット\n"
+        "*증권당 · The AI investor personas. 4 languages. 1.7s.*\n\n"
+        "バフェット · ダリオ · ウッドの視点で市場を読む。\n"
+        "*Markets through Buffett, Dalio, and Wood.*\n\n"
+        "📊 NASDAQ · S&P 500 · KOSPI · 暗号資産\n"
+        "🤖 DeepSeek (OpenAI互換、1/35コスト)\n"
+        "🌐 日本語 · 한국어 · English · 中文\n"
+        "⚡ プリウォーム70%適中 · 平均1.7秒\n\n"
+        "⚠ 本ボットは誤りえます。投資助言ではありません。\n"
+        "⚠ 投資判断とその結果は、すべてご自身の責任です。\n"
+        "*Not financial advice. Your decisions, your risk.*"
     ),
     language_switch_hint=(
         "日本語で対話中です。言語を切り替えるには /lang を送信してください。"
@@ -401,13 +419,19 @@ _JA = _Bundle(
 )
 
 _ZH = _Bundle(
-    greeting="您好,我是 AI Investor。",
+    greeting="🎯 欢迎来到投资战场 — Jeunggwondang",
     intro=(
-        "我会以著名投资人的角色解读每日美股(NASDAQ / S&P 500)行情。\n\n"
-        "• 数据来源: Yahoo Finance (yfinance)\n"
-        "• AI: DeepSeek\n"
-        "• ⚠ 本聊天机器人可能出错,所有回复均不构成投资建议。\n"
-        "• ⚠ 一切投资决策及其后果由您本人完全自行承担。"
+        "🎯 Jeunggwondang — AI投资角色聊天机器人\n"
+        "*증권당 · The AI investor personas. 4 languages. 1.7s.*\n\n"
+        "巴菲特 · 达利欧 · 伍德的视角解读市场。\n"
+        "*Markets through Buffett, Dalio, and Wood.*\n\n"
+        "📊 NASDAQ · S&P 500 · KOSPI · 加密货币\n"
+        "🤖 DeepSeek (OpenAI兼容,成本仅1/35)\n"
+        "🌐 中文 · 한국어 · English · 日本語\n"
+        "⚡ 预热缓存70%命中 · 平均1.7秒\n\n"
+        "⚠ 本机器人可能出错,不构成投资建议。\n"
+        "⚠ 一切投资决策及其后果由您本人完全自行承担。\n"
+        "*Not financial advice. Your decisions, your risk.*"
     ),
     language_switch_hint=(
         "当前使用中文对话。如需切换语言,请发送 /lang。"

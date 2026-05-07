@@ -72,39 +72,39 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
 <!-- ─────────────── HOME ─────────────── -->
 <section class="section" id="tab-home">
-  <div class="section-title">오늘의 미션</div>
+  <div class="section-title" data-i18n="todays_missions">오늘의 미션</div>
 
   <div class="card">
-    <div class="title">📅 출석 체크</div>
-    <div class="meta" id="attend-meta">하루 한 번 출석하면 +10 P, 연속 출석 시 보너스 +5 P/일 (최대 +50)</div>
+    <div class="title" data-i18n="attend_title">📅 출석 체크</div>
+    <div class="meta" id="attend-meta" data-i18n="attend_meta">하루 한 번 출석하면 +10 P, 연속 출석 시 보너스 +5 P/일 (최대 +50)</div>
     <div style="margin-top:10px;">
-      <button class="attend-btn" id="attend-btn">출석 체크하기</button>
+      <button class="attend-btn" id="attend-btn" data-i18n="attend_btn">출석 체크하기</button>
     </div>
   </div>
 
   <div class="card">
-    <div class="title">📊 KOSPI 오늘의 등락 예측</div>
-    <div class="meta">마감 KST 09:00 · 정답 시 +200 P</div>
+    <div class="title" data-i18n="kospi_title">📊 KOSPI 오늘의 등락 예측</div>
+    <div class="meta" data-i18n="kospi_meta">마감 KST 09:00 · 정답 시 +200 P</div>
     <div style="margin-top:10px; display:flex; gap:8px;">
-      <button class="btn-mission" data-market="kospi" data-direction="up">⬆ UP</button>
-      <button class="btn-mission" data-market="kospi" data-direction="down">⬇ DOWN</button>
+      <button class="btn-mission" data-market="kospi" data-direction="up" data-i18n="up">⬆ UP</button>
+      <button class="btn-mission" data-market="kospi" data-direction="down" data-i18n="down">⬇ DOWN</button>
     </div>
   </div>
 
   <div class="card">
-    <div class="title">📈 NASDAQ 오늘의 등락 예측</div>
-    <div class="meta">마감 KST 22:30 · 정답 시 +200 P</div>
+    <div class="title" data-i18n="nasdaq_title">📈 NASDAQ 오늘의 등락 예측</div>
+    <div class="meta" data-i18n="nasdaq_meta">마감 KST 22:30 · 정답 시 +200 P</div>
     <div style="margin-top:10px; display:flex; gap:8px;">
-      <button class="btn-mission" data-market="nasdaq" data-direction="up">⬆ UP</button>
-      <button class="btn-mission" data-market="nasdaq" data-direction="down">⬇ DOWN</button>
+      <button class="btn-mission" data-market="nasdaq" data-direction="up" data-i18n="up">⬆ UP</button>
+      <button class="btn-mission" data-market="nasdaq" data-direction="down" data-i18n="down">⬇ DOWN</button>
     </div>
   </div>
 
   <div class="card">
-    <div class="title">₿ BTC 시간별 가격 맞히기</div>
-    <div class="meta">매 정시 -1분까지 · ±0.5% 오차 허용 · 정답 시 +30 P</div>
+    <div class="title" data-i18n="btc_title">₿ BTC 시간별 가격 맞히기</div>
+    <div class="meta" data-i18n="btc_meta">매 정시 -1분까지 · ±0.5% 오차 허용 · 정답 시 +30 P</div>
     <div class="meta" style="margin-top:6px;" id="btc-current-meta">
-      현재가: <span id="btc-current-price" style="color:var(--accent); font-weight:700;">로딩 중…</span>
+      <span data-i18n="btc_current">현재가</span>: <span id="btc-current-price" style="color:var(--accent); font-weight:700;">…</span>
       <button id="btc-refresh" style="background:transparent; border:1px solid var(--border);
               color:#aaa; padding:1px 8px; border-radius:5px; font-size:11px; margin-left:6px;">↻</button>
     </div>
@@ -124,23 +124,23 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     </div>
   </div>
 
-  <div class="section-title" style="margin-top:24px;">내 통계</div>
+  <div class="section-title" style="margin-top:24px;" data-i18n="my_stats">내 통계</div>
   <div class="card" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
     <div>
-      <div class="meta">티어</div>
+      <div class="meta" data-i18n="tier">티어</div>
       <div class="title" id="stat-tier">—</div>
     </div>
     <div>
-      <div class="meta">다음 등급까지</div>
+      <div class="meta" data-i18n="to_next">다음 등급까지</div>
       <div class="title" id="stat-to-next">—</div>
     </div>
     <div>
-      <div class="meta">연속 출석</div>
-      <div class="title"><span class="streak-badge" id="stat-streak">0</span>일</div>
+      <div class="meta" data-i18n="consec_attend">연속 출석</div>
+      <div class="title"><span class="streak-badge" id="stat-streak">0</span><span data-i18n="days_unit">일</span></div>
     </div>
     <div>
-      <div class="meta">초대 검증</div>
-      <div class="title" id="stat-invites">0명</div>
+      <div class="meta" data-i18n="invites_validated">초대 검증</div>
+      <div class="title"><span id="stat-invites">0</span><span data-i18n="persons_unit">명</span></div>
     </div>
   </div>
 </section>
@@ -356,11 +356,11 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
 <!-- ─────────────── TAB BAR ─────────────── -->
 <nav class="tab-bar">
-  <a href="#" class="tab active" data-tab="home"><i class="fa-solid fa-house"></i>홈</a>
-  <a href="#" class="tab" data-tab="predict"><i class="fa-solid fa-chart-line"></i>예측</a>
-  <a href="#" class="tab" data-tab="invite"><i class="fa-solid fa-user-plus"></i>초대</a>
-  <a href="#" class="tab" data-tab="rank"><i class="fa-solid fa-trophy"></i>랭킹</a>
-  <a href="#" class="tab" data-tab="persona"><i class="fa-solid fa-user-tie"></i>페르소나</a>
+  <a href="#" class="tab active" data-tab="home"><i class="fa-solid fa-house"></i><span data-i18n="home">홈</span></a>
+  <a href="#" class="tab" data-tab="predict"><i class="fa-solid fa-chart-line"></i><span data-i18n="predict">예측</span></a>
+  <a href="#" class="tab" data-tab="invite"><i class="fa-solid fa-user-plus"></i><span data-i18n="invite">초대</span></a>
+  <a href="#" class="tab" data-tab="rank"><i class="fa-solid fa-trophy"></i><span data-i18n="rank">랭킹</span></a>
+  <a href="#" class="tab" data-tab="persona"><i class="fa-solid fa-user-tie"></i><span data-i18n="persona">페르소나</span></a>
 </nav>
 
 <script>
@@ -381,6 +381,259 @@ function escapeHtml(s) {
   return (s||'').toString().replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
 
+// ─────────────── Tiny i18n ───────────────
+// Detected from /profile (server) or tg language_code; defaults to 'ko'.
+let _lang = "ko";
+
+const I18N = {
+  ko: {
+    home: "홈", predict: "예측", invite: "초대", rank: "랭킹", persona: "페르소나",
+    todays_missions: "오늘의 미션",
+    attend_title: "📅 출석 체크",
+    attend_meta:  "하루 한 번 출석하면 +10 P, 연속 출석 시 보너스 +5 P/일 (최대 +50)",
+    attend_btn:   "출석 체크하기",
+    attend_done:  "오늘 출석 완료 ✓",
+    attend_streak: "연속 {n}일 출석 중",
+    kospi_title:  "📊 KOSPI 오늘의 등락 예측",
+    kospi_meta:   "마감 KST 09:00 · 정답 시 +200 P",
+    nasdaq_title: "📈 NASDAQ 오늘의 등락 예측",
+    nasdaq_meta:  "마감 KST 22:30 · 정답 시 +200 P",
+    btc_title:    "₿ BTC 시간별 가격 맞히기",
+    btc_meta:     "매 정시 -1분까지 · ±0.5% 오차 허용 · 정답 시 +30 P",
+    btc_current:  "현재가",
+    btc_placeholder: "예: 87432.50",
+    submit: "제출", up: "⬆ UP", down: "⬇ DOWN",
+    my_stats: "내 통계",
+    tier: "티어", to_next: "다음 등급까지", consec_attend: "연속 출석",
+    invites_validated: "초대 검증",
+    days_unit: "일", persons_unit: "명",
+    invite_section: "친구 초대",
+    invite_link_label: "내 초대 링크",
+    invite_help: "클릭 즉시 +30 P · 친구 첫 미션 완료 시 +470 P (총 500 P/명)",
+    msg_templates: "메시지 템플릿",
+    quick_share: "빠른 공유",
+    qr_label: "QR 코드 (오프라인 공유)",
+    save_image: "💾 이미지 저장",
+    rank_section: "🏆 내 자랑 카드",
+    rank_help: "티어 승급 / 예측 streak / 베팅 수익 등 마일스톤 도달 시 자랑 카드 자동 생성. 공유 시 +50 P.",
+    make_card: "📤 카드 만들기",
+    make_card_meta: "현재 상태로 즉시 카드 1장을 생성합니다.",
+    tier_card: "🏆 티어 카드", streak_card: "🎯 streak 카드",
+    my_card_box: "📁 내 카드 보관함",
+    no_cards: "아직 만든 카드가 없어요. 위 버튼으로 첫 카드 생성!",
+    share_telegram: "📤 텔레그램 공유",
+    download: "💾 저장",
+    leaderboard: "🏅 리더보드",
+    leaderboard_dev: "개발 중 (T2E-D 본격 UI). 17~21종 다축 리더보드 — Stage 2에서 추가됩니다.",
+    persona_section: "페르소나",
+    persona_dev: "텔레그램 봇으로 이동: /persona 명령으로 워렌 버핏 / 레이 달리오 / 캐시 우드 중 선택. /lang 으로 언어 변경.",
+    err_load_profile: "프로필 로딩 실패",
+    err_attend: "출석 실패",
+    err_submit: "제출 실패",
+    err_card_make: "카드 생성 실패",
+    err_card_load: "초대 정보 로딩 실패",
+    err_btc_fetch: "조회 실패",
+    err_no_init: "Telegram WebApp 환경에서만 동작합니다. 봇에서 [미니앱 열기]를 눌러주세요.",
+    already_today: "이미 오늘 출석했어요.",
+    already_submitted: "이미 오늘 제출했어요.",
+    closed: "마감됨",
+    enter_price: "가격을 입력해 주세요.",
+    creating: "생성 중…",
+  },
+  en: {
+    home: "Home", predict: "Predict", invite: "Invite", rank: "Rank", persona: "Persona",
+    todays_missions: "Today's missions",
+    attend_title: "📅 Daily check-in",
+    attend_meta:  "+10 P once a day. Streak bonus +5 P/day (cap +50).",
+    attend_btn:   "Check in",
+    attend_done:  "Checked in today ✓",
+    attend_streak: "Streak: {n} days",
+    kospi_title:  "📊 KOSPI close UP/DOWN",
+    kospi_meta:   "Deadline 09:00 KST · +200 P on correct",
+    nasdaq_title: "📈 NASDAQ close UP/DOWN",
+    nasdaq_meta:  "Deadline 22:30 KST · +200 P on correct",
+    btc_title:    "₿ BTC hourly price",
+    btc_meta:     "Submit by HH:59 KST · ±0.5% tolerance · +30 P on correct",
+    btc_current:  "Current",
+    btc_placeholder: "e.g. 87432.50",
+    submit: "Submit", up: "⬆ UP", down: "⬇ DOWN",
+    my_stats: "My stats",
+    tier: "Tier", to_next: "To next tier", consec_attend: "Streak",
+    invites_validated: "Invites verified",
+    days_unit: "d", persons_unit: "",
+    invite_section: "Invite friends",
+    invite_link_label: "My invite link",
+    invite_help: "+30 P on click · +470 P when friend completes first mission (500 P/person total)",
+    msg_templates: "Message templates",
+    quick_share: "Quick share",
+    qr_label: "QR code (offline share)",
+    save_image: "💾 Save image",
+    rank_section: "🏆 My brag cards",
+    rank_help: "Auto-generated cards on tier promotion / streak / bet profit. +50 P on share.",
+    make_card: "📤 Make a card",
+    make_card_meta: "Generate 1 card from current state.",
+    tier_card: "🏆 Tier card", streak_card: "🎯 Streak card",
+    my_card_box: "📁 My card library",
+    no_cards: "No cards yet. Use the buttons above to create your first.",
+    share_telegram: "📤 Share to Telegram",
+    download: "💾 Save",
+    leaderboard: "🏅 Leaderboard",
+    leaderboard_dev: "Coming in Stage 2 (T2E-D) — 17-21 multi-axis boards.",
+    persona_section: "Persona",
+    persona_dev: "Use Telegram: /persona to switch (Buffett / Dalio / Wood). /lang to change language.",
+    err_load_profile: "Profile load failed",
+    err_attend: "Check-in failed",
+    err_submit: "Submit failed",
+    err_card_make: "Card creation failed",
+    err_card_load: "Invite data load failed",
+    err_btc_fetch: "Fetch failed",
+    err_no_init: "Open via the bot's [Open Mini App] button — Telegram WebApp only.",
+    already_today: "Already checked in today.",
+    already_submitted: "Already submitted today.",
+    closed: "Closed",
+    enter_price: "Please enter a price.",
+    creating: "Creating…",
+  },
+  ja: {
+    home: "ホーム", predict: "予測", invite: "招待", rank: "ランク", persona: "ペルソナ",
+    todays_missions: "本日のミッション",
+    attend_title: "📅 出席チェック",
+    attend_meta: "1日1回 +10 P、連続で+5 P/日(最大+50)",
+    attend_btn: "出席する",
+    attend_done: "本日出席済 ✓",
+    attend_streak: "連続 {n} 日",
+    kospi_title: "📊 KOSPI 終値 UP/DOWN",
+    kospi_meta: "締切 09:00 KST · 正解 +200 P",
+    nasdaq_title: "📈 NASDAQ 終値 UP/DOWN",
+    nasdaq_meta: "締切 22:30 KST · 正解 +200 P",
+    btc_title: "₿ BTC 時間別価格",
+    btc_meta: "毎時 :59 まで · ±0.5% · 正解 +30 P",
+    btc_current: "現在",
+    btc_placeholder: "例: 87432.50",
+    submit: "提出", up: "⬆ UP", down: "⬇ DOWN",
+    my_stats: "ステータス",
+    tier: "ティア", to_next: "次まで", consec_attend: "連続",
+    invites_validated: "検証済",
+    days_unit: "日", persons_unit: "人",
+    invite_section: "友達招待",
+    invite_link_label: "招待リンク",
+    invite_help: "クリックで +30 P · 友達のミッション完了で +470 P (合計 500 P/人)",
+    msg_templates: "メッセージ・テンプレ",
+    quick_share: "クイック共有",
+    qr_label: "QRコード(オフライン共有)",
+    save_image: "💾 画像保存",
+    rank_section: "🏆 自慢カード",
+    rank_help: "ティア昇格/連続/ベット利益 でカード自動生成。共有で +50 P。",
+    make_card: "📤 カード作成",
+    make_card_meta: "現在のステータスで 1 枚生成。",
+    tier_card: "🏆 ティアカード", streak_card: "🎯 連続カード",
+    my_card_box: "📁 マイカード",
+    no_cards: "まだカードはありません。上のボタンで作成。",
+    share_telegram: "📤 Telegram に共有",
+    download: "💾 保存",
+    leaderboard: "🏅 リーダーボード",
+    leaderboard_dev: "Stage 2 で追加 (T2E-D)。17–21 種マルチ軸ボード。",
+    persona_section: "ペルソナ",
+    persona_dev: "Telegram で /persona (バフェット/ダリオ/ウッド)、/lang で言語変更。",
+    err_load_profile: "プロフィール読込失敗",
+    err_attend: "出席失敗",
+    err_submit: "提出失敗",
+    err_card_make: "カード生成失敗",
+    err_card_load: "招待情報読込失敗",
+    err_btc_fetch: "取得失敗",
+    err_no_init: "Telegram WebApp のみで動作します。ボットの [ミニアプリ] から開いてください。",
+    already_today: "本日は既に出席済みです。",
+    already_submitted: "本日は既に提出済みです。",
+    closed: "締切",
+    enter_price: "価格を入力してください。",
+    creating: "生成中…",
+  },
+  zh: {
+    home: "主页", predict: "预测", invite: "邀请", rank: "排行", persona: "角色",
+    todays_missions: "今日任务",
+    attend_title: "📅 签到",
+    attend_meta: "每日 +10 P,连续奖励 +5 P/日(上限 +50)",
+    attend_btn: "签到",
+    attend_done: "今日已签到 ✓",
+    attend_streak: "连续 {n} 天",
+    kospi_title: "📊 KOSPI 收盘 UP/DOWN",
+    kospi_meta: "截止 09:00 KST · 正确 +200 P",
+    nasdaq_title: "📈 NASDAQ 收盘 UP/DOWN",
+    nasdaq_meta: "截止 22:30 KST · 正确 +200 P",
+    btc_title: "₿ BTC 整点价格",
+    btc_meta: "每小时 :59 截止 · ±0.5% · 正确 +30 P",
+    btc_current: "当前",
+    btc_placeholder: "例: 87432.50",
+    submit: "提交", up: "⬆ UP", down: "⬇ DOWN",
+    my_stats: "我的统计",
+    tier: "等级", to_next: "距下一级", consec_attend: "连续",
+    invites_validated: "已验证",
+    days_unit: "天", persons_unit: "人",
+    invite_section: "邀请好友",
+    invite_link_label: "我的邀请链接",
+    invite_help: "点击 +30 P · 好友完成首个任务 +470 P (合计 500 P/人)",
+    msg_templates: "消息模板",
+    quick_share: "快速分享",
+    qr_label: "QR 码(离线分享)",
+    save_image: "💾 保存图片",
+    rank_section: "🏆 我的展示卡",
+    rank_help: "升级/连续/盈利时自动生成卡片。分享 +50 P。",
+    make_card: "📤 创建卡片",
+    make_card_meta: "用当前状态生成 1 张。",
+    tier_card: "🏆 等级卡", streak_card: "🎯 连续卡",
+    my_card_box: "📁 我的卡库",
+    no_cards: "还没有卡片。用上方按钮创建。",
+    share_telegram: "📤 分享到 Telegram",
+    download: "💾 保存",
+    leaderboard: "🏅 排行榜",
+    leaderboard_dev: "Stage 2 加入 (T2E-D)。17–21 种多轴排行。",
+    persona_section: "角色",
+    persona_dev: "Telegram 中 /persona 切换 (巴菲特/达利欧/伍德), /lang 变更语言。",
+    err_load_profile: "加载档案失败",
+    err_attend: "签到失败",
+    err_submit: "提交失败",
+    err_card_make: "卡片创建失败",
+    err_card_load: "加载邀请数据失败",
+    err_btc_fetch: "获取失败",
+    err_no_init: "请通过机器人的 [打开迷你应用] 进入。",
+    already_today: "今日已签到。",
+    already_submitted: "今日已提交。",
+    closed: "已截止",
+    enter_price: "请输入价格。",
+    creating: "生成中…",
+  },
+};
+
+function tr(key, vars) {
+  const dict = I18N[_lang] || I18N.ko;
+  let v = dict[key] || I18N.ko[key] || key;
+  if (vars) {
+    for (const [k, val] of Object.entries(vars)) {
+      v = v.replace("{" + k + "}", val);
+    }
+  }
+  return v;
+}
+
+function applyI18n() {
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    el.textContent = tr(el.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => {
+    el.placeholder = tr(el.dataset.i18nPh);
+  });
+}
+
+// Use Telegram's native popup when available — alert() can be silently
+// blocked in some Telegram WebViews (especially iOS).
+function notify(msg) {
+  if (tg?.showAlert) {
+    tg.showAlert(msg);
+  } else {
+    notify(msg);
+  }
+}
+
 async function api(path, opts = {}) {
   const headers = {
     "Content-Type": "application/json",
@@ -398,6 +651,11 @@ async function api(path, opts = {}) {
 function showError(msg) {
   document.getElementById("error-area").innerHTML =
     `<div class="error-box section">${escapeHtml(msg)}</div>`;
+  // Also surface via Telegram-native popup for critical failures —
+  // the inline error box can be hidden if the page is scrolled.
+  if (tg?.showAlert) {
+    try { tg.showAlert(msg); } catch (_) {}
+  }
 }
 
 function tgDisplayName() {
@@ -415,10 +673,17 @@ async function loadProfile() {
   // Show Telegram name immediately (don't wait for /profile fetch — feels instant)
   const tgName = tgDisplayName();
   if (tgName) document.getElementById("display-name").textContent = tgName;
+  // Pre-set language from Telegram client locale (refines after /profile returns)
+  const tgLang = (tg?.initDataUnsafe?.user?.language_code || "").toLowerCase().slice(0, 2);
+  if (["ko", "en", "ja", "zh"].includes(tgLang)) { _lang = tgLang; applyI18n(); }
 
   try {
     const p = await api("/profile");
-    if (!tgName) document.getElementById("display-name").textContent = p.display_name || "사용자";
+    if (!tgName) document.getElementById("display-name").textContent = p.display_name || "User";
+    // Server's profile.language is authoritative — overrides tg locale
+    if (p.language && ["ko", "en", "ja", "zh"].includes(p.language)) {
+      _lang = p.language; applyI18n();
+    }
     document.getElementById("points-balance").textContent = (p.points?.balance || 0).toLocaleString();
 
     const tier = (p.tier?.name || "bronze");
@@ -452,10 +717,10 @@ document.getElementById("attend-btn").addEventListener("click", async () => {
     if (r.success) {
       tg?.HapticFeedback?.notificationOccurred("success");
       const total = r.base_points + r.streak_bonus;
-      alert(`출석 완료! +${total} P (연속 ${r.streak_days}일)`);
+      notify(`출석 완료! +${total} P (연속 ${r.streak_days}일)`);
       await loadProfile();
     } else {
-      alert(r.reason === "already_today" ? "이미 오늘 출석했어요." : "출석 실패");
+      notify(r.reason === "already_today" ? "이미 오늘 출석했어요." : "출석 실패");
     }
   } catch (e) {
     showError(`출석 실패: ${e.message}`);
@@ -472,13 +737,13 @@ document.querySelectorAll(".btn-mission[data-market]").forEach(btn => {
         body: JSON.stringify({ market, direction }),
       });
       tg?.HapticFeedback?.notificationOccurred("success");
-      alert(`${market.toUpperCase()} ${direction.toUpperCase()} 예측 제출! +${r.participation_points} P (정답 시 +${r.potential_correct_points} P)`);
+      notify(`${market.toUpperCase()} ${direction.toUpperCase()} 예측 제출! +${r.participation_points} P (정답 시 +${r.potential_correct_points} P)`);
       await loadProfile();
     } catch (e) {
       const msg = e.message.includes("already_submitted") ? "이미 오늘 예측을 제출했어요."
         : e.message.includes("window_closed") ? "예측 마감 시간이 지났어요."
         : `제출 실패: ${e.message}`;
-      alert(msg);
+      notify(msg);
     }
   });
 });
@@ -523,20 +788,20 @@ document.querySelectorAll(".btn-prefill").forEach(b => {
 
 document.getElementById("btc-submit").addEventListener("click", async () => {
   const price = parseFloat(document.getElementById("btc-price-input").value);
-  if (!price || price <= 0) { alert("가격을 입력해 주세요."); return; }
+  if (!price || price <= 0) { notify(tr("enter_price")); return; }
   try {
     const r = await api("/predict", {
       method: "POST",
       body: JSON.stringify({ market: "btc", predicted_price: price }),
     });
     tg?.HapticFeedback?.notificationOccurred("success");
-    alert(`BTC $${price.toLocaleString()} 예측 제출! +${r.participation_points} P (±${r.tolerance_pct}% 정답 시 +${r.potential_correct_points} P)`);
+    notify(`BTC $${price.toLocaleString()} 예측 제출! +${r.participation_points} P (±${r.tolerance_pct}% 정답 시 +${r.potential_correct_points} P)`);
     await loadProfile();
   } catch (e) {
     const msg = e.message.includes("already_submitted") ? "이미 이 시간대에 예측했어요."
       : e.message.includes("window_closed") ? "이 시간대 마감"
       : `제출 실패: ${e.message}`;
-    alert(msg);
+    notify(msg);
   }
 });
 
@@ -606,20 +871,25 @@ function renderBragCards(items) {
 document.querySelectorAll(".btn-make-card").forEach(btn => {
   btn.addEventListener("click", async () => {
     const kind = btn.dataset.kind;
+    const original = btn.textContent;
     btn.disabled = true;
-    btn.textContent = "생성 중…";
+    btn.textContent = tr("creating");
+    console.log("brag card generate request:", kind);
     try {
       const r = await api("/brag_card/generate", {
         method: "POST",
         body: JSON.stringify({ kind }),
       });
+      console.log("brag card response:", r);
       tg?.HapticFeedback?.notificationOccurred("success");
       await loadBragCards();
+      notify("✓");
     } catch (e) {
-      alert("카드 생성 실패: " + e.message);
+      console.error("brag card error:", e);
+      notify(tr("err_card_make") + ": " + e.message);
     } finally {
       btn.disabled = false;
-      btn.textContent = btn.dataset.kind === "tier_promotion" ? "🏆 티어 카드" : "🎯 streak 카드";
+      btn.textContent = original;
     }
   });
 });
@@ -696,17 +966,17 @@ function renderWelcomeBanner() {
 
 document.getElementById("welcome-submit").addEventListener("click", async () => {
   const v = parseFloat(document.getElementById("welcome-price-input").value);
-  if (!v || v <= 0) { alert("가격을 입력해 주세요."); return; }
+  if (!v || v <= 0) { notify(tr("enter_price")); return; }
   try {
     const r = await api("/welcome_event/predict", {
       method: "POST",
       body: JSON.stringify({ predicted_price: v }),
     });
     tg?.HapticFeedback?.notificationOccurred("success");
-    alert(`예측 제출! +${r.participation_points} P (정답 시 +${r.potential_correct_points} P)`);
+    notify(`예측 제출! +${r.participation_points} P (정답 시 +${r.potential_correct_points} P)`);
     await Promise.allSettled([loadWelcomeEvent(), loadProfile()]);
   } catch (e) {
-    alert("제출 실패: " + e.message);
+    notify("제출 실패: " + e.message);
   }
 });
 
@@ -768,13 +1038,13 @@ document.querySelectorAll(".btn-predict-mkt").forEach(btn => {
         body: JSON.stringify({ market, direction }),
       });
       tg?.HapticFeedback?.notificationOccurred("success");
-      alert(`${market.toUpperCase()} ${direction.toUpperCase()} 제출! +${r.participation_points} P`);
+      notify(`${market.toUpperCase()} ${direction.toUpperCase()} 제출! +${r.participation_points} P`);
       await Promise.allSettled([loadProfile(), loadPredictionHistory()]);
     } catch (e) {
       const msg = e.message.includes("already_submitted") ? "이미 오늘 제출했어요."
         : e.message.includes("window_closed") ? "마감됨"
         : `제출 실패: ${e.message}`;
-      alert(msg);
+      notify(msg);
     }
   });
 });
@@ -792,17 +1062,17 @@ document.querySelectorAll(".btn-prefill-predict").forEach(b => {
 
 document.getElementById("btc-submit-predict").addEventListener("click", async () => {
   const v = parseFloat(document.getElementById("btc-price-input-predict").value);
-  if (!v || v <= 0) { alert("가격을 입력해 주세요."); return; }
+  if (!v || v <= 0) { notify(tr("enter_price")); return; }
   try {
     const r = await api("/predict", {
       method: "POST",
       body: JSON.stringify({ market: "btc", predicted_price: v }),
     });
     tg?.HapticFeedback?.notificationOccurred("success");
-    alert(`BTC $${v.toLocaleString()} 제출! +${r.participation_points} P`);
+    notify(`BTC $${v.toLocaleString()} 제출! +${r.participation_points} P`);
     await Promise.allSettled([loadProfile(), loadPredictionHistory()]);
   } catch (e) {
-    alert("제출 실패: " + e.message);
+    notify("제출 실패: " + e.message);
   }
 });
 
@@ -949,7 +1219,7 @@ document.getElementById("inv-share-native").addEventListener("click", async () =
     } catch (_) {}
   } else {
     copyToClipboard(text, document.getElementById("inv-share-native"));
-    alert("이 기기는 시스템 공유를 지원하지 않아 클립보드에 복사했습니다.");
+    notify("이 기기는 시스템 공유를 지원하지 않아 클립보드에 복사했습니다.");
   }
 });
 
