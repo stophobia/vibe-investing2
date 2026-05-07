@@ -299,6 +299,44 @@ canvas { max-height: 240px; }
     </div></div>
   </div>
 
+  <!-- Azure month-to-date spend -->
+  <h2 class="section-title">☁️ Azure 과금 (이번 달 누적)</h2>
+  <div class="card">
+    <div class="card-body">
+      <div id="billing-summary" class="muted">로딩 중…</div>
+      <div class="row mt-3">
+        <div class="col-md-6">
+          <h6 class="muted">서비스별 (Top 8)</h6>
+          <table class="table table-sm">
+            <tbody id="billing-by-service"></tbody>
+          </table>
+        </div>
+        <div class="col-md-6">
+          <h6 class="muted">리소스 그룹별</h6>
+          <table class="table table-sm">
+            <tbody id="billing-by-rg"></tbody>
+          </table>
+        </div>
+      </div>
+      <p class="muted small mb-0">
+        ⓘ 30분 캐시. <a href="#" id="billing-refresh">강제 새로고침</a> ·
+        <code>AZURE_SUBSCRIPTION_ID</code> 환경변수와 Cost Management Reader 권한 필요.
+      </p>
+    </div>
+  </div>
+
+  <!-- 누적 / 윈도우 CSV 다운로드 -->
+  <h2 class="section-title">📦 누적 CSV 다운로드 (전체 윈도우)</h2>
+  <div class="card">
+    <div class="card-body" style="display:flex; gap:8px; flex-wrap:wrap;">
+      <a id="dl-24h"  class="btn btn-sm btn-outline-light">24시간</a>
+      <a id="dl-7d"   class="btn btn-sm btn-outline-light">7일</a>
+      <a id="dl-30d"  class="btn btn-sm btn-outline-light">30일</a>
+      <a id="dl-90d"  class="btn btn-sm btn-outline-light">90일</a>
+      <a id="dl-cum"  class="btn btn-sm btn-warning">📥 전체 누적 (1년)</a>
+    </div>
+  </div>
+
   <!-- CSV download per date with pagination -->
   <h2 class="section-title">일별 CSV 다운로드</h2>
   <div class="card">
@@ -361,7 +399,62 @@ async function loadAll() {
   await loadV2();
   await loadDates(1);
   await loadBalance();
+  await loadBilling();
+  wireDownloadButtons();
 }
+
+function wireDownloadButtons() {
+  const k = encodeURIComponent(KEY);
+  const u = (w) => `${FUNC_BASE}/dashboard_export?key=${k}&window=${w}`;
+  document.getElementById("dl-24h").href  = u("24h");
+  document.getElementById("dl-7d").href   = u("7d");
+  document.getElementById("dl-30d").href  = u("30d");
+  document.getElementById("dl-90d").href  = u("90d");
+  document.getElementById("dl-cum").href  = u("cumulative");
+  document.querySelectorAll("[id^=dl-]").forEach(a => {
+    a.target = "_blank";
+    a.rel = "noopener";
+  });
+}
+
+async function loadBilling(force) {
+  try {
+    const url = `${FUNC_BASE}/dashboard_billing?key=${encodeURIComponent(KEY)}${force ? "&force=1" : ""}`;
+    const r = await fetch(url, { mode: "cors" });
+    if (!r.ok) {
+      document.getElementById("billing-summary").textContent = `로딩 실패 (HTTP ${r.status})`;
+      return;
+    }
+    const d = await r.json();
+    if (d.error) {
+      document.getElementById("billing-summary").innerHTML =
+        `<span style="color:var(--bad);">⚠ ${escapeHtml(d.error)}</span>`;
+      return;
+    }
+    const total = d.month_to_date_total || 0;
+    const fetched = (d.fetched_at || "").replace("T", " ").substring(0, 16);
+    document.getElementById("billing-summary").innerHTML =
+      `<strong style="font-size:24px; color:var(--accent);">${d.currency} ${total.toFixed(2)}</strong>
+       <span class="muted ms-2">월 누적 · 갱신 ${escapeHtml(fetched)}</span>`;
+
+    const renderTable = (id, obj) => {
+      const sorted = Object.entries(obj || {}).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      const html = sorted.length
+        ? sorted.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td class="text-end">${v.toFixed(4)}</td></tr>`).join("")
+        : `<tr><td class="muted text-center" colspan="2">데이터 없음</td></tr>`;
+      document.getElementById(id).innerHTML = html;
+    };
+    renderTable("billing-by-service", d.by_service);
+    renderTable("billing-by-rg", d.by_resource_group);
+  } catch (e) {
+    document.getElementById("billing-summary").textContent = "로딩 실패: " + e.message;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const refresh = document.getElementById("billing-refresh");
+  if (refresh) refresh.addEventListener("click", e => { e.preventDefault(); loadBilling(true); });
+});
 
 async function loadBalance() {
   try {

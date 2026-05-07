@@ -524,6 +524,22 @@ async def _verify_telegram_init_data_get_userkey(req: func.HttpRequest) -> str |
         return None
 
 
+def _detect_lang_from_init_data(req: func.HttpRequest) -> str:
+    """Extract Telegram language_code from init_data and normalize to ko/en/ja/zh.
+    Defaults to 'en' if missing or unsupported (matches normalize_language)."""
+    init_data = req.headers.get("X-Telegram-Init-Data", "").strip()
+    if not init_data:
+        return "en"
+    try:
+        from urllib.parse import parse_qsl
+        parsed = dict(parse_qsl(init_data))
+        user = json.loads(parsed.get("user", "{}"))
+        from services.i18n import normalize_language
+        return normalize_language(user.get("language_code"))
+    except Exception:
+        return "en"
+
+
 @app.route(route="gamification/profile", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
 async def gamification_profile(req: func.HttpRequest) -> func.HttpResponse:
     """Return the user's gamification snapshot (points, tier, attendance, invites)."""
@@ -543,12 +559,12 @@ async def gamification_profile(req: func.HttpRequest) -> func.HttpResponse:
     try:
         profile = await _profile_repo.get_or_create(
             user_key=user_key,
-            default_language="ko",
+            default_language=_detect_lang_from_init_data(req),
             default_persona="buffett",
         )
     except AttributeError:
         # Sync repo (SQLite)
-        profile = _profile_repo.get_or_create(user_key=user_key, default_language="ko", default_persona="buffett")
+        profile = _profile_repo.get_or_create(user_key=user_key, default_language=_detect_lang_from_init_data(req), default_persona="buffett")
 
     tier, stage, label = compute_tier_stage(profile.points_cumulative, profile.points_this_season)
     payload = {
@@ -781,7 +797,7 @@ async def gamification_brag_card_generate(req: func.HttpRequest) -> func.HttpRes
     from services.invite_service import get_or_create_invite_code
     from services.tier_calculator import next_tier_threshold
 
-    profile_call = _profile_repo.get_or_create(user_key=user_key, default_language="ko", default_persona="buffett")
+    profile_call = _profile_repo.get_or_create(user_key=user_key, default_language=_detect_lang_from_init_data(req), default_persona="buffett")
     profile = await profile_call if hasattr(profile_call, "__await__") else profile_call
     invite_code = await get_or_create_invite_code(_profile_repo, user_key)
 
@@ -888,7 +904,7 @@ async def gamification_today_market(req: func.HttpRequest) -> func.HttpResponse:
             status_code=200, mimetype="application/json", headers=_CORS_HEADERS)
 
     # User's profile to know persona + language
-    profile_call = _profile_repo.get_or_create(user_key=user_key, default_language="ko", default_persona="buffett")
+    profile_call = _profile_repo.get_or_create(user_key=user_key, default_language=_detect_lang_from_init_data(req), default_persona="buffett")
     profile = await profile_call if hasattr(profile_call, "__await__") else profile_call
 
     from services.slot_report import fetch_latest_slot_report, SLOTS_BY_ID
@@ -1034,23 +1050,69 @@ async def gamification_persona_analyze(req: func.HttpRequest) -> func.HttpRespon
         profile = _profile_repo.get_or_create(user_key, "ko", "buffett")
 
     from services.persona_engine import get_persona
+    from services.prewarm_service import cache_commentary, fetch_cached_commentary
     persona = get_persona(profile.persona_key)
-    try:
-        snapshot = await asyncio.to_thread(_stock_service.get_snapshot, ticker)
-        commentary = await _persona_engine.generate(
-            persona=persona, snapshot=snapshot, language=profile.language,
-            interests=profile.interest_tags or None,
+
+    # Cache lookup (per ticker × persona × lang) — skip DeepSeek + yfinance
+    # entirely on hit. The prewarm timer warms HOT_TICKERS hourly; on-demand
+    # requests for cold tickers populate the cache for next time.
+    cache_source = "miss"
+    snapshot = None
+    commentary = None
+    if _config and _config.storage_account_name:
+        cached = await fetch_cached_commentary(
+            _config.storage_account_name, ticker, persona.key, profile.language,
         )
-    except Exception as e:
-        logger.exception("persona_analyze failed for %s", ticker)
-        return func.HttpResponse(json.dumps({"error": "analysis_failed", "detail": str(e)}),
-            status_code=502, mimetype="application/json", headers=_CORS_HEADERS_POST)
+        if cached:
+            commentary = cached
+            cache_source = "blob"
+
+    if commentary is None:
+        try:
+            snapshot = await asyncio.to_thread(_stock_service.get_snapshot, ticker)
+            commentary = await _persona_engine.generate(
+                persona=persona, snapshot=snapshot, language=profile.language,
+                interests=profile.interest_tags or None,
+            )
+        except Exception as e:
+            logger.exception("persona_analyze failed for %s", ticker)
+            return func.HttpResponse(json.dumps({"error": "analysis_failed", "detail": str(e)}),
+                status_code=502, mimetype="application/json", headers=_CORS_HEADERS_POST)
+        # Best-effort fire-and-forget cache write — don't block response on it
+        if _config and _config.storage_account_name:
+            asyncio.create_task(cache_commentary(
+                _config.storage_account_name, ticker, persona.key,
+                profile.language, commentary,
+            ))
+
+    # If cache-hit we still want price/name for the UI header. Use the
+    # lightweight ticker_data_cache (memory→blob→origin) instead of a full
+    # snapshot — saves the heavy 1y history + .info call on hit path.
+    snap_name = ticker
+    snap_sector = None
+    snap_price = None
+    snap_ticker = ticker
+    if snapshot is not None:
+        snap_name = snapshot.name
+        snap_sector = snapshot.sector
+        snap_price = snapshot.price
+        snap_ticker = snapshot.ticker
+    elif _config and _config.storage_account_name:
+        try:
+            from services.ticker_data_cache import get_or_fetch as _td_fetch
+            data, _src = await _td_fetch(ticker, _config.storage_account_name)
+            snap_ticker = data.get("ticker", ticker)
+            snap_name = data.get("name") or ticker
+            snap_price = data.get("price")
+        except Exception:
+            logger.debug("ticker_data_cache fallback miss for %s", ticker, exc_info=True)
 
     return func.HttpResponse(json.dumps({
-        "ticker": snapshot.ticker,
-        "name": snapshot.name,
-        "sector": snapshot.sector,
-        "price": snapshot.price,
+        "ticker": snap_ticker,
+        "name": snap_name,
+        "sector": snap_sector,
+        "price": snap_price,
+        "cache_source": cache_source,
         "persona_key": persona.key,
         "persona_name": persona.name(profile.language),
         "commentary": commentary,
@@ -1373,7 +1435,7 @@ async def gamification_predict(req: func.HttpRequest) -> func.HttpResponse:
         market = raw_market.lower()
     else:
         market = raw_market.upper()
-    profile_get = _profile_repo.get_or_create(user_key=user_key, default_language="ko", default_persona="buffett")
+    profile_get = _profile_repo.get_or_create(user_key=user_key, default_language=_detect_lang_from_init_data(req), default_persona="buffett")
     profile = await profile_get if hasattr(profile_get, "__await__") else profile_get
 
     from services.prediction_service import (
@@ -1497,11 +1559,11 @@ async def saju_today(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
         profile = await _profile_repo.get_or_create(
-            user_key=user_key, default_language="ko", default_persona="buffett",
+            user_key=user_key, default_language=_detect_lang_from_init_data(req), default_persona="buffett",
         )
     except AttributeError:
         profile = _profile_repo.get_or_create(
-            user_key=user_key, default_language="ko", default_persona="buffett")
+            user_key=user_key, default_language=_detect_lang_from_init_data(req), default_persona="buffett")
 
     if not has_birth_data(profile):
         return func.HttpResponse(
@@ -1550,11 +1612,11 @@ async def saju_unlock(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
         profile = await _profile_repo.get_or_create(
-            user_key=user_key, default_language="ko", default_persona="buffett",
+            user_key=user_key, default_language=_detect_lang_from_init_data(req), default_persona="buffett",
         )
     except AttributeError:
         profile = _profile_repo.get_or_create(
-            user_key=user_key, default_language="ko", default_persona="buffett")
+            user_key=user_key, default_language=_detect_lang_from_init_data(req), default_persona="buffett")
 
     if not has_birth_data(profile):
         return func.HttpResponse(json.dumps({"error": "birth_data_missing"}),
@@ -2417,6 +2479,28 @@ async def dashboard_dates(req: func.HttpRequest) -> func.HttpResponse:
     )
 
 
+@app.route(route="dashboard_billing", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def dashboard_billing(req: func.HttpRequest) -> func.HttpResponse:
+    """Admin-only Azure month-to-date spend (cached 30 min).
+    Requires Cost Management Reader on the subscription. Falls back to a
+    descriptive error payload if AZURE_SUBSCRIPTION_ID is missing."""
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    if not _check_dashboard_key(req):
+        return func.HttpResponse("Forbidden", status_code=403)
+
+    from dataclasses import asdict
+    from services.azure_billing import fetch_billing_snapshot
+    force = (req.params.get("force") or "").strip() in ("1", "true", "yes")
+    snap = await fetch_billing_snapshot(force=force)
+    payload = asdict(snap)
+    headers = dict(_CORS_HEADERS)
+    headers["Cache-Control"] = "private, max-age=300"
+    return func.HttpResponse(json.dumps(payload, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=headers)
+
+
 @app.route(route="dashboard_export_daily", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET"])
 async def dashboard_export_daily(req: func.HttpRequest) -> func.HttpResponse:
     """CSV download for one specific KST day. Query: ?key=...&date=YYYY-MM-DD"""
@@ -2451,15 +2535,17 @@ async def dashboard_export(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Forbidden", status_code=403)
 
     window = (req.params.get("window") or "24h").strip()
-    if window not in ("24h", "7d"):
-        return func.HttpResponse("Bad window", status_code=400)
+    if window not in ("24h", "7d", "30d", "90d", "cumulative"):
+        return func.HttpResponse("Bad window (24h|7d|30d|90d|cumulative)", status_code=400)
     if not _config or not _config.storage_account_name:
         return func.HttpResponse("Not configured", status_code=500)
 
     from azure.identity.aio import DefaultAzureCredential
     from azure.storage.blob.aio import BlobServiceClient
     from services.dashboard_aggregator import _read_logs_in_window
-    hours = 24 if window == "24h" else 168
+    # cumulative = read everything we still have on disk (clamped to 365d to be safe)
+    hours_map = {"24h": 24, "7d": 168, "30d": 720, "90d": 2160, "cumulative": 8760}
+    hours = hours_map[window]
 
     creds = DefaultAzureCredential()
     try:

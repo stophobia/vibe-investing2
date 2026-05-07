@@ -244,6 +244,44 @@ class PrewarmService:
 # Read path — used by handlers
 # ------------------------------------------------------------
 
+async def cache_commentary(
+    storage_account_name: str,
+    ticker: str,
+    persona_key: str,
+    language: str,
+    rendered_text: str,
+    credential=None,
+) -> None:
+    """Write a commentary blob so a subsequent fetch_cached_commentary hits.
+    Used when an on-demand /persona/analyze call generates fresh content —
+    feeds the cache so repeated requests for the same (ticker, persona, lang)
+    skip the DeepSeek roundtrip until the prewarm timer rotates the entry."""
+    creds = credential or DefaultAzureCredential()
+    payload = {
+        "ticker": ticker,
+        "persona_key": persona_key,
+        "language": language,
+        "rendered_text": rendered_text,
+        "generated_at": int(time.time()),
+    }
+    path = f"commentary/{ticker}.{persona_key}.{language}.json"
+    try:
+        async with BlobServiceClient(
+            account_url=f"https://{storage_account_name}.blob.core.windows.net",
+            credential=creds,
+        ) as svc:
+            client = svc.get_blob_client(PREWARM_CONTAINER, path)
+            await client.upload_blob(
+                json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                overwrite=True, content_type="application/json",
+            )
+    except Exception:
+        logger.exception("cache_commentary write failed %s", path)
+    finally:
+        if credential is None and hasattr(creds, "close"):
+            await creds.close()
+
+
 async def fetch_cached_commentary(
     storage_account_name: str,
     ticker: str,
