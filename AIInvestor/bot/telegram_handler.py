@@ -236,9 +236,21 @@ async def _cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         await update.message.reply_text(s.intro)
         await deps.profile_repo.update(profile.user_key, intro_seen=True)
 
-    # [3] Persona keyboard
-    await deps.profile_repo.update(profile.user_key, onboarding_step=STEP_PERSONA)
-    await update.message.reply_text(s.persona_prompt, reply_markup=_persona_keyboard(lang))
+    # [3] §SAJU hook — pitch the Mini App as the primary entry point.
+    # Persona selection is deferred to inside the Mini App so first-run
+    # friction stays low; the user already has a default persona from
+    # profile_factory and can swap it later from the Persona tab.
+    miniapp_url = os.getenv(
+        "MINIAPP_URL",
+        "https://black-plant-0f73c5e00.7.azurestaticapps.net/miniapp/",
+    )
+    await deps.profile_repo.update(profile.user_key, onboarding_step=STEP_READY)
+    await update.message.reply_text(
+        s.saju_hook,
+        reply_markup=InlineKeyboardMarkup([[
+            InlineKeyboardButton(s.miniapp_open_btn, web_app={"url": miniapp_url}),
+        ]]),
+    )
 
     # §T2E-N — one-click value experience: if the inviter shared a /start
     # link with q_<TICKER>_p_<persona>, immediately surface that ticker

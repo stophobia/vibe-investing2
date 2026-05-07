@@ -83,6 +83,9 @@ class _Bundle:
     attendance_already: str
     attendance_streak: str
     tier_up_celebration: str
+    # §SAJU — onboarding hook (replaces persona keyboard at /start)
+    saju_hook: str
+    miniapp_open_btn: str
 
 
 _KO = _Bundle(
@@ -194,6 +197,12 @@ _KO = _Bundle(
     attendance_already="이미 오늘 출석했어요. 내일 KST 00:00에 다시 받을 수 있어요.",
     attendance_streak="🔥 {streak}일 연속 출석! 보너스 +{bonus} P",
     tier_up_celebration="🎉 축하합니다! {tier} 티어로 승급했습니다.",
+    saju_hook=(
+        "🔮 당신의 사주로 투자가 잘 풀리는 주식·코인을 추천해드립니다.\n"
+        "오늘의 운세 · 5운(재물·사업·학업·연애·건강) · 매시간 매치업까지\n"
+        "미니앱에서 한 번에 확인하실까요?"
+    ),
+    miniapp_open_btn="🚀 미니앱 열기",
 )
 
 _EN = _Bundle(
@@ -305,6 +314,12 @@ _EN = _Bundle(
     attendance_already="You already checked in today. Next claim at KST 00:00.",
     attendance_streak="🔥 {streak}-day streak! Bonus +{bonus} P",
     tier_up_celebration="🎉 Congratulations! Promoted to {tier} tier.",
+    saju_hook=(
+        "🔮 We'll match stocks & coins to your Saju (Four Pillars) reading.\n"
+        "Today's fortune · 5 axes (wealth · business · study · love · health) · hourly matchups\n"
+        "Open the mini app to see them all?"
+    ),
+    miniapp_open_btn="🚀 Open mini app",
 )
 
 _JA = _Bundle(
@@ -416,6 +431,12 @@ _JA = _Bundle(
     attendance_already="本日は既に出席済みです。次は KST 00:00 から。",
     attendance_streak="🔥 {streak} 日連続! ボーナス +{bonus} P",
     tier_up_celebration="🎉 おめでとうございます! {tier} ティアに昇格しました。",
+    saju_hook=(
+        "🔮 あなたの四柱推命に合う株・コインを推薦します。\n"
+        "今日の運勢 · 5運(財・事業・学業・恋愛・健康)· 毎時マッチアップ\n"
+        "ミニアプリで一括チェックしませんか?"
+    ),
+    miniapp_open_btn="🚀 ミニアプリを開く",
 )
 
 _ZH = _Bundle(
@@ -527,6 +548,12 @@ _ZH = _Bundle(
     attendance_already="今日已签到。下次 KST 00:00 后。",
     attendance_streak="🔥 连续 {streak} 天! 奖励 +{bonus} P",
     tier_up_celebration="🎉 恭喜! 晋级至 {tier} 等级。",
+    saju_hook=(
+        "🔮 根据您的四柱命理推荐适合的股票与币种。\n"
+        "今日运势 · 五运(财·事业·学业·恋爱·健康)· 每小时对决\n"
+        "在迷你应用中一键查看?"
+    ),
+    miniapp_open_btn="🚀 打开迷你应用",
 )
 
 _BUNDLES: dict[str, _Bundle] = {"ko": _KO, "en": _EN, "ja": _JA, "zh": _ZH}
