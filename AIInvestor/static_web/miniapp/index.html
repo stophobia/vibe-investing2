@@ -1584,14 +1584,31 @@ document.querySelectorAll(".btn-predict-mkt").forEach(btn => {
 
 let _matchupCache = null;
 
-async function loadMatchups() {
+async function loadMatchups(attempt = 1) {
+  const maxAttempts = 3;
   try {
     const r = await api("/matchup/active");
     _matchupCache = r;
     renderMatchups(r);
   } catch (e) {
-    document.getElementById("matchup-list").innerHTML =
-      `<div class="card meta">매치업 로딩 실패: ${escapeHtml(e.message)}</div>`;
+    // Auto-retry on transient network failures (cold-start, SSL handshake, etc.)
+    if (attempt < maxAttempts) {
+      const backoff = attempt * 1500;
+      document.getElementById("matchup-list").innerHTML =
+        `<div class="card meta">매치업 로딩 중… (재시도 ${attempt}/${maxAttempts - 1})</div>`;
+      setTimeout(() => loadMatchups(attempt + 1), backoff);
+      return;
+    }
+    document.getElementById("matchup-list").innerHTML = `
+      <div class="card" style="border-left:4px solid var(--bad);">
+        <div class="title" style="font-size:13px;">매치업 로딩 실패</div>
+        <div class="meta" style="margin-top:6px; line-height:1.5;">
+          ${escapeHtml(e.message || "Load failed")}
+          <br>네트워크 / 콜드스타트 가능. 잠시 후 다시 시도하세요.
+        </div>
+        <button class="btn-mission" id="matchup-retry-btn" style="margin-top:8px;">🔄 다시 시도</button>
+      </div>`;
+    document.getElementById("matchup-retry-btn")?.addEventListener("click", () => loadMatchups(1));
   }
 }
 

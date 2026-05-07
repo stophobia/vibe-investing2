@@ -219,6 +219,69 @@ def _blob_path(kst_date: str, matchup_id: str) -> str:
     return f"{kst_date}/{matchup_id}.json"
 
 
+def _summary_path(kst_date: str) -> str:
+    return f"{kst_date}/__summary.json"
+
+
+async def _write_summary(svc, kst_date: str, matchups: list[Matchup]) -> None:
+    """Rewrite the day's aggregate summary blob (single-roundtrip read path)."""
+    payload = {
+        "kst_date": kst_date,
+        "updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "matchups": [_matchup_to_dict(m) for m in matchups],
+    }
+    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    container = svc.get_container_client(CONTAINER)
+    try:
+        await container.create_container()
+    except Exception:
+        pass
+    bc = container.get_blob_client(_summary_path(kst_date))
+    try:
+        await bc.upload_blob(body, overwrite=True)
+    except Exception:
+        logger.exception("matchup summary write failed for %s", kst_date)
+
+
+async def _splice_into_summary(svc, kst_date: str, m: Matchup) -> None:
+    """Read existing summary, replace/insert this matchup, write back.
+    Used by single-matchup writes (predictions, individual gauge updates) so
+    we don't clobber unrelated entries with a memory-only rebuild."""
+    from azure.core.exceptions import ResourceNotFoundError
+    bc = svc.get_blob_client(CONTAINER, _summary_path(kst_date))
+    existing: list[dict] = []
+    try:
+        body = await (await bc.download_blob()).readall()
+        existing = json.loads(body).get("matchups", [])
+    except ResourceNotFoundError:
+        pass
+    except Exception:
+        logger.warning("summary read failed (will re-create) for %s", kst_date)
+
+    # Replace by id, or append
+    target_id = m.id
+    found = False
+    new_entry = _matchup_to_dict(m)
+    for i, e in enumerate(existing):
+        if e.get("id") == target_id:
+            existing[i] = new_entry
+            found = True
+            break
+    if not found:
+        existing.append(new_entry)
+
+    payload = {
+        "kst_date": kst_date,
+        "updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "matchups": existing,
+    }
+    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    try:
+        await bc.upload_blob(body, overwrite=True)
+    except Exception:
+        logger.exception("matchup summary splice failed for %s/%s", kst_date, target_id)
+
+
 def _matchup_to_dict(m: Matchup) -> dict:
     d = asdict(m)
     return d
@@ -250,7 +313,13 @@ class MatchupRepo:
         ), creds
 
     async def list_for_date(self, kst_date: str) -> list[Matchup]:
-        """List all matchups for a KST date (blob prefix scan)."""
+        """List all matchups for a KST date.
+
+        Fast path: read the single `__summary.json` aggregate blob (one round-trip).
+        Slow path (legacy / inconsistent state): list_blobs + parallel download
+        every individual matchup file, then refresh the summary.
+        """
+        from azure.core.exceptions import ResourceNotFoundError
         from azure.identity.aio import DefaultAzureCredential
         from azure.storage.blob.aio import BlobServiceClient
         creds = self._credential or DefaultAzureCredential()
@@ -260,15 +329,51 @@ class MatchupRepo:
                 account_url=f"https://{self._account}.blob.core.windows.net",
                 credential=creds,
             ) as svc:
+                # Tier 1 — single summary blob (~50ms)
+                summary_client = svc.get_blob_client(CONTAINER, _summary_path(kst_date))
+                try:
+                    body = await (await summary_client.download_blob()).readall()
+                    arr = json.loads(body).get("matchups", [])
+                    for d in arr:
+                        results.append(_dict_to_matchup(d))
+                    if results:
+                        for m in results:
+                            self._memory[m.id] = m
+                        return results
+                except ResourceNotFoundError:
+                    pass  # Fall through to slow path
+
+                # Tier 2 — parallel scan of individual blobs
                 container = svc.get_container_client(CONTAINER)
                 try:
                     await container.create_container()
                 except Exception:
                     pass
+                blob_names: list[str] = []
                 async for blob in container.list_blobs(name_starts_with=f"{kst_date}/"):
-                    bc = container.get_blob_client(blob.name)
-                    body = await (await bc.download_blob()).readall()
-                    results.append(_dict_to_matchup(json.loads(body)))
+                    if blob.name.endswith("__summary.json"):
+                        continue
+                    blob_names.append(blob.name)
+
+                async def _fetch(name: str) -> Matchup | None:
+                    try:
+                        bc = container.get_blob_client(name)
+                        body = await (await bc.download_blob()).readall()
+                        return _dict_to_matchup(json.loads(body))
+                    except Exception:
+                        return None
+
+                # Bounded parallel — 8 concurrent reads
+                sem = asyncio.Semaphore(8)
+                async def _bounded(name: str) -> Matchup | None:
+                    async with sem:
+                        return await _fetch(name)
+                fetched = await asyncio.gather(*[_bounded(n) for n in blob_names])
+                results = [m for m in fetched if m is not None]
+
+                # Rewrite the summary so next read uses Tier 1
+                if results:
+                    await _write_summary(svc, kst_date, results)
         finally:
             if self._credential is None and hasattr(creds, "close"):
                 await creds.close()
@@ -301,7 +406,12 @@ class MatchupRepo:
         self._memory[m.id] = m
         return m
 
-    async def put(self, matchup: Matchup) -> None:
+    async def put(self, matchup: Matchup, *, refresh_summary: bool = True) -> None:
+        """Persist a single matchup. By default also refreshes the day's
+        __summary.json aggregate so the read path stays at one blob.
+
+        Pass refresh_summary=False when bulk-writing (caller flushes summary
+        once at the end via put_many())."""
         from azure.identity.aio import DefaultAzureCredential
         from azure.storage.blob.aio import BlobServiceClient
         kst_date = matchup.id.split("-h")[0]
@@ -319,10 +429,14 @@ class MatchupRepo:
                     pass
                 bc = container.get_blob_client(_blob_path(kst_date, matchup.id))
                 await bc.upload_blob(body, overwrite=True)
+                self._memory[matchup.id] = matchup
+                if refresh_summary:
+                    # Read-modify-write: keeps summary consistent without
+                    # depending on in-memory completeness across processes.
+                    await _splice_into_summary(svc, kst_date, matchup)
         finally:
             if self._credential is None and hasattr(creds, "close"):
                 await creds.close()
-        self._memory[matchup.id] = matchup
 
 
 # ─────────────────────────────────────────────────────────────────────────────
