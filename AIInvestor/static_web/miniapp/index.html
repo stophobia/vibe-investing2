@@ -309,12 +309,36 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   </div>
 </section>
 
-<!-- ─────────────── RANK placeholder ─────────────── -->
+<!-- ─────────────── RANK / BRAG CARDS ─────────────── -->
 <section class="section" id="tab-rank" style="display:none;">
-  <div class="section-title">리더보드</div>
+  <div class="section-title">🏆 내 자랑 카드</div>
+  <p class="meta" style="margin-bottom:8px;">
+    티어 승급 / 예측 streak / 베팅 수익 등 마일스톤 도달 시 자랑 카드 자동 생성.
+    공유 시 +50 P.
+  </p>
+
+  <div class="card">
+    <div class="title">📤 카드 만들기</div>
+    <div class="meta">현재 상태로 즉시 카드 1장을 생성합니다.</div>
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;">
+      <button class="btn-mission btn-make-card" data-kind="tier_promotion" style="flex:1; min-width:120px;">
+        🏆 티어 카드
+      </button>
+      <button class="btn-mission btn-make-card" data-kind="streak_accuracy" style="flex:1; min-width:120px;">
+        🎯 streak 카드
+      </button>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:18px;">📁 내 카드 보관함</div>
+  <div id="brag-cards-list">
+    <div class="card meta">로딩 중…</div>
+  </div>
+
+  <div class="section-title" style="margin-top:18px;">🏅 리더보드</div>
   <div class="card">
     <div class="title">개발 중 (T2E-D 본격 UI)</div>
-    <div class="meta">17~21종 다축 리더보드가 추후 추가됩니다.</div>
+    <div class="meta">17~21종 다축 리더보드 — Stage 2에서 추가됩니다.</div>
   </div>
 </section>
 
@@ -515,6 +539,91 @@ document.getElementById("btc-submit").addEventListener("click", async () => {
     alert(msg);
   }
 });
+
+// ─────────────── §T2E-O Brag cards ───────────────
+
+const FUNC_ROOT_FOR_CARDS = FUNC_BASE.replace("/gamification", "");
+
+async function loadBragCards() {
+  try {
+    const r = await api("/brag_cards");
+    renderBragCards(r.items || []);
+  } catch (e) {
+    console.error("brag cards load failed", e);
+  }
+}
+
+function renderBragCards(items) {
+  const area = document.getElementById("brag-cards-list");
+  if (!items.length) {
+    area.innerHTML = '<div class="card meta">아직 만든 카드가 없어요. 위 버튼으로 첫 카드 생성!</div>';
+    return;
+  }
+  area.innerHTML = items.map(c => {
+    const url = FUNC_ROOT_FOR_CARDS + c.public_url;
+    const dateStr = (c.generated_at || "").replace("T", " ").substring(0, 16);
+    const labels = {
+      tier_promotion: "🏆 티어 승급",
+      streak_accuracy: "🎯 정확도 streak",
+      bet_profit: "💰 베팅 수익",
+      staking_size: "🪙 스테이킹",
+    };
+    return `
+      <div class="card" style="padding:8px;">
+        <div class="title" style="font-size:13px;">${escapeHtml(labels[c.kind] || c.kind)}
+          <span class="meta" style="font-weight:400;">· ${escapeHtml(dateStr)}</span></div>
+        <img src="${escapeHtml(url)}" alt="brag card"
+             style="width:100%; max-width:300px; border-radius:8px; margin:8px auto; display:block;">
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn-mission btn-share-card" data-url="${escapeHtml(url)}" data-kind="${escapeHtml(c.kind)}"
+                  style="flex:1; min-width:100px;">📤 텔레그램 공유</button>
+          <a class="btn-mission" href="${escapeHtml(url)}" download
+             style="flex:1; min-width:100px; text-decoration:none; text-align:center; background:#3a3a4a; color:#fff;">
+            💾 저장
+          </a>
+        </div>
+      </div>`;
+  }).join("");
+
+  // Wire share buttons
+  document.querySelectorAll(".btn-share-card").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const url = btn.dataset.url;
+      // Build Telegram share intent — text mentions the bot
+      const inviteLink = _invitePackCache?.invite_link || "";
+      const shareText = `증권당 AI 페르소나 챗봇에서 받은 카드. ${inviteLink}`;
+      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(shareText)}`;
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(shareUrl);
+      } else {
+        window.open(shareUrl, "_blank");
+      }
+      tg?.HapticFeedback?.notificationOccurred("success");
+    });
+  });
+}
+
+document.querySelectorAll(".btn-make-card").forEach(btn => {
+  btn.addEventListener("click", async () => {
+    const kind = btn.dataset.kind;
+    btn.disabled = true;
+    btn.textContent = "생성 중…";
+    try {
+      const r = await api("/brag_card/generate", {
+        method: "POST",
+        body: JSON.stringify({ kind }),
+      });
+      tg?.HapticFeedback?.notificationOccurred("success");
+      await loadBragCards();
+    } catch (e) {
+      alert("카드 생성 실패: " + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = btn.dataset.kind === "tier_promotion" ? "🏆 티어 카드" : "🎯 streak 카드";
+    }
+  });
+});
+
 
 // ─────────────── §T2E-N Welcome BTC mini event ───────────────
 
@@ -864,6 +973,7 @@ document.querySelectorAll(".tab").forEach(t => {
       loadPredictionHistory();
       syncBtcPriceToPredictTab();
     }
+    if (target === "rank") loadBragCards();
   });
 });
 

@@ -712,6 +712,150 @@ def _next_invite_reward(current: int) -> str:
     return rewards.get(nxt, "")
 
 
+@app.route(route="gamification/brag_cards", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def gamification_brag_cards(req: func.HttpRequest) -> func.HttpResponse:
+    """§T2E-O — Return the user's existing brag cards (most recent first)."""
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    if not user_key:
+        return func.HttpResponse(json.dumps({"error": "unauthorized"}),
+            status_code=401, mimetype="application/json", headers=_CORS_HEADERS)
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse(json.dumps({"items": []}),
+            status_code=200, mimetype="application/json", headers=_CORS_HEADERS)
+    from services.brag_card_service import list_user_cards
+    items = await list_user_cards(_config.storage_account_name, user_key)
+    headers = dict(_CORS_HEADERS)
+    headers["Cache-Control"] = "private, max-age=30"
+    return func.HttpResponse(
+        json.dumps({"items": items}, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=headers,
+    )
+
+
+@app.route(route="gamification/brag_card/generate", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST", "OPTIONS"])
+async def gamification_brag_card_generate(req: func.HttpRequest) -> func.HttpResponse:
+    """§T2E-O — Manually generate a brag card (called from Mini App).
+    Body: {"kind": "tier_promotion" | "streak_accuracy" | "bet_profit"}
+    The auto-trigger paths fire on milestone events; this endpoint lets users
+    manually re-create from the current snapshot.
+    """
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    if not user_key:
+        return func.HttpResponse(json.dumps({"error": "unauthorized"}),
+            status_code=401, mimetype="application/json", headers=_CORS_HEADERS)
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse(json.dumps({"error": "not configured"}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS)
+
+    try:
+        body = req.get_json()
+    except ValueError:
+        body = {}
+    kind = (body.get("kind") or "tier_promotion").strip()
+
+    from services.brag_card_service import (
+        build_tier_promotion_card, build_streak_accuracy_card,
+        build_bet_profit_card, render_and_upload,
+    )
+    from services.invite_service import get_or_create_invite_code
+    from services.tier_calculator import next_tier_threshold
+
+    profile_call = _profile_repo.get_or_create(user_key=user_key, default_language="ko", default_persona="buffett")
+    profile = await profile_call if hasattr(profile_call, "__await__") else profile_call
+    invite_code = await get_or_create_invite_code(_profile_repo, user_key)
+
+    bot_username = "AI_vibe_investor_bot"
+    try:
+        if _ptb_app:
+            me = await _ptb_app.bot.get_me()
+            bot_username = me.username
+    except Exception:
+        pass
+    invite_link = f"https://t.me/{bot_username}?start=ref_{invite_code}"
+    nickname = profile.display_name or f"User_{profile.anon_user_id[:4]}"
+
+    if kind == "tier_promotion":
+        card = build_tier_promotion_card(
+            nickname=nickname, tier=profile.tier,
+            season_points=profile.points_this_season,
+            next_threshold=next_tier_threshold(profile.tier),
+            rank=None, invite_link=invite_link, user_id=user_key,
+        )
+    elif kind == "streak_accuracy":
+        card = build_streak_accuracy_card(
+            nickname=nickname, tier=profile.tier,
+            streak_days=profile.consecutive_login_days,
+            accuracy_pct=0.0,    # Mini App could pass an explicit value
+            percentile=None, invite_link=invite_link, user_id=user_key,
+        )
+    elif kind == "bet_profit":
+        card = build_bet_profit_card(
+            nickname=nickname, tier=profile.tier,
+            profit_p=int(body.get("profit_p", 0) or 0),
+            win_count=int(body.get("win_count", 0) or 0),
+            total_bets=int(body.get("total_bets", 0) or 0),
+            invite_link=invite_link, user_id=user_key,
+        )
+    else:
+        return func.HttpResponse(json.dumps({"error": "unknown kind"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS)
+
+    try:
+        card = await render_and_upload(card, _config.storage_account_name)
+    except Exception as exc:
+        logger.exception("brag card generation failed")
+        return func.HttpResponse(json.dumps({"error": str(exc)[:200]}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS)
+
+    return func.HttpResponse(
+        json.dumps({"success": True, **card.__dict__}, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=_CORS_HEADERS,
+    )
+
+
+@app.route(route="share-card/{*path}", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET"])
+async def share_card_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    """§T2E-O — Public proxy serving brag card PNGs from private Blob.
+    Path: /api/share-card/<user_short>/<kind>/<uuid>.png
+    No auth (cards are meant to be sharable). Public URLs aren't supported on
+    Free Trial Storage Accounts (allowBlobPublicAccess=false), so we proxy.
+    """
+    await _bootstrap()
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse("not configured", status_code=500)
+    path = (req.route_params.get("path") or "").strip("/")
+    if not path.endswith(".png") or ".." in path or path.count("/") > 3:
+        return func.HttpResponse("bad path", status_code=400)
+
+    from azure.identity.aio import DefaultAzureCredential
+    from azure.storage.blob.aio import BlobServiceClient
+    from azure.core.exceptions import ResourceNotFoundError
+    creds = DefaultAzureCredential()
+    try:
+        async with BlobServiceClient(
+            account_url=f"https://{_config.storage_account_name}.blob.core.windows.net",
+            credential=creds,
+        ) as svc:
+            client = svc.get_blob_client("share-cards", path)
+            try:
+                stream = await client.download_blob()
+                body = await stream.readall()
+            except ResourceNotFoundError:
+                return func.HttpResponse("not found", status_code=404)
+    finally:
+        await creds.close()
+    return func.HttpResponse(
+        body, status_code=200, mimetype="image/png",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
 @app.route(route="gamification/welcome_event/status", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
 async def gamification_welcome_event_status(req: func.HttpRequest) -> func.HttpResponse:
     """§T2E-N — Return the user's active (or recently resolved) welcome event."""
