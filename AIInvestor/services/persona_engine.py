@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 from openai import AsyncOpenAI
 
-from .i18n import PERSONA_LANGUAGE_INSTRUCTION
+from .i18n import PERSONA_LANGUAGE_INSTRUCTION, t as _t
 from .stock_service import StockSnapshot
 
 logger = logging.getLogger(__name__)
@@ -45,8 +45,8 @@ PERSONAS: dict[str, Persona] = {
             "about the company. Frame conclusions as a stance ('I'd be inclined to wait', "
             "'this looks like a wonderful business at a fair price', 'I'd pass') rather "
             "than buy/sell instructions. Never invent financial figures — only reason about "
-            "the data provided. End every reply with a one-line disclaimer in the user's "
-            "language meaning 'This is not financial advice.'"
+            "the data provided. Do NOT add any disclaimer line yourself — our system "
+            "appends a standardized disclaimer after your response."
         ),
     ),
     "dalio": Persona(
@@ -65,8 +65,8 @@ PERSONAS: dict[str, Persona] = {
             "Emphasize risk parity thinking and 'don't lose money' over chasing returns. "
             "Reason from cause-and-effect linkages. Never give explicit financial advice — "
             "share how you would frame the situation. Never invent financial figures. "
-            "End every reply with a one-line disclaimer in the user's language meaning "
-            "'This is not financial advice.'"
+            "Do NOT add any disclaimer line yourself — our system appends a standardized "
+            "disclaimer after your response."
         ),
     ),
     "wood": Persona(
@@ -85,8 +85,8 @@ PERSONAS: dict[str, Persona] = {
             "total-addressable-market expansion over near-term earnings. Acknowledge that "
             "volatility is the price of innovation. Never give explicit financial advice — "
             "share your investment thesis instead. Never invent financial figures. "
-            "End every reply with a one-line disclaimer in the user's language meaning "
-            "'This is not financial advice.'"
+            "Do NOT add any disclaimer line yourself — our system appends a standardized "
+            "disclaimer after your response."
         ),
     ),
 }
@@ -136,7 +136,7 @@ class PersonaEngine:
             "• Value vs growth read of the fundamentals.\n"
             "• Persona stance (accumulate / hold / pass) with the single biggest reason.\n"
             "• 1M/6M/1Y trend in one phrase.\n"
-            "• Disclaimer line.\n"
+            "Do NOT include a disclaimer — our system appends one. "
             "Use bullets. No introductions, no greetings, no repeating the data block."
         )
 
@@ -156,7 +156,7 @@ class PersonaEngine:
             ],
         )
         content = response.choices[0].message.content or ""
-        return content.strip()
+        return _append_disclaimer(content, language)
 
     async def generate_deep(
         self,
@@ -224,7 +224,7 @@ class PersonaEngine:
             "number from the data block\n\n"
             "💡 7. What you'd watch next (1–2 sentences) — the one earnings-call line item or "
             "macro indicator that would change the thesis\n\n"
-            "End with the mandatory disclaimer line.\n"
+            "Do NOT add a disclaimer line — our system appends a standardized one.\n"
             "Do not use bullet markdown ** ** for emphasis — use the section headers instead.\n\n"
             f"⚠️ FINAL REMINDER: Write every word — including section headers — in {lang_name}.\n"
         )
@@ -253,7 +253,7 @@ class PersonaEngine:
             ],
         )
         content = response.choices[0].message.content or ""
-        return content.strip()
+        return _append_disclaimer(content, language)
 
     async def generate_dual(
         self,
@@ -312,7 +312,7 @@ class PersonaEngine:
             f"name the metric or assumption each side weighs differently\n\n"
             f"🛑 6. Combined risk view (2–3 sentences) — risks BOTH personas would flag\n\n"
             f"💡 7. What you'd watch (2–3 sentences) — the indicator that would shift the balance\n\n"
-            f"End with the mandatory disclaimer line.\n"
+            f"Do NOT add a disclaimer line — our system appends a standardized one.\n"
             f"Do not use bold ** ** — use the section headers instead.\n\n"
             f"⚠️ FINAL REMINDER: Write every word — including section headers — in {lang_name}.\n"
         )
@@ -342,7 +342,33 @@ class PersonaEngine:
             ],
         )
         content = response.choices[0].message.content or ""
-        return content.strip()
+        return _append_disclaimer(content, language)
 
     async def aclose(self) -> None:
         await self._client.close()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Standardized disclaimer append (replaces LLM-side disclaimer)
+# ─────────────────────────────────────────────────────────────────────────────
+def _append_disclaimer(content: str, language: str) -> str:
+    """Append our standardized i18n.short_disclaimer to LLM output.
+
+    LLM compliance with 'do not include disclaimer' is imperfect — DeepSeek
+    sometimes still adds 'This is not financial advice.' tail. We strip that
+    common pattern then append the canonical wording so the displayed text
+    is legally consistent across responses, languages, and personas.
+    """
+    text = (content or "").strip()
+    # Best-effort strip of LLM's self-injected disclaimer (last line if it
+    # looks like a one-liner about "not advice / 투자 조언 / 投資 / 投资").
+    lines = text.split("\n")
+    if lines:
+        last = lines[-1].strip().lower()
+        markers = ("not financial advice", "not investment advice",
+                   "not a buy/sell", "not a recommendation",
+                   "투자 조언", "투자 권유", "投資助言", "投資のアドバイス",
+                   "投资建议", "投资意见")
+        if any(m in last for m in markers) and len(lines[-1]) < 120:
+            text = "\n".join(lines[:-1]).rstrip()
+    return f"{text}\n\n{_t(language).short_disclaimer}"
