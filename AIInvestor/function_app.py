@@ -325,76 +325,78 @@ async def slot_23_us_after(timer: func.TimerRequest) -> None:
 # §T2E-B — Prediction resolve timers
 # ---------------------------------------------------------------------
 
+async def _resolve_one_market(market: str, window_id: str) -> int:
+    """Generic per-market resolver. Reads yf_ticker from MARKET_WINDOWS,
+    fetches close-vs-open from yfinance, applies UP/DOWN to all predictions
+    for the given (market, window_id). Returns number of users awarded."""
+    from services.prediction_service import resolve_market_predictions, MARKET_WINDOWS
+    cfg = MARKET_WINDOWS.get(market)
+    if not cfg:
+        return 0
+    yf_ticker = cfg.get("yf_ticker")
+    try:
+        import yfinance as yf
+        import asyncio as _asyncio
+        df = await _asyncio.to_thread(
+            yf.download, yf_ticker, period="2d", interval="1d",
+            auto_adjust=False, progress=False,
+        )
+        if df is None or df.empty or len(df) < 1:
+            logger.warning("%s close data unavailable, skipping resolve", market)
+            return 0
+        last = df.iloc[-1]
+        open_p, close_p = float(last["Open"]), float(last["Close"])
+        actual = "up" if close_p >= open_p else "down"
+        logger.info("%s resolve: open=%.2f close=%.2f → %s",
+                    market, open_p, close_p, actual)
+        awarded = await resolve_market_predictions(
+            _config.storage_account_name, market, actual, window_id,
+            repo=_profile_repo, usage_logger=_usage_logger,
+        )
+        return len(awarded)
+    except Exception:
+        logger.exception("%s resolve failed", market)
+        return 0
+
+
 @app.timer_trigger(
-    schedule="0 0 7 * * 1-5",   # KST 16:00 = UTC 07:00, Mon-Fri only
+    schedule="0 0 7 * * 1-5",   # KST 16:00 = UTC 07:00, Mon-Fri
     arg_name="timer", run_on_startup=False, use_monitor=True,
 )
 async def resolve_kospi_predictions(timer: func.TimerRequest) -> None:
-    """KST 16:00 — KOSPI close. Resolve all UP/DOWN predictions for today."""
+    """KST 16:00 — KOSPI close. Window deadline is 14:00 KST (mid-session)."""
     await _bootstrap()
     if not _config or not _config.storage_account_name:
         return
-    from services.prediction_service import resolve_market_predictions
     from datetime import datetime, timezone, timedelta
     window_id = (datetime.now(timezone.utc) + timedelta(hours=9)).date().isoformat()
-    try:
-        # Fetch KOSPI close vs open via yfinance (^KS11)
-        import yfinance as yf
-        import asyncio as _asyncio
-        df = await _asyncio.to_thread(
-            yf.download, "^KS11", period="2d", interval="1d", auto_adjust=False, progress=False,
-        )
-        if df is None or df.empty or len(df) < 1:
-            logger.warning("KOSPI close data unavailable, skipping resolve")
-            return
-        last = df.iloc[-1]
-        open_p, close_p = float(last["Open"]), float(last["Close"])
-        actual = "up" if close_p >= open_p else "down"
-        logger.info("KOSPI resolve: open=%.2f close=%.2f → %s", open_p, close_p, actual)
-
-        awarded = await resolve_market_predictions(
-            _config.storage_account_name, "kospi", actual, window_id,
-            repo=_profile_repo, usage_logger=_usage_logger,
-        )
-        logger.info("KOSPI resolve: %d users awarded", len(awarded))
-    except Exception:
-        logger.exception("KOSPI resolve failed")
+    n = await _resolve_one_market("kospi", window_id)
+    logger.info("KOSPI resolve: %d awarded", n)
 
 
 @app.timer_trigger(
-    schedule="0 0 21 * * 2-6",  # KST 06:00 next day = UTC 21:00 prev day; Mon-Fri close → resolved Tue-Sat morning
+    schedule="0 0 21 * * 2-6",  # KST 06:00 next day; Mon-Fri close → Tue-Sat resolve
     arg_name="timer", run_on_startup=False, use_monitor=True,
 )
-async def resolve_nasdaq_predictions(timer: func.TimerRequest) -> None:
-    """KST 06:00 — NASDAQ close (previous US session). Resolve UP/DOWN for yesterday's KST window."""
+async def resolve_nasdaq_and_tickers(timer: func.TimerRequest) -> None:
+    """KST 06:00 — NASDAQ + per-ticker close. Resolves NASDAQ index plus
+    every individual ticker registered in MARKET_WINDOWS that shares the
+    nasdaq deadline (TSLA, NVDA, ...)."""
     await _bootstrap()
     if not _config or not _config.storage_account_name:
         return
-    from services.prediction_service import resolve_market_predictions
     from datetime import datetime, timezone, timedelta
-    # The window_id is yesterday's KST date (the day the user submitted)
+    from services.prediction_service import MARKET_WINDOWS
+    # Yesterday's KST date — the day user submitted
     window_id = ((datetime.now(timezone.utc) + timedelta(hours=9)).date() - timedelta(days=1)).isoformat()
-    try:
-        import yfinance as yf
-        import asyncio as _asyncio
-        df = await _asyncio.to_thread(
-            yf.download, "^IXIC", period="2d", interval="1d", auto_adjust=False, progress=False,
-        )
-        if df is None or df.empty or len(df) < 1:
-            logger.warning("NASDAQ close data unavailable, skipping resolve")
-            return
-        last = df.iloc[-1]
-        open_p, close_p = float(last["Open"]), float(last["Close"])
-        actual = "up" if close_p >= open_p else "down"
-        logger.info("NASDAQ resolve: open=%.2f close=%.2f → %s", open_p, close_p, actual)
-
-        awarded = await resolve_market_predictions(
-            _config.storage_account_name, "nasdaq", actual, window_id,
-            repo=_profile_repo, usage_logger=_usage_logger,
-        )
-        logger.info("NASDAQ resolve: %d users awarded", len(awarded))
-    except Exception:
-        logger.exception("NASDAQ resolve failed")
+    # Resolve all markets whose window deadline is 22:30 KST (NASDAQ + TSLA + NVDA)
+    nasdaq_aligned = [m for m, cfg in MARKET_WINDOWS.items()
+                      if cfg.get("deadline_kst_hour") == 22 and cfg.get("deadline_kst_min") == 30]
+    total = 0
+    for m in nasdaq_aligned:
+        total += await _resolve_one_market(m, window_id)
+    logger.info("NASDAQ+tickers resolve: %d awarded across %d markets",
+                total, len(nasdaq_aligned))
 
 
 @app.timer_trigger(
@@ -1120,25 +1122,30 @@ async def gamification_predict(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(json.dumps({"error": "bad json"}),
             status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
 
-    market = (body.get("market") or "").strip().lower()
+    # Market is case-sensitive for tickers (TSLA, NVDA), lowercase for index
+    raw_market = (body.get("market") or "").strip()
+    # Normalize: kospi/nasdaq → lower; TSLA/NVDA → upper
+    if raw_market.lower() in ("kospi", "nasdaq"):
+        market = raw_market.lower()
+    else:
+        market = raw_market.upper()
     profile_get = _profile_repo.get_or_create(user_key=user_key, default_language="ko", default_persona="buffett")
     profile = await profile_get if hasattr(profile_get, "__await__") else profile_get
 
-    from services.prediction_service import submit_daily_prediction, submit_btc_hourly_prediction
-    if market in ("kospi", "nasdaq"):
+    from services.prediction_service import (
+        submit_daily_prediction, submit_btc_hourly_prediction, MARKET_WINDOWS,
+    )
+    if market in MARKET_WINDOWS:
+        # KOSPI / NASDAQ index OR per-ticker (TSLA / NVDA / ...)
         ok, err, payload = await submit_daily_prediction(
             _config.storage_account_name, user_key, profile.anon_user_id,
             market, (body.get("direction") or "").strip().lower(),
             repo=_profile_repo, usage_logger=_usage_logger,
         )
-    elif market == "btc":
-        try:
-            price = float(body.get("predicted_price", 0))
-        except (TypeError, ValueError):
-            return func.HttpResponse(json.dumps({"error": "bad predicted_price"}),
-                status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
+    elif market.lower() == "btc":
+        direction = (body.get("direction") or "").strip().lower()
         ok, err, payload = await submit_btc_hourly_prediction(
-            _config.storage_account_name, user_key, profile.anon_user_id, price,
+            _config.storage_account_name, user_key, profile.anon_user_id, direction,
             repo=_profile_repo, usage_logger=_usage_logger,
         )
     else:

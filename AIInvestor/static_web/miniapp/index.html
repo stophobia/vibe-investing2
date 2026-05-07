@@ -113,26 +113,16 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   </div>
 
   <div class="card">
-    <div class="title" data-i18n="btc_title">₿ BTC 시간별 가격 맞히기</div>
-    <div class="meta" data-i18n="btc_meta">매 정시 -1분까지 · ±0.5% 오차 허용 · 정답 시 +30 P</div>
+    <div class="title" data-i18n="btc_title">₿ BTC 1시간 후 등락</div>
+    <div class="meta" data-i18n="btc_meta">매 정시 -1분 마감 · 1시간 후 가격이 오를지 내릴지 · 정답 +30 P</div>
     <div class="meta" style="margin-top:6px;" id="btc-current-meta">
       <span data-i18n="btc_current">현재가</span>: <span id="btc-current-price" style="color:var(--accent); font-weight:700;">…</span>
       <button id="btc-refresh" style="background:transparent; border:1px solid var(--border);
               color:#aaa; padding:1px 8px; border-radius:5px; font-size:11px; margin-left:6px;">↻</button>
     </div>
     <div style="margin-top:10px; display:flex; gap:8px;">
-      <input type="number" id="btc-price-input" placeholder="예: 87432.50" step="0.01"
-             style="flex:1; background:#1e1e2a; border:1px solid var(--border);
-                    color:#fff; padding:8px 10px; border-radius:6px;">
-      <button class="btn-mission" id="btc-submit">제출</button>
-    </div>
-    <div style="display:flex; gap:6px; margin-top:6px;">
-      <button class="btn-prefill" data-delta="-1" style="flex:1; background:#3a2a2a; color:#e57373;
-              border:none; padding:5px; border-radius:5px; font-size:11px;">현재가 -1%</button>
-      <button class="btn-prefill" data-delta="0" style="flex:1; background:#2a3a2a; color:#4caf50;
-              border:none; padding:5px; border-radius:5px; font-size:11px;">현재가</button>
-      <button class="btn-prefill" data-delta="1" style="flex:1; background:#2a2a3a; color:#74b9ff;
-              border:none; padding:5px; border-radius:5px; font-size:11px;">현재가 +1%</button>
+      <button class="btn-mission" data-market="btc" data-direction="up"   data-i18n="up">⬆ UP</button>
+      <button class="btn-mission" data-market="btc" data-direction="down" data-i18n="down">⬇ DOWN</button>
     </div>
   </div>
 
@@ -186,7 +176,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
   <div class="card">
     <div class="title">📊 KOSPI 종가 등락 (UP/DOWN)</div>
-    <div class="meta">마감 KST 09:00 · 정답 시 +200 P · 참여 +10 P</div>
+    <div class="meta">마감 KST 14:00 · 정답 +200 P · 참여 +10 P</div>
     <div style="margin-top:10px; display:flex; gap:8px;">
       <button class="btn-mission btn-predict-mkt" data-market="kospi" data-direction="up">⬆ UP</button>
       <button class="btn-mission btn-predict-mkt" data-market="kospi" data-direction="down">⬇ DOWN</button>
@@ -196,7 +186,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
   <div class="card">
     <div class="title">📈 NASDAQ 종가 등락 (UP/DOWN)</div>
-    <div class="meta">마감 KST 22:30 · 정답 시 +200 P · 참여 +10 P</div>
+    <div class="meta">마감 KST 22:30 · 정답 +200 P · 참여 +10 P</div>
     <div style="margin-top:10px; display:flex; gap:8px;">
       <button class="btn-mission btn-predict-mkt" data-market="nasdaq" data-direction="up">⬆ UP</button>
       <button class="btn-mission btn-predict-mkt" data-market="nasdaq" data-direction="down">⬇ DOWN</button>
@@ -205,24 +195,34 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   </div>
 
   <div class="card">
-    <div class="title">₿ BTC 시간별 가격 맞히기</div>
-    <div class="meta">매 정시 -1분까지 · ±0.5% 오차 · 정답 +30 P · 참여 +5 P</div>
+    <div class="title">🚗 TSLA 종가 등락 (UP/DOWN)</div>
+    <div class="meta">마감 KST 22:30 · 정답 +100 P · 참여 +10 P</div>
+    <div style="margin-top:10px; display:flex; gap:8px;">
+      <button class="btn-mission btn-predict-mkt" data-market="TSLA" data-direction="up">⬆ UP</button>
+      <button class="btn-mission btn-predict-mkt" data-market="TSLA" data-direction="down">⬇ DOWN</button>
+    </div>
+    <div class="history-area" data-market="TSLA" style="margin-top:10px; font-size:11px; color:#aaa;"></div>
+  </div>
+
+  <div class="card">
+    <div class="title">🎮 NVDA 종가 등락 (UP/DOWN)</div>
+    <div class="meta">마감 KST 22:30 · 정답 +100 P · 참여 +10 P</div>
+    <div style="margin-top:10px; display:flex; gap:8px;">
+      <button class="btn-mission btn-predict-mkt" data-market="NVDA" data-direction="up">⬆ UP</button>
+      <button class="btn-mission btn-predict-mkt" data-market="NVDA" data-direction="down">⬇ DOWN</button>
+    </div>
+    <div class="history-area" data-market="NVDA" style="margin-top:10px; font-size:11px; color:#aaa;"></div>
+  </div>
+
+  <div class="card">
+    <div class="title">₿ BTC 1시간 후 UP/DOWN</div>
+    <div class="meta">매 정시 -1분 마감 · 정답 +30 P · 참여 +5 P</div>
     <div class="meta" style="margin-top:4px;">
       현재가: <span id="btc-current-price-predict" style="color:var(--accent); font-weight:700;">로딩 중…</span>
     </div>
     <div style="margin-top:10px; display:flex; gap:8px;">
-      <input type="number" id="btc-price-input-predict" placeholder="가격 입력" step="0.01"
-             style="flex:1; background:#1e1e2a; border:1px solid var(--border);
-                    color:#fff; padding:8px 10px; border-radius:6px;">
-      <button class="btn-mission" id="btc-submit-predict">제출</button>
-    </div>
-    <div style="display:flex; gap:6px; margin-top:6px;">
-      <button class="btn-prefill-predict" data-delta="-0.5" style="flex:1; background:#3a2a2a; color:#e57373;
-              border:none; padding:5px; border-radius:5px; font-size:11px;">-0.5%</button>
-      <button class="btn-prefill-predict" data-delta="0" style="flex:1; background:#2a3a2a; color:#4caf50;
-              border:none; padding:5px; border-radius:5px; font-size:11px;">현재가</button>
-      <button class="btn-prefill-predict" data-delta="0.5" style="flex:1; background:#2a2a3a; color:#74b9ff;
-              border:none; padding:5px; border-radius:5px; font-size:11px;">+0.5%</button>
+      <button class="btn-mission btn-predict-mkt" data-market="btc" data-direction="up">⬆ UP</button>
+      <button class="btn-mission btn-predict-mkt" data-market="btc" data-direction="down">⬇ DOWN</button>
     </div>
     <div class="history-area" data-market="btc" style="margin-top:10px; font-size:11px; color:#aaa;"></div>
   </div>
@@ -788,7 +788,7 @@ document.getElementById("attend-btn").addEventListener("click", async () => {
   }
 });
 
-document.querySelectorAll(".btn-mission[data-market]").forEach(btn => {
+document.querySelectorAll(".btn-mission[data-market]:not(.btn-predict-mkt)").forEach(btn => {
   btn.addEventListener("click", async () => {
     const market = btn.dataset.market;
     const direction = btn.dataset.direction;
@@ -821,11 +821,8 @@ async function fetchBtcCurrent() {
     _btcCurrentPrice = d.price;
     if (_btcCurrentPrice) {
       document.getElementById("btc-current-price").textContent = "$" + _btcCurrentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-      // Pre-fill input with current price
-      const inp = document.getElementById("btc-price-input");
-      if (!inp.value) inp.value = _btcCurrentPrice.toFixed(2);
-      // Also sync to predict tab if it's loaded
-      if (typeof syncBtcPriceToPredictTab === "function") syncBtcPriceToPredictTab();
+      const pcur = document.getElementById("btc-current-price-predict");
+      if (pcur) pcur.textContent = "$" + _btcCurrentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     } else {
       document.getElementById("btc-current-price").textContent = "—";
     }
@@ -835,36 +832,8 @@ async function fetchBtcCurrent() {
   }
 }
 
-// Initial load + refresh button + prefill quick-select
+// Initial load + refresh button (BTC UP/DOWN buttons handled by .btn-mission listener)
 document.getElementById("btc-refresh").addEventListener("click", fetchBtcCurrent);
-document.querySelectorAll(".btn-prefill").forEach(b => {
-  b.addEventListener("click", () => {
-    if (!_btcCurrentPrice) return;
-    const delta = parseFloat(b.dataset.delta) || 0;
-    const v = _btcCurrentPrice * (1 + delta / 100);
-    document.getElementById("btc-price-input").value = v.toFixed(2);
-    tg?.HapticFeedback?.impactOccurred("light");
-  });
-});
-
-document.getElementById("btc-submit").addEventListener("click", async () => {
-  const price = parseFloat(document.getElementById("btc-price-input").value);
-  if (!price || price <= 0) { notify(tr("enter_price")); return; }
-  try {
-    const r = await api("/predict", {
-      method: "POST",
-      body: JSON.stringify({ market: "btc", predicted_price: price }),
-    });
-    tg?.HapticFeedback?.notificationOccurred("success");
-    notify(`BTC $${price.toLocaleString()} 예측 제출! +${r.participation_points} P (±${r.tolerance_pct}% 정답 시 +${r.potential_correct_points} P)`);
-    await loadProfile();
-  } catch (e) {
-    const msg = e.message.includes("already_submitted") ? "이미 이 시간대에 예측했어요."
-      : e.message.includes("window_closed") ? "이 시간대 마감"
-      : `제출 실패: ${e.message}`;
-    notify(msg);
-  }
-});
 
 // ─────────────── §A5 Today's market (slot report) ───────────────
 
@@ -895,18 +864,40 @@ async function loadTodayMarket() {
   }
 }
 
+// Custom in-app modal for long content (tg.showPopup is capped at 256 chars).
+function showLongModal(title, body) {
+  // Remove any existing modal
+  const existing = document.getElementById("long-modal");
+  if (existing) existing.remove();
+  const modal = document.createElement("div");
+  modal.id = "long-modal";
+  modal.style.cssText = "position:fixed; top:0; left:0; right:0; bottom:0; " +
+    "background:rgba(0,0,0,0.85); z-index:9999; display:flex; align-items:center; " +
+    "justify-content:center; padding:16px;";
+  modal.innerHTML = `
+    <div style="background:var(--card); border-radius:12px; max-width:600px;
+                width:100%; max-height:85vh; display:flex; flex-direction:column;
+                overflow:hidden;">
+      <div style="padding:14px 18px; border-bottom:1px solid var(--border);
+                  display:flex; justify-content:space-between; align-items:center;">
+        <strong style="font-size:14px;">${escapeHtml(title)}</strong>
+        <button id="long-modal-close" style="background:transparent; color:#aaa;
+                border:none; font-size:20px; cursor:pointer;">×</button>
+      </div>
+      <div style="padding:16px 18px; overflow-y:auto; white-space:pre-wrap;
+                  font-size:13px; line-height:1.6; color:#e0e0e0;">${escapeHtml(body)}</div>
+    </div>`;
+  document.body.appendChild(modal);
+  document.getElementById("long-modal-close").addEventListener("click", () => modal.remove());
+  modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+}
+
 document.getElementById("tm-expand-btn").addEventListener("click", () => {
   if (!_todayMarket) return;
-  // Open the full report in a Telegram popup (or fall back to alert)
-  if (tg?.showPopup) {
-    tg.showPopup({
-      title: _lang === "ko" ? "오늘의 시황" : "Today's market",
-      message: _todayMarket.rendered_text.substring(0, 4000),
-      buttons: [{ type: "ok" }],
-    });
-  } else {
-    notify(_todayMarket.rendered_text);
-  }
+  showLongModal(
+    _lang === "ko" ? "📊 오늘의 시황" : "📊 Today's market",
+    _todayMarket.rendered_text,
+  );
 });
 
 
@@ -944,7 +935,10 @@ document.querySelectorAll(".persona-card").forEach(card => {
 
 // ─────────────── §T2E-O Brag cards ───────────────
 
-const FUNC_ROOT_FOR_CARDS = FUNC_BASE.replace("/gamification", "");
+// Server returns public_url = "/api/share-card/...". Prepend ONLY the host
+// (not /api) so the result is correct: "https://<host>/api/share-card/...".
+// Earlier code prepended ".../api" which produced "/api/api/..." — broken images.
+const FUNC_HOST_ORIGIN = FUNC_BASE.replace(/\/api(\/.*)?$/, "");
 
 async function loadBragCards() {
   try {
@@ -962,7 +956,7 @@ function renderBragCards(items) {
     return;
   }
   area.innerHTML = items.map(c => {
-    const url = FUNC_ROOT_FOR_CARDS + c.public_url;
+    const url = FUNC_HOST_ORIGIN + c.public_url;
     const dateStr = (c.generated_at || "").replace("T", " ").substring(0, 16);
     const labels = {
       tier_promotion: "🏆 티어 승급",
@@ -1186,42 +1180,7 @@ document.querySelectorAll(".btn-predict-mkt").forEach(btn => {
   });
 });
 
-// BTC predict tab (separate input from home tab)
-document.querySelectorAll(".btn-prefill-predict").forEach(b => {
-  b.addEventListener("click", () => {
-    if (!_btcCurrentPrice) return;
-    const delta = parseFloat(b.dataset.delta) || 0;
-    document.getElementById("btc-price-input-predict").value =
-      (_btcCurrentPrice * (1 + delta / 100)).toFixed(2);
-    tg?.HapticFeedback?.impactOccurred("light");
-  });
-});
-
-document.getElementById("btc-submit-predict").addEventListener("click", async () => {
-  const v = parseFloat(document.getElementById("btc-price-input-predict").value);
-  if (!v || v <= 0) { notify(tr("enter_price")); return; }
-  try {
-    const r = await api("/predict", {
-      method: "POST",
-      body: JSON.stringify({ market: "btc", predicted_price: v }),
-    });
-    tg?.HapticFeedback?.notificationOccurred("success");
-    notify(`BTC $${v.toLocaleString()} 제출! +${r.participation_points} P`);
-    await Promise.allSettled([loadProfile(), loadPredictionHistory()]);
-  } catch (e) {
-    notify("제출 실패: " + e.message);
-  }
-});
-
-// Update BTC price display in predict tab when home tab fetches
-function syncBtcPriceToPredictTab() {
-  if (_btcCurrentPrice) {
-    document.getElementById("btc-current-price-predict").textContent =
-      "$" + _btcCurrentPrice.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-    const inp = document.getElementById("btc-price-input-predict");
-    if (!inp.value) inp.value = _btcCurrentPrice.toFixed(2);
-  }
-}
+// (BTC predict tab UP/DOWN handled by .btn-predict-mkt listener above)
 
 
 // ─────────────── Invite tab logic ───────────────
@@ -1378,7 +1337,7 @@ document.querySelectorAll(".tab").forEach(t => {
     if (target === "predict") {
       loadWelcomeEvent();
       loadPredictionHistory();
-      syncBtcPriceToPredictTab();
+      fetchBtcCurrent();
     }
     if (target === "rank") loadBragCards();
     if (target === "persona") {
