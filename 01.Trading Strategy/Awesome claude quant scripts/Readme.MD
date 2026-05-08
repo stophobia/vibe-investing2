@@ -1,172 +1,197 @@
 # Awesome Claude Quant Scripts
 
-Claude를 활용해 만든 트레이딩 전략 스크립트 모음입니다.
+> Claude 기반 재현 가능한 퀀트 스크립트 라이브러리. 다국어 검증 + 1차 출처 강제 + 시점적 전략 + 학술 검증 결합.
 
-→ [상위 폴더 README](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/README.md)
-→ [메인 레포 README](https://github.com/gameworkerkim/vibe-investing/blob/main/README.md)
-
----
-
-## 중요한 주의 고지 (Important Notice)
-
-> **LLM은 엑셀이지, 정답을 알려주는 오라클(신탁)이 될 수 없습니다.**
-
-본 폴더의 모든 LLM 기반 프롬프트와 스크립트를 사용하기 전에 다음 사항을 반드시 인지하십시오.
-
-### 본 연구로 입증된 LLM의 4가지 구조적 한계
-
-1. **언어별 출력 결과의 비대칭** — 동일한 프롬프트라도 한국어, 영어, 중국어로 입력했을 때 결과가 크게 달라집니다. 본 연구에서 4개 frontier LLM × 3개 언어 = 11개 결과물의 평균 Jaccard 유사도가 **0.297**에 불과했습니다. 9개의 모든 언어 쌍이 J<0.5로, 동일 LLM 내에서도 언어 간 일관성이 낮습니다.
-
-2. **LLM별 학습 편차** — Claude, ChatGPT, Gemini, DeepSeek 등 frontier LLM은 학습 코퍼스, RLHF 정책, 토크나이저 차이로 정량 메트릭(Sharpe, P/E, 수익률 등) 보고에서 체계적 편차를 보입니다. 특히 한국어 LLM에서 *Sharpe inflation* (비현실적 수익률 보고) 같은 *Cultural Optimism Bias*가 관찰되었습니다.
-
-3. **데이터 cutoff와 hallucination** — 본 연구에서 Gemini와 ChatGPT가 EN/CN/KR에서 **AVGO 분할 전 가격($1,695, $1,410, $1,420, $1,350)을 4번 모두 보고**한 사례가 발견되었습니다. 이는 *동일 학습 코퍼스에 인코딩된 hallucination signature*입니다. LLM 합의가 강해도 *학습 cutoff까지의 narrative*에 갇혀 있습니다.
-
-4. **Cross-LLM Consensus의 시점 편향** — 11개 LLM 모두가 추천한 *universal pick* MSFT조차, 2026년 4월 29일 어닝 발표 후 다음 위험을 *어떤 LLM도 인지하지 못했다*는 사실이 밝혀졌습니다.
-   - Calendar 2026 capex $190B (단일 기업 사상 최대)
-   - Commercial RPO의 45%가 OpenAI 단일 고객 의존
-   - OpenAI의 2030년까지 $665B burn rate
-   - 같은 날 어닝 우위를 보인 GOOG는 0/11로 추천 누락
-
-### 사용자에게 요구되는 것
-
-- LLM 출력은 **검증의 대상**이지 결과 그 자체가 아닙니다.
-- 프롬프트의 universe 정의 자체에 의문을 제기할 수 있는 **시장 도메인 지식**이 필요합니다.
-- LLM이 모르는 정보 (학습 cutoff 이후 어닝, 정책 변화, 시스템 위험)를 **실시간 시장 데이터로 보완**해야 합니다.
-- 정량 메트릭(Sharpe, MD)은 **단일 값이 아니라 RANGE로** 해석해야 합니다.
-
-### 본 연구 결과를 기반으로 한 권장 검증 워크플로
-
-1. **Cross-LLM consensus 확인** — Frontier LLM 4개+에서 common stock 추출
-2. **다국어 cross-validation** — 한국어 + 영문 + 중국어로 동일 프롬프트
-3. **실시간 어닝 검증** — 가장 최근 분기 어닝을 SEC EDGAR에서 직접 확인
-4. **시스템 위험 검토** — Concentration risk, circular financing 노출도
-5. **Universe 외부 재검토** — 프롬프트 criteria로 누락된 강한 종목 검토
-
-### 본 연구 자료 (Reference)
-
-본 주의 고지의 근거가 된 실증 연구:
-
--  **칼럼**: [LLM이 모두 추천한 종목, 그래서 사도 되나? — 마이크로소프트 사례에서 본 AI 시대 투자의 함정](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Dividend%20growth%20prompt/Column%20llm%20consensus%20vs%20reality%20msft%20case.md) (markdown)
--  **PDF 버전**: [Column_LLM_Consensus_vs_Reality_MSFT_Case_v2.pdf](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Dividend%20growth%20prompt/Column_LLM_Consensus_vs_Reality_MSFT_Case_v2.pdf)
--  **학술 논문 예정** — 4개 LLM × 3개 언어 = 11개 결과물의 정량 메트릭 분석
-
-본 폴더의 모든 스크립트는 위 연구의 결과를 사전 인지한 사용자를 전제로 작성되었습니다.
+→ [01.Trading Strategy README로 돌아가기](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Readme.MD)
+→ [메인 README](https://github.com/gameworkerkim/vibe-investing/blob/main/README.md)
 
 ---
 
-## 개요
+## 한 줄 요약
 
-이 폴더는 4종의 트레이딩 전략과 1개의 Sample 템플릿, 그리고 전체 전략 맵 (`trading map.png`)을 담고 있습니다.
+이 폴더의 모든 스크립트는 **단일 LLM의 답을 신뢰하지 않고**, *다국어 cross-validation + 1차 출처 강제 + 학술적 검증* 을 통해 **AI 시대의 재현 가능한 퀀트 프롬프트** 패턴을 라이브러리화한 결과물입니다.
 
-전체 개요는 [Awesome claude quant scripts.MD](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Awesome%20claude%20quant%20scripts.MD)를 참조하세요.
+> 메타 메시지: LLM은 엑셀이지, 정답을 알려주는 오라클이 아니다.
 
 ---
 
-## 수록 전략
+## 폴더 구성
 
-| # | 전략 | 폴더 | 분류 |
+3개의 하위 폴더로 구성되어 있습니다.
+
+| # | 폴더 | 핵심 자산 | 형식 |
 | --- | --- | --- | --- |
-| 1 | [AI supply chain bayesian analysis](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/AI%20supply%20chain%20bayesian%20analysis) | AI 공급망 베이지안 분석 | 연구 / 정량 분석 |
-| 2 | [DAT quant strategy](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/DAT%20quant%20strategy) | DAT 기업 정량 전략 | 트레이딩 전략 |
-| 3 | [Declining Stock Quant Script Using LLM](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Declining%20Stock%20Quant%20Script%20Using%20LLM) | LLM 기반 하락주 스크립트 | 트레이딩 전략 |
-| 4 | [Long-Term Dividend Investing](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Long-Term%20Dividend%20Investing) | 장기 배당 투자 | 트레이딩 전략 |
-| 5 | [Dividend growth prompt](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Dividend%20growth%20prompt) | 배당 성장 프롬프트 + Cross-Lingual LLM 검증 연구 | 연구 / 트레이딩 전략 |
-| - | [Sample](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Sample) | 새 전략 시작 시 사용할 템플릿 | Template |
+| Q1 | [Dividend growth prompt](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Dividend%20growth%20prompt) | Cross-Lingual LLM Accuracy v5 + MSFT 사례 칼럼 v2 | 학술 (SSRN) + 칼럼 + 프롬프트 |
+| Q2 | [Pharma growth prompt](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Pharma%20growth%20prompt) | 미국 제약 LONG 7 + SHORT 3 (FDA + ClinicalTrials.gov NCT) | 다국어 프롬프트 (KR/EN/CN) |
+| Q3 | [AI Supercycle Investment Quant Strategy](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/AI%20Supercycle%20Investment%20Quant%20Strategy) | AI 인프라 사이클의 시점적 정량 전략 | 칼럼 + 전략 |
 
 ---
 
-## 전략별 설명
+## 핵심 자산
 
-### 1. AI supply chain bayesian analysis
+### Q1. Dividend Growth Prompt — Cross-Lingual LLM 학술 검증 + MSFT 실증 사례
 
-AI 산업의 공급망 위험을 베이지안 추론으로 분석한 연구 자료. 반도체, GPU, 클라우드, 데이터 등 AI 공급망 핵심 노드의 의존성과 단일 실패점(SPOF) 위험을 정량화합니다.
+**가장 중요한 폴더.** 이 폴더 하나에 *학술 working paper + 실증 칼럼 + 재현 가능한 프롬프트* 가 **모두 함께** 위치합니다.
 
-활용:
+#### 주요 자산
 
-* 엔비디아·TSMC·ASML 같은 단일 노드 의존도가 높은 기업의 risk-adjusted 평가
-* AI 섹터 포트폴리오의 공급망 집중도 측정
-* 지정학적 충격 시 가장 먼저 영향받을 종목 식별
+**1. 학술 working paper (SSRN IN REVIEW)**
 
-### 2. DAT quant strategy
+> *\"Less Volume, More Variety: Same LLM, Different Languages, Different Answers\"*
 
-DAT (Digital Asset Treasury) 기업, 즉 비트코인·이더리움·솔라나를 재무제표에 핵심 자산으로 보유하는 기업의 정량 트레이딩 전략입니다.
+- 같은 LLM이 한국어 / 영어 / 중국어로 같은 질문을 받을 때 *서로 다른 답을 산출*하는 현상을 N=11 종목으로 검증
+- Abstract ID 6705598 (5/4 created, 5/6부터 IN REVIEW, 5/8-11 publishing 예상)
+- v5에서 *실시간 시장 검증 addendum* 추가 (이론 → 실측 시장 데이터로 cross-validation)
 
-연관:
+#### 핵심 발견 사항
 
-* [DAT mNAV 아비트리지 칼럼](https://github.com/gameworkerkim/vibe-investing/blob/main/mNAV(Market-to-Net-Asset-Value)%20arbitrage)에서 이론 배경 확인
-* MSTR, BMNR, SBET 등 15개 기업 대상
+- 같은 LLM (예: Claude Opus 4.5) 이 한국어 질문 → 11개 종목 중 8개 매수 추천, 영어 질문 → 11개 종목 중 5개 매수 추천, 중국어 질문 → 11개 종목 중 6개 매수 추천 등의 *언어 간 inconsistency*
+- 다국어 답변 *합집합* 이 단일 언어 답변보다 *더 정확한 universe* 를 만든다는 결론
+- Korean retail 투자자가 *영문 답변만* 신뢰하면 *놓치는 종목* 이 평균 27% 발생
 
-### 3. Declining Stock Quant Script Using LLM
+**2. 실증 칼럼 — LLM 합의 vs 시장 현실 (MSFT 사례 v2)**
 
-급락 중인 종목 가운데 반등 가능성이 있는 종목을 LLM이 선별하는 스크립트. 단순 모멘텀 역발상이 아니라 펀더멘털과 기술적 지표를 함께 검토합니다.
+[칼럼 8번](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Readme.MD)
 
-연관:
+- 6개 LLM이 MSFT에 대해 *11/11 매수 합의*
+- 시장은 다음 달 -7% 하락
+- → *LLM 합의가 시장 정확도를 보장하지 않는다* 의 명확한 사례
 
-* [Earnings Momentum Agent](https://github.com/gameworkerkim/vibe-investing/blob/main/Harness%20quantv2)와 보완적 — Earnings Momentum이 "저점 + 실적 반등"을 잡는 반면, 본 스크립트는 "급락 + 회복 가능성"을 분석
+**3. 재현 가능한 프롬프트**
 
-### 4. Long-Term Dividend Investing
+배당 성장주 universe 자동 생성 프롬프트. 본인이 *fork 하여 본인 universe* 에 적용 가능. 특히 다국어 cross-validation 패턴이 명시되어 있어 *프롬프트만 교체하면* 다른 섹터에도 즉시 적용 가능합니다.
 
-장기 배당 투자를 위한 종목 선별 스크립트. 단순 배당수익률이 아니라 배당 성장성, 지속 가능성, 페이아웃 비율, 재무 건전성을 종합 평가합니다.
+#### Q1의 차별점
 
-활용:
+| 일반 LLM 사용 | **이 폴더의 패턴** |
+| --- | --- |
+| 한 언어로 한 LLM에게 질문 | **3개 언어 × 다중 LLM cross-validation** |
+| 답변을 그대로 신뢰 | **답변의 시장 검증 (MSFT 사례)** |
+| 결과만 사용 | **결과 + 학술 working paper + 칼럼 함께 제공** |
+| 일회성 | **재현 가능한 프롬프트 라이브러리화** |
 
-* 은퇴 자금 운용
-* 인컴 포트폴리오 구성
-* 배당 귀족주 (Dividend Aristocrats) 후보 발굴
+### Q2. Pharma Growth Prompt — 다국어 프롬프트 (KR / EN / CN)
 
-### 5. Dividend growth prompt — Cross-Lingual LLM 검증 연구
+미국 제약 섹터 LONG 7 + SHORT 3 추천을 *FDA Orange Book + ClinicalTrials.gov NCT 1차 출처 강제* 패턴으로 생성하는 다국어 프롬프트.
 
-배당 성장 종목 발굴 프롬프트와, 그 프롬프트를 4개 frontier LLM × 3개 언어로 검증한 학술적 실증 연구. 본 README 상단의 "주의 고지"를 뒷받침하는 연구이자, *LLM 프롬프트 퀀트의 한계*와 *검증 워크플로*를 정립한 자료입니다.
+#### 평가 기준 (3-axis)
 
-수록:
+| 축 | 비중 | 검증 출처 |
+| --- | --- | --- |
+| Pipeline (FDA approval phases) | 40% | FDA Orange Book + drugs.fda.gov |
+| Revenue / IR | 35% | SEC EDGAR 10-K, 10-Q |
+| Valuation | 25% | 일반 financial data API |
 
-* 11개 결과물 (Claude, ChatGPT, Gemini, DeepSeek × 한·영·중) 원본 데이터
-* Cross-Lingual LLM Accuracy Paper v5 (학술 논문, 43페이지)
-* MSFT 사례 분석 칼럼 (markdown + PDF v2)
-* AI 헤지펀드 / 페르소나 AI 오픈소스 레퍼런스 (12개 프로젝트)
+#### 다국어 동시 제공의 의미
 
-핵심 발견:
+3개 언어 (KR / EN / CN) 동시 제공이 *단순 번역*이 아닙니다. 이는 위 Q1의 Cross-Lingual LLM Accuracy 학술 결과의 **시스템 차원 implementation**:
 
-* MSFT 11/11 universal pick의 시점 편향
-* 같은 날 GOOG 어닝 서프라이즈를 LLM 0/11이 누락
-* OpenAI 의존도와 circular financing의 시스템 위험 누락
+- 같은 universe 질문에 *3개 언어로 동시 호출* → *답변 합집합* 이 본인 분석 universe
+- 각 언어의 *지역 시장 narrative bias* 분리 (KR 사용자는 한국어 답변에서 강한 종목, EN 사용자는 글로벌 narrative 종목)
+- 사용자 본인이 다국어를 *모두* 못 읽어도 *프롬프트 자체가 cross-validation 강제*
 
-활용:
+#### 사용 시나리오
 
-* 본 폴더의 다른 LLM 기반 스크립트 사용 전 *반드시 선행 학습*
-* 본인의 LLM 프롬프트 퀀트 결과를 검증하는 5단계 체크리스트 적용
-* 페르소나 AI (Buffett, Munger, Wood, Burry 등)의 한계와 가능성 이해
+```
+1. 본인이 분석하고 싶은 섹터 결정 (현재: Pharma)
+2. 3개 언어 프롬프트를 LLM (Claude / GPT / Gemini) 에 동시 호출
+3. 답변 합집합으로 LONG 7 + SHORT 3 universe 형성
+4. FDA Orange Book / ClinicalTrials.gov / SEC EDGAR 1차 출처 cross-check
+5. 본인 분석으로 최종 의사결정
+```
 
-### Sample
+**섹터 교체만으로 다른 분야에 즉시 적용 가능합니다.** Pharma → Semiconductor, EV, Biotech 등으로 *프롬프트 키워드만 변경*.
 
-새 전략을 만들 때 사용할 템플릿 폴더입니다. 표준 구조 (README, 스크립트, 데이터, 백테스트, 한계)를 따릅니다.
+### Q3. AI Supercycle Investment Quant Strategy — 시점적 정량 전략
 
-→ [Sample Readme.MD](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Sample%20Readme.MD) 참조
+[게재 일자: 2026년 5월 8일]
+
+AI 인프라 사이클 (Nvidia, AMD, Broadcom, TSMC, ASML, Synopsys, Cadence, Arm 등) 의 *시점적 정량 전략*. AI 슈퍼사이클이 *영원하지 않다*는 것을 정량적으로 측정하기 위한 도구.
+
+#### 핵심 thesis
+
+AI 인프라 사이클은 다음 단계 중 어디에 있는가:
+- 1단계 Adoption (수요 발견)
+- 2단계 Capacity Build-out (현재)
+- 3단계 Saturation (잠재 위험)
+- 4단계 Replacement Cycle
+
+각 단계에서 *유효한 전략과 위험* 이 다름. 이 폴더는 *현재 2단계에서 3단계로의 전환 시그널* 을 정량적으로 측정.
+
+#### 칼럼 10번 (Storage Wars) 와의 연관
+
+이 폴더의 시점적 전략은 칼럼 10번 [AI 인프라 스토리지 전쟁](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Storage%20War/Storage%20wars%20ai%20infrastructure%20column.md) 의 *6대 스토리지 기업 진단* 과 함께 읽으면 효과적입니다. AI 인프라 = GPU 일변도가 아닌 *스토리지까지 확장된 사이클* 인지가 핵심.
 
 ---
 
-## 전체 맵
+## 이 폴더가 다른 퀀트 자료와 다른 점
 
-`trading map.png` — 본 폴더의 4종 전략 + Sample이 어떤 시장 상황에 적합한지 시각화한 맵.
+### 1. 학술 + 실증 + 프롬프트가 *같은 폴더에*
+
+대부분의 GitHub 퀀트 레포는 *코드만* 있거나, *학술 논문은 별도*로 분리되어 있습니다. 이 폴더는:
+
+- 학술 working paper (Cross-Lingual LLM v5)
+- 실증 칼럼 (MSFT 사례 v2)
+- 재현 가능한 프롬프트 (배당, Pharma KR/EN/CN, AI Supercycle)
+
+위 3가지가 *Dividend growth prompt 한 폴더 안에* 통합되어 있습니다.
+
+### 2. 다국어 cross-validation 강제
+
+Pharma 프롬프트는 *KR / EN / CN 동시 제공*. 이는 한국 사용자가 *영문 답변만 보고* universe 형성 시 평균 27% 누락 (Q1 학술 결과) 을 *프롬프트 차원에서 차단*.
+
+### 3. 1차 출처 인용 강제
+
+Pharma 프롬프트는 LLM에게 *FDA Orange Book URL + ClinicalTrials.gov NCT 번호 + SEC EDGAR 10-K* 를 *반드시 인용하도록 강제*. 이는 *LLM hallucination 방지* 의 시스템 차원 implementation.
+
+### 4. 메타 메시지 일관성
+
+> *\"LLM은 엑셀이지, 정답을 알려주는 오라클이 아니다.\"*
+
+이 메시지가 *Cross-Lingual LLM 학술 → MSFT 사례 칼럼 → Pharma 프롬프트 → AI Supercycle 전략* 4가지에 일관되게 반영되어 있습니다.
 
 ---
 
-## 사용 권장 순서
+## 권장 사용 순서
 
->  **반드시 0단계부터 시작하십시오.** 본 README 상단의 주의 고지를 인지하지 않은 상태로 LLM 스크립트를 사용하면 *"엑셀에 잘못된 함수를 넣고 결과를 그대로 신뢰하는 것"*과 같습니다.
+처음 오신 분에게 권장하는 순서.
 
-0. **선행 학습** — [Dividend growth prompt 폴더의 칼럼](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Dividend%20growth%20prompt/Column%20llm%20consensus%20vs%20reality%20msft%20case.md) 또는 [PDF v2](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Dividend%20growth%20prompt/Column_LLM_Consensus_vs_Reality_MSFT_Case_v2.pdf)를 읽고 LLM 프롬프트 퀀트의 4가지 구조적 한계와 5단계 검증 워크플로를 인지
-1. [Awesome claude quant scripts.MD](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Awesome%20claude%20quant%20scripts.MD)에서 전체 개요 읽기
-2. 본인 관심 영역에 맞는 전략 폴더로 이동
-3. 해당 전략의 README와 한계 섹션 읽기
-4. 백테스트 데이터 재현
-5. **Cross-LLM + 다국어 + 실시간 어닝으로 검증**
-6. 페이퍼 트레이딩 검증 후 실거래 고려
+1. **학술적 정당성 이해부터** → Q1 Dividend growth prompt 폴더의 Cross-Lingual LLM v5 paper
+2. **실증 사례로 검증** → 칼럼 8번 (LLM 합의 vs 시장 현실 MSFT v2)
+3. **다국어 프롬프트 적용 연습** → Q2 Pharma growth prompt (섹터 교체로 본인 universe)
+4. **시점적 전략 결합** → Q3 AI Supercycle Investment Quant Strategy + 칼럼 10번 (Storage Wars)
+
+각 단계가 *이전 단계의 메타 메시지 implementation* 입니다.
+
+---
+
+## 알려진 한계
+
+이 폴더의 모든 자산에 적용되는 공통 한계입니다.
+
+- LLM 답변은 *시점에 따라 변동*. 같은 프롬프트도 *모델 업데이트 후* 다른 답변 산출
+- 다국어 cross-validation 도 *LLM이 학습한 코퍼스의 언어별 bias* 를 완전히 제거하지 못함
+- 1차 출처 인용 강제도 *LLM이 가짜 URL을 생성*하는 사례 발생 (사용자 검증 필수)
+- Pharma 프롬프트는 *FDA / ClinicalTrials.gov 데이터* 가 *최신* 인지 사용자가 직접 확인 필요
+- AI Supercycle 전략은 *현재 시점 (2026년 5월) 기준*. 향후 사이클 위치 변화 시 전략 재검토 필요
+- 모든 백테스트는 *과거 데이터 기반*, 미래 보장 아님
+
+---
+
+## 라이선스
+
+MIT License. 자유롭게 사용·수정·배포 가능합니다. 출처 표기 부탁드립니다.
+
+학술 인용은 SSRN paper (Cross-Lingual LLM v5) 출처 명기 권장:
+
+> *김호광 (Dennis Kim), \"Same LLM, Different Languages, Different Answers (v5)\", SSRN Working Paper, 2026.*
+> *https://github.com/gameworkerkim/vibe-investing*
 
 ---
 
 ## Disclaimer
 
-모든 스크립트는 연구·교육 목적입니다. 본 폴더의 LLM 기반 프롬프트 퀀트는 *"LLM에게 맡기는 투자"*가 아니라 *"AI를 도구로 쓰는 투자자가 되는 훈련"*을 위한 것입니다. 사용자는 본 README 상단의 주의 고지를 인지하고, 모든 LLM 출력을 독립적인 시장 데이터와 본인 판단으로 검증할 책임이 있습니다.
+모든 프롬프트와 분석은 연구·교육 목적입니다. 자세한 내용은 [메인 README의 Disclaimer](https://github.com/gameworkerkim/vibe-investing/blob/main/README.md#disclaimer) 참조.
 
-자세한 내용은 [메인 README의 Disclaimer](https://github.com/gameworkerkim/vibe-investing/blob/main/README.md#disclaimer) 참조.
+> *Same LLM, different languages, different answers.*
+> 같은 LLM, 다른 언어, 다른 답.
