@@ -1838,6 +1838,148 @@ async def predictions_settle_timer(timer: func.TimerRequest) -> None:
         logger.exception("predictions_settle_timer failed")
 
 
+@app.route(route="predictions/{prediction_id}/click", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST", "OPTIONS"])
+async def predictions_click(req: func.HttpRequest) -> func.HttpResponse:
+    """§5 P1 — Append a third-party click. <50ms p95 target.
+
+    Anonymous viewers OK (cohort signal only). Same viewer × prediction
+    rate-limited to 1× / 30s. Counts are aggregated by 15-min cron — this
+    endpoint just appends an NDJSON line and returns 204.
+    """
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS_POST)
+    await _bootstrap()
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS_POST)
+
+    prediction_id = (req.route_params.get("prediction_id") or "").strip()
+    if not prediction_id:
+        return func.HttpResponse(status_code=400, headers=_CORS_HEADERS_POST)
+
+    # Viewer ID = init-data anon if logged in, else IP hash. Both anonymized.
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    if user_key:
+        from services.user_profile import make_anon_user_id
+        viewer_id = make_anon_user_id(user_key, _config.user_id_salt)
+    else:
+        # Fallback IP hash (X-Forwarded-For first hop)
+        import hashlib
+        ip = (req.headers.get("X-Forwarded-For", "") or
+              req.headers.get("X-Client-IP", "")).split(",")[0].strip() or "anon"
+        viewer_id = hashlib.sha256(
+            f"{_config.user_id_salt}:ip:{ip}".encode()).hexdigest()[:16]
+
+    from services.click_aggregator import append_click, is_rate_limited
+    if is_rate_limited(viewer_id, prediction_id):
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS_POST)
+
+    country = req.headers.get("CF-IPCountry", "") or req.headers.get("X-Country", "")
+    asyncio.create_task(append_click(
+        _config.storage_account_name, prediction_id, viewer_id, country))
+    return func.HttpResponse(status_code=204, headers=_CORS_HEADERS_POST)
+
+
+@app.route(route="rankings/{kind}", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def rankings_get(req: func.HttpRequest) -> func.HttpResponse:
+    """§6 — Read pre-built ranking. Path: predictions | referrers
+    Query: ?period=daily|weekly|monthly&anon=<for-my_rank>"""
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    if not _config or not _config.storage_account_name:
+        return func.HttpResponse(json.dumps({"error": "not_configured"}),
+            status_code=500, mimetype="application/json", headers=_CORS_HEADERS)
+
+    kind = (req.route_params.get("kind") or "").strip().lower()
+    if kind not in ("predictions", "referrers"):
+        return func.HttpResponse(json.dumps({"error": "invalid_kind"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS)
+    period = (req.params.get("period") or "daily").strip().lower()
+    if period not in ("daily", "weekly", "monthly"):
+        return func.HttpResponse(json.dumps({"error": "invalid_period"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS)
+
+    from services.ranking_builder import read_ranking_blob
+    data = await read_ranking_blob(_config.storage_account_name, period, kind)
+    if data is None:
+        # Lazy build if timer hasn't run yet
+        from services.ranking_builder import (
+            build_prediction_ranking, build_referrer_ranking, write_ranking_blob,
+        )
+        builder = build_prediction_ranking if kind == "predictions" else build_referrer_ranking
+        rows = await builder(_config.storage_account_name, period)
+        await write_ranking_blob(_config.storage_account_name, period, kind, rows)
+        from dataclasses import asdict
+        data = {
+            "kind": kind, "period": period,
+            "generated_at": "now",
+            "ranking": [asdict(r) for r in rows],
+        }
+
+    # Optional: my_rank (lookup by 8-char anon)
+    my_anon = (req.params.get("anon") or "").strip().lower()
+    my_rank = None
+    if my_anon:
+        for r in data.get("ranking", []):
+            if (r.get("anon_short") or "") == my_anon[:8]:
+                my_rank = r
+                break
+
+    payload = {**data, "my_rank": my_rank}
+    headers = dict(_CORS_HEADERS)
+    headers["Cache-Control"] = "private, max-age=300"
+    return func.HttpResponse(json.dumps(payload, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=headers)
+
+
+# Timer: KST 03:00 daily — rebuild all rankings + payout top-10 rewards
+@app.timer_trigger(schedule="0 0 18 * * *", arg_name="timer",
+                   run_on_startup=False, use_monitor=True)
+async def rankings_rebuild_timer(timer: func.TimerRequest) -> None:
+    """KST 03:00 (UTC 18:00) — daily ranking rebuild + reward payout."""
+    await _bootstrap()
+    if _profile_repo is None or not _config or not _config.storage_account_name:
+        return
+    from dataclasses import asdict
+    from services.ranking_builder import (
+        build_prediction_ranking, build_referrer_ranking, write_ranking_blob,
+    )
+    from services.ranking_rewards import pay_rewards
+    account = _config.storage_account_name
+    for kind in ("predictions", "referrers"):
+        builder = build_prediction_ranking if kind == "predictions" else build_referrer_ranking
+        for period in ("daily", "weekly", "monthly"):
+            try:
+                rows = await builder(account, period)
+                await write_ranking_blob(account, period, kind, rows)
+                # Pay rewards (idempotent per KST date)
+                ranking_dicts = [asdict(r) for r in rows]
+                result = await pay_rewards(
+                    _profile_repo, account, kind, period, ranking_dicts,
+                    usage_logger=_usage_logger,
+                )
+                logger.info("rankings_rebuild %s %s — %s",
+                            kind, period, result)
+            except Exception:
+                logger.exception("rankings_rebuild failed for %s/%s", kind, period)
+
+
+# Timer: every 15 min — aggregate click NDJSON → click_count on each Prediction
+@app.timer_trigger(schedule="0 */15 * * * *", arg_name="timer",
+                   run_on_startup=False, use_monitor=True)
+async def predictions_click_aggregator_timer(timer: func.TimerRequest) -> None:
+    await _bootstrap()
+    if _prediction_repo is None or not _config or not _config.storage_account_name:
+        return
+    from services.click_aggregator import aggregate_clicks
+    try:
+        result = await aggregate_clicks(_prediction_repo, _config.storage_account_name)
+        if result.get("predictions_updated"):
+            logger.info("predictions_click_aggregator %s", result)
+    except Exception:
+        logger.exception("predictions_click_aggregator failed")
+
+
 # Timer: KST 02:30 daily — expire pendings older than 7 days
 @app.timer_trigger(schedule="0 30 17 * * *", arg_name="timer",
                    run_on_startup=False, use_monitor=True)
