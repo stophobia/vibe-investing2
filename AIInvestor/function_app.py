@@ -2174,7 +2174,8 @@ async def fortune_unlock(req: func.HttpRequest) -> func.HttpResponse:
             user_key=user_key, default_language="ko", default_persona="buffett")
 
     from services.fortune_service import (
-        UNLOCK_COST_POINTS, select_for_user, unlock_via_points,
+        UNLOCK_COST_POINTS, select_for_user,
+        unlock_via_donation, unlock_via_invite, unlock_via_points,
     )
     result = select_for_user(profile)
     if result is None:
@@ -2186,26 +2187,67 @@ async def fortune_unlock(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(json.dumps({"error": "target_not_locked"}),
             status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
 
-    # Channels other than 'points' fold into existing flows:
-    #   donation  → expects user to already have donated (point credit handles it)
-    #   invite    → expects ≥1 verified referral (admin to validate)
-    # MVP: only 'points' is fully wired; donation/invite return 501 for now
-    # so the UI surface is stable but discourages these paths until §7.
-    if channel != "points":
-        return func.HttpResponse(
-            json.dumps({"error": "channel_not_wired_yet", "channel": channel,
-                       "hint": "use channel='points' or wait for §7"}),
-            status_code=501, mimetype="application/json", headers=_CORS_HEADERS_POST,
+    if channel == "points":
+        ok, reason, updated = await unlock_via_points(
+            _profile_repo, profile, target["ticker"], usage_logger=_usage_logger,
+        )
+    elif channel == "donation":
+        ok, reason, updated = await unlock_via_donation(
+            _profile_repo, _config.storage_account_name, profile, target["ticker"],
+        )
+    else:  # invite
+        ok, reason, updated = await unlock_via_invite(
+            _profile_repo, profile, target["ticker"],
         )
 
-    ok, reason, updated = await unlock_via_points(
-        _profile_repo, profile, target["ticker"], usage_logger=_usage_logger,
-    )
-    payload = {"success": ok, "reason": reason, "ticker": target["ticker"]}
+    payload = {"success": ok, "reason": reason, "ticker": target["ticker"], "channel": channel}
     if updated is not None:
         payload["points_balance"] = updated.points_balance
     if not ok and reason == "insufficient_points":
         payload["cost_points"] = UNLOCK_COST_POINTS
+        return func.HttpResponse(json.dumps(payload, ensure_ascii=False),
+            status_code=402, mimetype="application/json", headers=_CORS_HEADERS_POST)
+    if not ok:
+        # Friendly status: 403 for eligibility (no donation / no referee)
+        return func.HttpResponse(json.dumps(payload, ensure_ascii=False),
+            status_code=403, mimetype="application/json", headers=_CORS_HEADERS_POST)
+    return func.HttpResponse(json.dumps(payload, ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+
+@app.route(route="fortune/reroll", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST", "OPTIONS"])
+async def fortune_reroll(req: func.HttpRequest) -> func.HttpResponse:
+    """§7 — Reroll today's lucky number for 10 P. (Supporter+ free path
+    arrives with full donation-tier integration.)"""
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS_POST)
+    await _bootstrap()
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    if not user_key:
+        return func.HttpResponse(json.dumps({"error": "unauthorized"}),
+            status_code=401, mimetype="application/json", headers=_CORS_HEADERS_POST)
+    try:
+        profile = await _profile_repo.get_or_create(
+            user_key=user_key,
+            default_language=_detect_lang_from_init_data(req),
+            default_persona="buffett",
+        )
+    except AttributeError:
+        profile = _profile_repo.get_or_create(
+            user_key=user_key, default_language="ko", default_persona="buffett")
+    if not profile.saju_birth_date:
+        return func.HttpResponse(json.dumps({"error": "birth_data_missing"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS_POST)
+
+    from services.fortune_service import REROLL_COST_POINTS, reroll_fortune
+    ok, reason, updated = await reroll_fortune(
+        _profile_repo, profile, usage_logger=_usage_logger,
+    )
+    payload = {"success": ok, "reason": reason}
+    if updated is not None:
+        payload["points_balance"] = updated.points_balance
+    if not ok:
+        payload["cost_points"] = REROLL_COST_POINTS
         return func.HttpResponse(json.dumps(payload, ensure_ascii=False),
             status_code=402, mimetype="application/json", headers=_CORS_HEADERS_POST)
     return func.HttpResponse(json.dumps(payload, ensure_ascii=False),

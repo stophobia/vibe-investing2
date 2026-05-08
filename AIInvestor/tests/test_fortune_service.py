@@ -8,11 +8,14 @@ from pathlib import Path
 import pytest
 
 from services.fortune_service import (
+    REROLL_COST_POINTS,
     UNLOCK_COST_POINTS,
     get_risk_pool,
     is_age_19_or_older,
     is_already_unlocked_today,
+    reroll_fortune,
     select_for_user,
+    unlock_via_invite,
     unlock_via_points,
     _kst_today_iso,
 )
@@ -129,3 +132,52 @@ class TestUnlockViaPoints:
         assert reason == "already_unlocked"
         bal2 = repo.get("u1").points_balance
         assert bal1 == bal2
+
+
+class TestUnlockViaInvite:
+    def test_no_referee_blocks(self, repo: UserProfileRepo) -> None:
+        p = repo.get_or_create("u1", "ko", "buffett")
+        ok, reason, _ = asyncio.run(unlock_via_invite(repo, p, "AAPL"))
+        assert not ok
+        assert reason == "no_verified_referee"
+
+    def test_with_referee_unlocks(self, repo: UserProfileRepo) -> None:
+        repo.get_or_create("u1", "ko", "buffett")
+        repo.update("u1", invite_validated_count=2)
+        p = repo.get("u1")
+        ok, reason, updated = asyncio.run(unlock_via_invite(repo, p, "AAPL"))
+        assert ok
+        assert reason == "ok"
+        assert "AAPL" in updated.saju_unlocked_today
+        # No points deducted
+        assert updated.points_balance == 0
+
+    def test_idempotent(self, repo: UserProfileRepo) -> None:
+        repo.get_or_create("u1", "ko", "buffett")
+        repo.update("u1", invite_validated_count=1,
+                    saju_unlocked_today=["AAPL"],
+                    saju_unlocked_date_kst=_kst_today_iso())
+        p = repo.get("u1")
+        ok, reason, _ = asyncio.run(unlock_via_invite(repo, p, "AAPL"))
+        assert ok
+        assert reason == "already_unlocked"
+
+
+class TestRerollFortune:
+    def test_insufficient_points(self, repo: UserProfileRepo) -> None:
+        p = repo.get_or_create("u1", "ko", "buffett")
+        ok, reason, _ = asyncio.run(reroll_fortune(repo, p))
+        assert not ok
+        assert reason == "insufficient_points"
+
+    def test_deducts_reroll_cost(self, repo: UserProfileRepo) -> None:
+        repo.get_or_create("u1", "ko", "buffett")
+        asyncio.run(add_points(repo, "u1", REROLL_COST_POINTS + 5, "test_seed"))
+        p = repo.get("u1")
+        ok, reason, updated = asyncio.run(reroll_fortune(repo, p))
+        assert ok
+        assert reason == "ok"
+        assert updated.points_balance == 5
+
+    def test_reroll_cost_is_10(self) -> None:
+        assert REROLL_COST_POINTS == 10

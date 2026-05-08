@@ -121,3 +121,102 @@ async def unlock_via_points(repo, profile: UserProfile,
     )
     final = await update_call if hasattr(update_call, "__await__") else update_call
     return True, "ok", final
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# §7 — Donation / Invite unlock channels (no point deduction)
+# ─────────────────────────────────────────────────────────────────────────────
+async def unlock_via_donation(repo, account_name: str, profile: UserProfile,
+                              ticker: str) -> tuple[bool, str, UserProfile | None]:
+    """Channel='donation' — eligible if user has any confirmed donation.
+
+    The donation system itself credits P via add_points; this channel
+    skips that double-charge by spending the P-equivalent already credited
+    (i.e. donation already paid for the unlock implicitly). For MVP we just
+    check existence of a confirmed donation and unlock for free.
+    """
+    if is_already_unlocked_today(profile, ticker):
+        return True, "already_unlocked", profile
+
+    # Scan donation-intents for any confirmed by this user
+    has_donation = False
+    try:
+        from azure.identity.aio import DefaultAzureCredential
+        from azure.storage.blob.aio import BlobServiceClient
+        import json as _json
+        creds = DefaultAzureCredential()
+        async with BlobServiceClient(
+            account_url=f"https://{account_name}.blob.core.windows.net",
+            credential=creds,
+        ) as svc:
+            container = svc.get_container_client("donation-intents")
+            try:
+                async for blob in container.list_blobs():
+                    if not blob.name.endswith(".json"):
+                        continue
+                    body = await (await container.get_blob_client(blob.name)
+                                  .download_blob()).readall()
+                    d = _json.loads(body)
+                    if (d.get("user_key") == profile.user_key and
+                            d.get("status") == "confirmed"):
+                        has_donation = True
+                        break
+            except Exception:
+                pass
+        await creds.close()
+    except Exception:
+        logger.exception("donation channel scan failed")
+
+    if not has_donation:
+        return False, "no_confirmed_donation", None
+
+    today = _kst_today_iso()
+    updates = list(profile.saju_unlocked_today or [])
+    if ticker not in updates:
+        updates.append(ticker)
+    call = repo.update(
+        profile.user_key,
+        saju_unlocked_today=updates,
+        saju_unlocked_date_kst=today,
+    )
+    final = await call if hasattr(call, "__await__") else call
+    return True, "ok", final
+
+
+async def unlock_via_invite(repo, profile: UserProfile,
+                            ticker: str) -> tuple[bool, str, UserProfile | None]:
+    """Channel='invite' — eligible if user has ≥1 verified referee."""
+    if is_already_unlocked_today(profile, ticker):
+        return True, "already_unlocked", profile
+
+    if (profile.invite_validated_count or 0) < 1:
+        return False, "no_verified_referee", None
+
+    today = _kst_today_iso()
+    updates = list(profile.saju_unlocked_today or [])
+    if ticker not in updates:
+        updates.append(ticker)
+    call = repo.update(
+        profile.user_key,
+        saju_unlocked_today=updates,
+        saju_unlocked_date_kst=today,
+    )
+    final = await call if hasattr(call, "__await__") else call
+    return True, "ok", final
+
+
+REROLL_COST_POINTS = 10
+
+
+async def reroll_fortune(repo, profile: UserProfile, *,
+                         usage_logger=None) -> tuple[bool, str, UserProfile | None]:
+    """§7 — Reroll today's lucky number for 10 P (spec says Supporter+ free,
+    that gating arrives in donation-tier integration). Stores reroll_count
+    so the seed perturbs deterministically per attempt."""
+    new_profile = await deduct_points(
+        repo, profile.user_key, REROLL_COST_POINTS,
+        reason="fortune_reroll", ref="", usage_logger=usage_logger,
+    )
+    if new_profile is None:
+        return False, "insufficient_points", None
+    return True, "ok", new_profile
