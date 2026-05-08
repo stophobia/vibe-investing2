@@ -71,6 +71,10 @@ class UserProfile:
     saju_first_used_at: str = ""        # ISO date of first /saju/ use (for 5-day free)
     saju_unlocked_today: list[str] = field(default_factory=list)  # tickers unlocked today
     saju_unlocked_date_kst: str = ""    # KST date when unlocks were last reset
+    # §7 — Donation tier (Supporter / Patron / Benefactor / Champion)
+    donation_total_usdt: float = 0.0    # cumulative confirmed donations
+    fortune_reroll_count_today: int = 0 # # of rerolls used today (resets KST midnight)
+    fortune_reroll_date_kst: str = ""   # last reroll's KST date (for daily reset)
 
 
 class UserProfileRepo:
@@ -114,6 +118,9 @@ class UserProfileRepo:
             saju_first_used_at  TEXT NOT NULL DEFAULT '',
             saju_unlocked_today TEXT NOT NULL DEFAULT '[]',
             saju_unlocked_date_kst TEXT NOT NULL DEFAULT '',
+            donation_total_usdt REAL NOT NULL DEFAULT 0,
+            fortune_reroll_count_today INTEGER NOT NULL DEFAULT 0,
+            fortune_reroll_date_kst TEXT NOT NULL DEFAULT '',
             created_at          TEXT NOT NULL,
             updated_at          TEXT NOT NULL
         );
@@ -153,6 +160,9 @@ class UserProfileRepo:
         "ALTER TABLE users ADD COLUMN saju_first_used_at TEXT NOT NULL DEFAULT ''",
         "ALTER TABLE users ADD COLUMN saju_unlocked_today TEXT NOT NULL DEFAULT '[]'",
         "ALTER TABLE users ADD COLUMN saju_unlocked_date_kst TEXT NOT NULL DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN donation_total_usdt REAL NOT NULL DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN fortune_reroll_count_today INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN fortune_reroll_date_kst TEXT NOT NULL DEFAULT ''",
     )
 
     def __init__(self, db_path: str | Path, salt: str) -> None:
@@ -277,4 +287,7 @@ def _row_to_profile(row: sqlite3.Row) -> UserProfile:
         saju_first_used_at=_g("saju_first_used_at", ""),
         saju_unlocked_today=json.loads(_g("saju_unlocked_today", "[]") or "[]"),
         saju_unlocked_date_kst=_g("saju_unlocked_date_kst", ""),
+        donation_total_usdt=float(_g("donation_total_usdt", 0) or 0),
+        fortune_reroll_count_today=_g("fortune_reroll_count_today", 0),
+        fortune_reroll_date_kst=_g("fortune_reroll_date_kst", ""),
     )

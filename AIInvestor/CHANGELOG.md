@@ -66,20 +66,32 @@
 - `POST /api/fortune/reroll` 신규
 - 6 신규 단위 테스트
 
-### 진행 미완 (다음 단계)
-- §7 30일 holding 추천인 milestone 보너스 ($100/$500/$1k/$5k)
-- §7 referrals/<referrer>/<referee>.<milestone>.json 스케줄러
-- §7 Supporter+ tier free reroll (도네이션 tier 통합)
-- §8 e2e integration test + Locust load test
-- §8 미니앱 `/predictions/mine` UI (status badge + click 트래킹)
-- §8 미니앱 ranking 탭 (현재 stub)
+### v1.1 final batch (다음 커밋) — §7 잔여 + §8 + Mini App UI
+- §7 services/referrer_milestones.py — schedule/payout + 30d holding +
+  donation_tier (none/supporter/patron/benefactor/champion)
+- §7 donation_service.confirm_intent — donation_total_usdt 누적 + milestone
+  자동 schedule
+- §7 fortune_service.reroll_fortune — Supporter+ 1회/일 free
+- §7 timer "0 0 19 * * *" (KST 04:00) — 30d 도래 milestone payout
+- §7 user_profile schema +3 필드: donation_total_usdt, fortune_reroll_count_today,
+  fortune_reroll_date_kst
+- §8 docs/monitoring/v1.1.kql — 9 KQL 쿼리 (probe latency, settler runs,
+  click aggregator, ranking rebuild, milestone payouts, etc.)
+- §8 tests/integration/test_e2e_onboarding_to_ranking.py — 5건 E2E 경로 검증
+- UI Predict 탭: 내 예측 (티커별) — pending/settled/no_data 필터 + 색상 카드 +
+  click_count "👀 N명 조회" 표시
+- UI Rank 탭: 리더보드 본격 — kind 토글 (예측/추천인) + period (일간/주간/월간) +
+  내 순위 sticky bar + 🥇🥈🥉 메달
+- UI Fortune 카드: 🎲 다시 뽑기 (10 P, Supporter+ 1회 무료) 버튼
+- UI 클릭 트래킹: IntersectionObserver로 prediction-id가 보이면 자동
+  POST /api/predictions/{id}/click
 
-### 통계
-- 295 tests passing (+82 신규: §2 7건 + §3 30건 + §4 10건 + §5 7건 + §6 15건 + §7 6건)
-- 6 신규 service 모듈 (fortune_match / fortune_service / prediction_repo /
-  prediction_settler / click_aggregator / ranking_builder / ranking_rewards)
-- 11 신규 HTTP 엔드포인트 + 4 신규 timer trigger
-- 4 신규 Blob 컨테이너 (predictions/, rankings/, logs/clicks/, donation-intents/)
+### 통계 (최종)
+- 316 tests passing (+103 신규)
+- 7 신규 service 모듈 + referrer_milestones 추가 = 8 모듈
+- 13 신규 HTTP 엔드포인트 + 5 신규 timer trigger
+- 5 신규 Blob 컨테이너 (predictions/, rankings/, logs/clicks/,
+  donation-intents/, referrer-rewards/)
 
 ---
 

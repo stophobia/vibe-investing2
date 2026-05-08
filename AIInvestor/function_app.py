@@ -2592,6 +2592,27 @@ async def donate_intent_check(req: func.HttpRequest) -> func.HttpResponse:
         mimetype="application/json", headers=_CORS_HEADERS_POST)
 
 
+# Timer: KST 04:00 daily — pay out referrer milestones whose 30d holding period elapsed
+@app.timer_trigger(schedule="0 0 19 * * *", arg_name="timer",
+                   run_on_startup=False, use_monitor=True)
+async def referrer_milestone_payout_timer(timer: func.TimerRequest) -> None:
+    """§7 — Pay out referrer milestone bonuses whose scheduled_at is in the past.
+    Idempotent: paid blobs move from pending/ to paid/."""
+    await _bootstrap()
+    if _profile_repo is None or not _config or not _config.storage_account_name:
+        return
+    from services.referrer_milestones import pay_due_milestones
+    try:
+        result = await pay_due_milestones(
+            _profile_repo, _config.storage_account_name,
+            usage_logger=_usage_logger,
+        )
+        if any(result.values()):
+            logger.info("referrer_milestone_payout %s", result)
+    except Exception:
+        logger.exception("referrer_milestone_payout failed")
+
+
 # Timer: every 5 min → poll TON + TRON for incoming USDT, match against pending
 @app.timer_trigger(schedule="0 */5 * * * *", arg_name="timer",
                    run_on_startup=False, use_monitor=True)

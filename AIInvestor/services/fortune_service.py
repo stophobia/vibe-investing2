@@ -206,17 +206,50 @@ async def unlock_via_invite(repo, profile: UserProfile,
 
 
 REROLL_COST_POINTS = 10
+SUPPORTER_FREE_REROLLS_PER_DAY = 1
 
 
 async def reroll_fortune(repo, profile: UserProfile, *,
                          usage_logger=None) -> tuple[bool, str, UserProfile | None]:
-    """§7 — Reroll today's lucky number for 10 P (spec says Supporter+ free,
-    that gating arrives in donation-tier integration). Stores reroll_count
-    so the seed perturbs deterministically per attempt."""
+    """§7 — Reroll today's lucky number.
+
+    Supporter+ tier (donation_total_usdt ≥ $1) gets SUPPORTER_FREE_REROLLS_PER_DAY
+    free reroll(s) per KST day. Beyond that — and for non-supporters — it costs
+    REROLL_COST_POINTS (10 P) per reroll.
+    """
+    from .referrer_milestones import is_supporter_or_higher
+    today = _kst_today_iso()
+
+    # Reset counter if it's a new KST day
+    used_today = profile.fortune_reroll_count_today
+    if profile.fortune_reroll_date_kst != today:
+        used_today = 0
+
+    is_supporter = is_supporter_or_higher(profile.donation_total_usdt or 0)
+    free_remaining = max(0, SUPPORTER_FREE_REROLLS_PER_DAY - used_today) if is_supporter else 0
+
+    if free_remaining > 0:
+        # Free path — just bump counter
+        update_call = repo.update(
+            profile.user_key,
+            fortune_reroll_count_today=used_today + 1,
+            fortune_reroll_date_kst=today,
+        )
+        final = await update_call if hasattr(update_call, "__await__") else update_call
+        return True, "ok_free", final
+
     new_profile = await deduct_points(
         repo, profile.user_key, REROLL_COST_POINTS,
         reason="fortune_reroll", ref="", usage_logger=usage_logger,
     )
     if new_profile is None:
         return False, "insufficient_points", None
-    return True, "ok", new_profile
+
+    # Bump reroll counter on the fresh profile
+    update_call = repo.update(
+        profile.user_key,
+        fortune_reroll_count_today=used_today + 1,
+        fortune_reroll_date_kst=today,
+    )
+    final = await update_call if hasattr(update_call, "__await__") else update_call
+    return True, "ok", final

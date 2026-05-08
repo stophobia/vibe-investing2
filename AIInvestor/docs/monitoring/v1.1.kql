@@ -1,0 +1,126 @@
+// §8 P2 — Application Insights KQL queries for v1.1 ops monitoring
+// Paste into Application Insights → Logs. Time window is set in the UI.
+//
+// Naming: each query has a `name:` comment header. Use Cmd+F to find.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// name: probe_latency_p50_p95_p99
+// purpose: §2 /api/profile/check pre-warm probe response time.
+// alert: p95 > 200ms sustained 5min → cache layer is failing
+// ─────────────────────────────────────────────────────────────────────────────
+requests
+| where url contains "/api/profile/check"
+| summarize
+    p50 = percentile(duration, 50),
+    p95 = percentile(duration, 95),
+    p99 = percentile(duration, 99),
+    count = count()
+    by bin(timestamp, 1m)
+| render timechart
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// name: settle_predictions_runs
+// purpose: §4 KST 16:00 cron — daily settlement processing rate
+// alert: count = 0 on weekdays at expected slot → timer broken
+// ─────────────────────────────────────────────────────────────────────────────
+traces
+| where message contains "predictions_settle_timer"
+| extend resultJson = extract("{[^}]+}", 0, message)
+| project timestamp, resultJson
+| order by timestamp desc
+| take 30
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// name: click_aggregator_throughput
+// purpose: §5 15-min click aggregator — predictions updated per run
+// ─────────────────────────────────────────────────────────────────────────────
+traces
+| where message contains "predictions_click_aggregator"
+| project timestamp, message
+| order by timestamp desc
+| take 100
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// name: ranking_rebuild_runs
+// purpose: §6 KST 03:00 — daily ranking rebuild + reward payout
+// alert: count = 0 in last 24h → timer broken
+// ─────────────────────────────────────────────────────────────────────────────
+traces
+| where message contains "rankings_rebuild"
+| project timestamp, message
+| order by timestamp desc
+| take 50
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// name: referrer_milestone_payouts
+// purpose: §7 KST 04:00 — referrer 30d milestone payout audit
+// ─────────────────────────────────────────────────────────────────────────────
+traces
+| where message contains "referrer_milestone_payout"
+| project timestamp, message
+| order by timestamp desc
+| take 30
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// name: donation_verify_tick
+// purpose: §3 USDT donation cron — confirmation rate vs scanned tx volume
+// ─────────────────────────────────────────────────────────────────────────────
+traces
+| where message contains "donate_verify_tick"
+| project timestamp, message
+| order by timestamp desc
+| take 100
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// name: fortune_unlock_channel_split
+// purpose: §3+§7 — what % of unlocks come from points vs donation vs invite?
+// ─────────────────────────────────────────────────────────────────────────────
+requests
+| where url contains "/fortune/unlock"
+| summarize total = count() by resultCode
+| order by total desc
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// name: webhook_warmup_overhead
+// purpose: §2 telegram_webhook fire-and-forget warmup should not block
+// alert: webhook duration > 500ms p95 → warmup task slowing down requests
+// ─────────────────────────────────────────────────────────────────────────────
+requests
+| where url contains "/api/telegram/webhook"
+| summarize
+    p50 = percentile(duration, 50),
+    p95 = percentile(duration, 95),
+    count = count()
+    by bin(timestamp, 5m)
+| render timechart
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// name: error_rate_5xx
+// purpose: overall server-error rate by route, sorted high → low
+// ─────────────────────────────────────────────────────────────────────────────
+requests
+| where resultCode >= "500"
+| summarize errors = count() by name, resultCode
+| order by errors desc
+| take 20
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// name: cache_hit_ratio_persona_analyze
+// purpose: persona analyze cache (518c5f4) — ratio of blob hits vs LLM calls
+// ─────────────────────────────────────────────────────────────────────────────
+requests
+| where url contains "/persona/analyze"
+| summarize
+    total = count(),
+    avg_duration_ms = avg(duration)
+    by bin(timestamp, 15m)
+| render timechart

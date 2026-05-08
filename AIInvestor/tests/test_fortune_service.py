@@ -181,3 +181,36 @@ class TestRerollFortune:
 
     def test_reroll_cost_is_10(self) -> None:
         assert REROLL_COST_POINTS == 10
+
+    def test_supporter_first_reroll_free(self, repo: UserProfileRepo) -> None:
+        """Supporter+ (donation_total_usdt >= 1) gets 1 free reroll/day."""
+        repo.get_or_create("u1", "ko", "buffett")
+        repo.update("u1", donation_total_usdt=10.0)
+        p = repo.get("u1")
+        # No points → would normally fail, but Supporter free path skips
+        ok, reason, updated = asyncio.run(reroll_fortune(repo, p))
+        assert ok
+        assert reason == "ok_free"
+        assert updated.points_balance == 0
+        assert updated.fortune_reroll_count_today == 1
+
+    def test_supporter_second_reroll_charges(self, repo: UserProfileRepo) -> None:
+        """After 1 free, Supporter still pays 10 P for additional rerolls."""
+        from services.fortune_service import _kst_today_iso
+        repo.get_or_create("u1", "ko", "buffett")
+        repo.update("u1", donation_total_usdt=10.0,
+                    fortune_reroll_count_today=1,
+                    fortune_reroll_date_kst=_kst_today_iso())
+        p = repo.get("u1")
+        ok, reason, _ = asyncio.run(reroll_fortune(repo, p))
+        # No points → falls through to insufficient
+        assert not ok
+        assert reason == "insufficient_points"
+
+    def test_non_supporter_always_charges(self, repo: UserProfileRepo) -> None:
+        repo.get_or_create("u1", "ko", "buffett")
+        repo.update("u1", donation_total_usdt=0.0)  # not a Supporter
+        p = repo.get("u1")
+        ok, reason, _ = asyncio.run(reroll_fortune(repo, p))
+        assert not ok
+        assert reason == "insufficient_points"

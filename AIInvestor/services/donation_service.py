@@ -351,7 +351,8 @@ async def check_intent_now(repo: "DonationIntentRepo", profile_repo,
     # Confirm + credit
     confirmed = await confirm_intent(repo, profile_repo, intent,
                                      matching_tx.tx_hash,
-                                     usage_logger=usage_logger)
+                                     usage_logger=usage_logger,
+                                     storage_account_name=repo._account)
     if not confirmed:
         return {"success": False, "reason": "credit_failed"}
     return {
@@ -395,8 +396,10 @@ async def _is_tx_hash_used(repo: "DonationIntentRepo", tx_hash: str,
 
 async def confirm_intent(repo: DonationIntentRepo, profile_repo,
                          intent: DonationIntent, tx_hash: str,
-                         *, usage_logger=None) -> bool:
-    """Mark intent confirmed and credit points (atomic-ish)."""
+                         *, usage_logger=None,
+                         storage_account_name: str | None = None) -> bool:
+    """Mark intent confirmed, credit points, update donation_total_usdt,
+    and schedule referrer milestone bonuses (30d holding)."""
     from .point_ledger import add_points
     if intent.status != "pending":
         return False
@@ -405,20 +408,79 @@ async def confirm_intent(repo: DonationIntentRepo, profile_repo,
     intent.confirmed_at = _now_iso()
     await repo.put(intent)
     try:
-        await add_points(
+        new_profile = await add_points(
             profile_repo, intent.user_key, intent.points_to_credit,
             reason="donation", ref=f"{intent.chain}:{intent.intent_id}",
             usage_logger=usage_logger,
         )
     except Exception:
         logger.exception("donation credit failed for %s", intent.intent_id)
-        # Roll back status so a manual retry can re-credit later
         intent.status = "pending"
         intent.confirmed_tx_hash = ""
         intent.confirmed_at = ""
         await repo.put(intent)
         return False
+
+    # §7 — bump donation_total_usdt + check referrer milestone
+    try:
+        old_total = float(getattr(new_profile, "donation_total_usdt", 0) or 0)
+        new_total = round(old_total + float(intent.amount_usdt), 4)
+        update_call = profile_repo.update(
+            intent.user_key, donation_total_usdt=new_total,
+        )
+        updated = (await update_call if hasattr(update_call, "__await__")
+                   else update_call)
+
+        # Schedule referrer milestone if referee has an inviter
+        if storage_account_name and getattr(updated, "invited_by_anon", ""):
+            from .referrer_milestones import schedule_for_donation
+            try:
+                referrer_user_key = await _resolve_referrer_user_key(
+                    profile_repo, storage_account_name,
+                    updated.invited_by_anon,
+                )
+                if referrer_user_key:
+                    await schedule_for_donation(
+                        storage_account_name, updated, referrer_user_key,
+                        new_total_usdt=new_total, old_total_usdt=old_total,
+                    )
+            except Exception:
+                logger.warning("referrer milestone schedule failed",
+                               exc_info=True)
+    except Exception:
+        logger.warning("donation_total_usdt update failed (non-fatal)",
+                       exc_info=True)
     return True
+
+
+async def _resolve_referrer_user_key(profile_repo, account_name: str,
+                                     anon_short: str) -> str | None:
+    """Find the referrer's user_key from their 8-char anon prefix.
+    Used by milestone scheduling. O(N) blob scan, MVP-acceptable."""
+    from azure.identity.aio import DefaultAzureCredential
+    from azure.storage.blob.aio import BlobServiceClient
+    creds = DefaultAzureCredential()
+    try:
+        async with BlobServiceClient(
+            account_url=f"https://{account_name}.blob.core.windows.net",
+            credential=creds,
+        ) as svc:
+            container = svc.get_container_client("users")
+            async for blob in container.list_blobs(name_starts_with=f"{anon_short[:2]}/"):
+                if not blob.name.endswith(".json"):
+                    continue
+                try:
+                    body = await (await container.get_blob_client(blob.name)
+                                  .download_blob()).readall()
+                    d = json.loads(body)
+                    if (d.get("anon_user_id") or "").startswith(anon_short):
+                        return d.get("user_key") or None
+                except Exception:
+                    continue
+    finally:
+        if hasattr(creds, "close"):
+            await creds.close()
+    return None
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -464,7 +526,8 @@ async def verify_tick(repo: DonationIntentRepo, profile_repo,
         if match is None:
             continue
         if await confirm_intent(repo, profile_repo, match, tx.tx_hash,
-                                usage_logger=usage_logger):
+                                usage_logger=usage_logger,
+                                storage_account_name=repo._account):
             confirmed += 1
             active.remove(match)
 
