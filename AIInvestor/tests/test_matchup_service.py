@@ -13,25 +13,26 @@ from services.movers_source import Mover, MoversSnapshot
 
 
 def _mk_snap() -> MoversSnapshot:
-    """Synthetic snapshot with 6 stock movers + 6 crypto movers."""
+    """Synthetic snapshot with 12 stock movers + 10 crypto movers — enough
+    for the 10-pair generator (3 free + 7 premium) without ticker exhaustion."""
     stocks = [
         Mover(t, t, "stock", price, pct) for (t, price, pct) in (
-            ("NVDA", 800.0, 0.12),
-            ("TSLA", 250.0, -0.08),
-            ("AAPL", 200.0, 0.07),
-            ("AMD",  150.0, -0.05),
-            ("META", 500.0, 0.04),
-            ("MSFT", 410.0, 0.03),
+            ("NVDA", 800.0, 0.12),  ("TSLA", 250.0, -0.08),
+            ("AAPL", 200.0, 0.07),  ("AMD",  150.0, -0.05),
+            ("META", 500.0, 0.04),  ("MSFT", 410.0, 0.03),
+            ("GOOG", 195.0, 0.06),  ("AMZN", 180.0, -0.04),
+            ("AVGO", 1500.0, 0.05), ("ORCL", 175.0, 0.02),
+            ("CRM",  290.0, -0.03), ("ADBE", 480.0, 0.01),
         )
     ]
     cryptos = [
-        Mover(t, t.replace("-USD", ""), "crypto", price, pct) for (t, price, pct) in (
-            ("BTC-USD", 70000.0, 0.10),
-            ("ETH-USD",  3500.0, -0.06),
-            ("SOL-USD",   200.0, 0.15),
-            ("DOGE-USD",  0.15,  0.20),
-            ("AVAX-USD",  35.0, -0.04),
-            ("MATIC-USD", 0.85,  0.05),
+        Mover(t, t.replace("-USD", ""), "crypto", price, pct)
+        for (t, price, pct) in (
+            ("BTC-USD", 70000.0, 0.10),  ("ETH-USD",  3500.0, -0.06),
+            ("SOL-USD",   200.0, 0.15),  ("DOGE-USD",  0.15,  0.20),
+            ("AVAX-USD",  35.0, -0.04),  ("MATIC-USD", 0.85,  0.05),
+            ("LINK-USD",  18.0,  0.07),  ("DOT-USD",    7.5, -0.02),
+            ("ADA-USD",    0.55, 0.08),  ("XRP-USD",    0.65, 0.04),
         )
     ]
     return MoversSnapshot(kst_date="2026-05-07", fetched_at="x",
@@ -39,34 +40,46 @@ def _mk_snap() -> MoversSnapshot:
 
 
 class TestGenerator:
-    def test_generates_three_matchups(self) -> None:
+    def test_generates_ten_matchups(self) -> None:
+        """Spec: 10 matchups per hour (3 free + 7 premium)."""
         snap = _mk_snap()
         ms = generate_matchups_for_hour(snap, "2026-05-07", 14)
-        assert len(ms) == 3
+        assert len(ms) == 10
 
-    def test_types_distributed(self) -> None:
+    def test_first_three_are_free(self) -> None:
+        """First 3 slots (m1/m2/m3) are visible to all users."""
         snap = _mk_snap()
         ms = generate_matchups_for_hour(snap, "2026-05-07", 14)
-        types = sorted([m.type for m in ms])
-        assert types == ["cc", "sc", "ss"]
+        free = [m for m in ms if not m.premium_only]
+        assert len(free) == 3
+        # Free slots are SS / CC / SC in order
+        free_types = [m.type for m in free]
+        assert "ss" in free_types
+        assert "cc" in free_types
+        assert "sc" in free_types
+
+    def test_premium_count(self) -> None:
+        """7 of 10 must be premium_only."""
+        snap = _mk_snap()
+        ms = generate_matchups_for_hour(snap, "2026-05-07", 14)
+        premium = [m for m in ms if m.premium_only]
+        assert len(premium) == 7
 
     def test_anchor_set_to_last_close(self) -> None:
         snap = _mk_snap()
         ms = generate_matchups_for_hour(snap, "2026-05-07", 14)
-        ss = next(m for m in ms if m.type == "ss")
-        assert ss.anchor_a == ss.asset_a.yesterday_pct or ss.anchor_a > 0
-        # Anchor should match the source mover's last_close
         for m in ms:
             assert m.anchor_a > 0
             assert m.anchor_b > 0
-            assert m.last_a == m.anchor_a  # initial gauge equals anchor
+            assert m.last_a == m.anchor_a
             assert m.last_b == m.anchor_b
 
     def test_resolve_at_distributed(self) -> None:
-        """3 matchups should have 3 different resolve times (distributed)."""
+        """Resolve times rotate +1/+2/+3 hours through 10 slots."""
         snap = _mk_snap()
         ms = generate_matchups_for_hour(snap, "2026-05-07", 14)
         resolve_times = {m.resolve_at_kst for m in ms}
+        # 10 matchups × 3 offsets → exactly 3 distinct resolve times
         assert len(resolve_times) == 3
 
     def test_no_duplicate_assets_in_pairings(self) -> None:
@@ -163,6 +176,31 @@ class TestPredictionDataclass:
                        side="a", submitted_at="2026-05-07T12:00:00")
         assert p.user_key == "uk"
         assert p.anon_user_id == "anon123"
+
+
+class TestPremiumGating:
+    def test_free_slots_have_premium_flag_false(self) -> None:
+        snap = _mk_snap()
+        ms = generate_matchups_for_hour(snap, "2026-05-07", 14)
+        for m in ms[:3]:
+            assert not m.premium_only, f"slot {m.id} should be free"
+
+    def test_premium_slots_have_premium_flag_true(self) -> None:
+        snap = _mk_snap()
+        ms = generate_matchups_for_hour(snap, "2026-05-07", 14)
+        for m in ms[3:]:
+            assert m.premium_only, f"slot {m.id} should be premium"
+
+    def test_no_duplicate_tickers_across_all_10(self) -> None:
+        """With 10 pairs × 2 sides = 20 picks; all should come from distinct
+        tickers in the pool (otherwise we ran out of variety)."""
+        snap = _mk_snap()
+        ms = generate_matchups_for_hour(snap, "2026-05-07", 14)
+        tickers = []
+        for m in ms:
+            tickers.append(m.asset_a.ticker)
+            tickers.append(m.asset_b.ticker)
+        assert len(tickers) == len(set(tickers))
 
 
 class TestMatchupId:

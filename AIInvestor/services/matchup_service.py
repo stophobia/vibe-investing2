@@ -39,7 +39,9 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────────────────────────────────────
 # Constants
 # ─────────────────────────────────────────────────────────────────────────────
-MATCHUPS_PER_HOUR = 3                # ≥3 per spec
+MATCHUPS_PER_HOUR_FREE = 3           # visible to all users
+MATCHUPS_PER_HOUR_PREMIUM = 10       # additional 7 require Premium subscription
+MATCHUPS_PER_HOUR = MATCHUPS_PER_HOUR_PREMIUM  # generator creates the full 10
 PREDICT_DEADLINE_MINUTES = 55        # picks lock 5 min before next hour rolls in
 RESOLVE_OFFSET_HOURS = (1, 2, 3)     # rotate so result times are spread
 PARTICIPATION_POINTS = 1
@@ -90,6 +92,7 @@ class Matchup:
     predictions: list[Prediction] = field(default_factory=list)
     created_at: str = ""
     resolved_at: str = ""
+    premium_only: bool = False  # if True, only Supporter+ users can see/predict
 
     def gauge_pct(self) -> tuple[float, float]:
         """Return (gauge_a_pct, gauge_b_pct) summing to 100 (clamped 5..95)."""
@@ -139,55 +142,93 @@ def _to_assetref(m: Mover) -> AssetRef:
 
 def generate_matchups_for_hour(snap: MoversSnapshot, kst_date: str,
                                hour: int) -> list[Matchup]:
-    """Build ≥3 matchups for the given KST hour from a movers snapshot.
+    """Build up to 10 matchups for the given KST hour from a movers snapshot.
 
-    Slot 1: stock vs stock  (top 2 stock movers, deterministic by hour)
-    Slot 2: coin  vs coin   (top 2 crypto movers)
-    Slot 3: stock vs coin   (mid stock × mid crypto, mixed)
+    First 3 (free for all): SS / CC / SC — rotates through top-6 movers per pool
+    Next 7 (premium_only):
+      - 4 SS pairs from stock pool (deeper rotation)
+      - 2 CC pairs from crypto pool
+      - 1 extra SC mixed pair
+
+    All slots use deterministic seeded RNG so the same (date, hour) input
+    yields the same matchups (so timer re-runs are idempotent).
     """
     rng = _seeded_rng(kst_date, hour)
     open_dt = _kst_now().replace(hour=hour, minute=0, second=0, microsecond=0)
     deadline_dt = open_dt + timedelta(minutes=PREDICT_DEADLINE_MINUTES)
 
-    # Pick from top-N movers, rotating by hour to vary which assets pair up
-    stock_pool = snap.stocks[:20]
-    crypto_pool = snap.cryptos[:20]
-    if len(stock_pool) < 4 or len(crypto_pool) < 4:
+    stock_pool = snap.stocks[:30]   # widened from 20 → 30 for premium variety
+    crypto_pool = snap.cryptos[:25]
+    if len(stock_pool) < 8 or len(crypto_pool) < 6:
         logger.warning("insufficient movers — stocks=%d cryptos=%d",
                        len(stock_pool), len(crypto_pool))
 
-    matchups: list[Matchup] = []
+    used_tickers: set[str] = set()
 
-    def _pair(pool: list[Mover], seed_offset: int) -> tuple[Mover, Mover] | None:
+    def _pair_distinct(pool: list[Mover], seed_offset: int
+                       ) -> tuple[Mover, Mover] | None:
+        """Pick 2 unused movers from pool (skips already-used tickers)."""
         if len(pool) < 2:
             return None
-        # Take 6 candidates, shuffle, pair 0 with 1 (first 2 after shuffle)
-        candidates = pool[: max(6, len(pool) // 2)]
-        idxs = list(range(len(candidates)))
+        candidates = [m for m in pool if m.ticker not in used_tickers]
+        if len(candidates) < 2:
+            return None
         rng2 = random.Random(rng.random() + seed_offset)
+        idxs = list(range(len(candidates)))
         rng2.shuffle(idxs)
         return candidates[idxs[0]], candidates[idxs[1]]
 
-    pairings: list[tuple[Mover, Mover, MatchupType]] = []
-    ss = _pair(stock_pool, 1)
+    pairings: list[tuple[Mover, Mover, MatchupType, bool]] = []  # last = premium
+
+    # ── 3 free slots ────────────────────────────────────────────────
+    ss = _pair_distinct(stock_pool, 1)
     if ss:
-        pairings.append((ss[0], ss[1], "ss"))
-    cc = _pair(crypto_pool, 2)
+        pairings.append((ss[0], ss[1], "ss", False))
+        used_tickers.add(ss[0].ticker); used_tickers.add(ss[1].ticker)
+    cc = _pair_distinct(crypto_pool, 2)
     if cc:
-        pairings.append((cc[0], cc[1], "cc"))
+        pairings.append((cc[0], cc[1], "cc", False))
+        used_tickers.add(cc[0].ticker); used_tickers.add(cc[1].ticker)
     if stock_pool and crypto_pool:
-        sidx = (hour * 3) % min(len(stock_pool), 6)
-        cidx = (hour * 5) % min(len(crypto_pool), 6)
-        # Avoid duplicates of the ss/cc picks
-        used_tickers = {p[0].ticker for p in pairings} | {p[1].ticker for p in pairings}
+        # Mixed: pick mid-rank stock × mid-rank crypto
+        sidx = (hour * 3) % min(len(stock_pool), 8)
+        cidx = (hour * 5) % min(len(crypto_pool), 8)
         while sidx < len(stock_pool) and stock_pool[sidx].ticker in used_tickers:
             sidx += 1
         while cidx < len(crypto_pool) and crypto_pool[cidx].ticker in used_tickers:
             cidx += 1
         if sidx < len(stock_pool) and cidx < len(crypto_pool):
-            pairings.append((stock_pool[sidx], crypto_pool[cidx], "sc"))
+            s_m, c_m = stock_pool[sidx], crypto_pool[cidx]
+            pairings.append((s_m, c_m, "sc", False))
+            used_tickers.add(s_m.ticker); used_tickers.add(c_m.ticker)
 
-    for i, (a_m, b_m, mtype) in enumerate(pairings):
+    # ── 7 premium-only slots ───────────────────────────────────────────
+    # 4 deeper SS, 2 deeper CC, 1 extra SC — all use unused tickers
+    for i in range(4):
+        ss_p = _pair_distinct(stock_pool, 10 + i)
+        if ss_p is None:
+            break
+        pairings.append((ss_p[0], ss_p[1], "ss", True))
+        used_tickers.add(ss_p[0].ticker); used_tickers.add(ss_p[1].ticker)
+    for i in range(2):
+        cc_p = _pair_distinct(crypto_pool, 20 + i)
+        if cc_p is None:
+            break
+        pairings.append((cc_p[0], cc_p[1], "cc", True))
+        used_tickers.add(cc_p[0].ticker); used_tickers.add(cc_p[1].ticker)
+    # 1 more mixed
+    if stock_pool and crypto_pool:
+        s_avail = [m for m in stock_pool if m.ticker not in used_tickers]
+        c_avail = [m for m in crypto_pool if m.ticker not in used_tickers]
+        if s_avail and c_avail:
+            rng3 = random.Random(rng.random() + 30)
+            s_m = s_avail[rng3.randrange(len(s_avail))]
+            c_m = c_avail[rng3.randrange(len(c_avail))]
+            pairings.append((s_m, c_m, "sc", True))
+            used_tickers.add(s_m.ticker); used_tickers.add(c_m.ticker)
+
+    matchups: list[Matchup] = []
+    for i, (a_m, b_m, mtype, premium) in enumerate(pairings):
         offset = RESOLVE_OFFSET_HOURS[i % len(RESOLVE_OFFSET_HOURS)]
         resolve_dt = open_dt + timedelta(hours=offset)
         m = Matchup(
@@ -206,6 +247,7 @@ def generate_matchups_for_hour(snap: MoversSnapshot, kst_date: str,
             status="open",
             winner="",
             created_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            premium_only=premium,
         )
         matchups.append(m)
 
@@ -469,11 +511,12 @@ async def ensure_matchups_for_hour(repo: MatchupRepo, account_name: str,
 # ─────────────────────────────────────────────────────────────────────────────
 async def submit_prediction(repo: MatchupRepo, matchup_id: str,
                             user_key: str, anon_user_id: str,
-                            side: Side) -> tuple[bool, str]:
+                            side: Side, *,
+                            is_premium: bool = False) -> tuple[bool, str]:
     """Submit a prediction. Returns (ok, reason).
 
     Reasons: "ok" | "not_found" | "deadline_passed" | "already_submitted" |
-             "invalid_side"
+             "invalid_side" | "premium_only"
     """
     if side not in ("a", "b"):
         return False, "invalid_side"
@@ -483,6 +526,10 @@ async def submit_prediction(repo: MatchupRepo, matchup_id: str,
         return False, "not_found"
     if m.status != "open":
         return False, "deadline_passed"
+
+    # Premium gate: free users cannot submit on premium-only matchups
+    if m.premium_only and not is_premium:
+        return False, "premium_only"
 
     try:
         deadline = datetime.fromisoformat(m.deadline_kst)

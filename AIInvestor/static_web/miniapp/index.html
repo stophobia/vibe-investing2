@@ -339,8 +339,13 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   <div class="section-title" style="margin-top:18px;">⚡ 매치업 예측 (전일 상승률 기반)</div>
   <div class="meta" style="margin-bottom:8px;">
     매시간 자동 생성 · 30분 단위 게이지 갱신 · 정답 +30 P
+    <br><span id="matchup-quota-line">무료 3개 · 프리미엄 구독 시 10개</span>
   </div>
+  <div id="matchup-premium-cta" style="display:none;"></div>
   <div id="matchup-list">로딩 중…</div>
+
+  <div class="section-title" style="margin-top:18px;">📊 시간별 승패 (최근 7일)</div>
+  <div id="matchup-history">로딩 중…</div>
 
   <div class="section-title" style="margin-top:18px;">📈 내 예측 성적</div>
   <div class="card" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; text-align:center;">
@@ -2141,12 +2146,68 @@ function trackPredictionClicks(rootEl) {
 
 let _matchupCache = null;
 
+async function loadMatchupHistory() {
+  const el = document.getElementById("matchup-history");
+  if (!el) return;
+  try {
+    const r = await api("/matchup/history?days=7");
+    const hours = (r.hours || []).filter(h => h.total > 0);
+    if (!hours.length) {
+      el.innerHTML = `<div class="card meta">아직 결산된 예측이 없어요. 첫 예측 후 7일 누적 통계가 여기 표시됩니다.</div>`;
+      return;
+    }
+    // Compact 24-cell hour grid with W/L rate
+    const cells = Array.from({length: 24}, (_, h) => {
+      const slot = (r.hours || []).find(x => x.hour === h) || {hour:h, total:0, wins:0, losses:0, ties:0, win_rate:0};
+      const opacity = slot.total === 0 ? 0.2 : (0.4 + slot.total / 20).toFixed(2);
+      const bg = slot.total === 0
+        ? "#1f1f2e"
+        : slot.win_rate >= 0.55
+          ? `rgba(76,175,80,${opacity})`
+          : slot.win_rate <= 0.45
+            ? `rgba(229,115,115,${opacity})`
+            : `rgba(116,185,255,${opacity})`;
+      const label = slot.total === 0 ? "—" : `${(slot.win_rate*100).toFixed(0)}%`;
+      const tip = slot.total === 0
+        ? `${h}시 · 데이터 없음`
+        : `${h}시 · ${slot.wins}W ${slot.losses}L ${slot.ties}T (총 ${slot.total})`;
+      return `<div title="${tip}" style="background:${bg}; padding:6px 2px; text-align:center; border-radius:4px;
+                     font-size:10px; font-weight:600;">
+        <div style="font-size:9px; color:#888;">${h}</div>
+        <div>${label}</div>
+      </div>`;
+    }).join("");
+    const totals = (r.hours || []).reduce((acc, h) => ({
+      total: acc.total + h.total,
+      wins: acc.wins + h.wins,
+      losses: acc.losses + h.losses,
+    }), {total: 0, wins: 0, losses: 0});
+    const totalWinRate = totals.total > 0 ? (totals.wins / totals.total * 100).toFixed(1) : "0.0";
+    el.innerHTML = `
+      <div class="card">
+        <div style="display:grid; grid-template-columns:repeat(12,1fr); gap:3px; margin-bottom:8px;">
+          ${cells}
+        </div>
+        <div class="meta" style="text-align:center; font-size:11px;">
+          🟢 좋음 (≥55%) · 🔵 보통 · 🔴 약함 (≤45%) — 색 진하기 = 표본 크기
+        </div>
+        <div style="text-align:center; margin-top:6px; font-size:13px; color:var(--accent); font-weight:700;">
+          7일 누적: ${totals.wins}승 ${totals.losses}패 (정확도 ${totalWinRate}%)
+        </div>
+      </div>`;
+  } catch (e) {
+    el.innerHTML = `<div class="card meta">시간별 통계 로딩 실패: ${escapeHtml(e.message || "")}</div>`;
+  }
+}
+
+
 async function loadMatchups(attempt = 1) {
   const maxAttempts = 3;
   try {
     const r = await api("/matchup/active");
     _matchupCache = r;
     renderMatchups(r);
+    loadMatchupHistory();
   } catch (e) {
     // Auto-retry on transient network failures (cold-start, SSL handshake, etc.)
     if (attempt < maxAttempts) {
@@ -2198,6 +2259,28 @@ function _kstHM(iso) {
 }
 
 function renderMatchups(r) {
+  // Premium upsell banner — shown to non-Supporter users
+  const premiumCta = document.getElementById("matchup-premium-cta");
+  if (!r.is_premium) {
+    premiumCta.innerHTML = `
+      <div class="card" style="background:linear-gradient(135deg,#2a2a3c 0%,#3a2a4a 100%); border-left:4px solid var(--accent); margin-bottom:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <div style="flex:1;">
+            <div class="title" style="font-size:13px;">🌟 프리미엄 구독 시 매시간 10개 매치업</div>
+            <div class="meta" style="margin-top:4px; line-height:1.5;">
+              현재 무료 3개 + 프리미엄 잠금 7개. 1 USDT 후원 = Supporter 등급 → 즉시 잠금 해제 + 매일 reroll 무료 1회.
+            </div>
+          </div>
+          <button class="btn-mission" id="matchup-go-donate" style="white-space:nowrap; padding:8px 12px;">구독하기</button>
+        </div>
+      </div>`;
+    document.getElementById("matchup-go-donate")?.addEventListener("click", () => {
+      _switchToTab("invite");
+    });
+  } else {
+    premiumCta.innerHTML = "";
+  }
+
   const ms = (r.matchups || []).filter(m => m.status === "open" || (m.status === "resolved" && Date.now() - new Date(m.resolve_at_kst).getTime() < 3600_000));
   if (!ms.length) {
     document.getElementById("matchup-list").innerHTML =
@@ -2206,11 +2289,27 @@ function renderMatchups(r) {
   }
 
   const html = ms.map(m => {
+    // Locked premium card (shown only to non-premium users)
+    if (m.locked) {
+      return `<div class="card" style="border-left:4px solid #555; opacity:.85;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="title" style="font-size:13px;">🔒 ${_typeLabel(m.type)} · 프리미엄 전용</div>
+            <div class="meta" style="margin-top:4px;">결산 ${_kstHM(m.resolve_at_kst)} · ${m.predictions_count}명 참여</div>
+          </div>
+          <button class="btn-mission" onclick="_switchToTab('invite')" style="font-size:12px; padding:6px 12px;">잠금 해제</button>
+        </div>
+      </div>`;
+    }
+
     const ga = m.gauge_a_pct, gb = m.gauge_b_pct;
     const liveA = m.last && m.asset_a.anchor ? (m.asset_a.last - m.asset_a.anchor) / m.asset_a.anchor : null;
     const liveB = m.last && m.asset_b.anchor ? (m.asset_b.last - m.asset_b.anchor) / m.asset_b.anchor : null;
     const livePctA = m.asset_a.anchor > 0 ? (m.asset_a.last - m.asset_a.anchor) / m.asset_a.anchor : 0;
     const livePctB = m.asset_b.anchor > 0 ? (m.asset_b.last - m.asset_b.anchor) / m.asset_b.anchor : 0;
+    const premiumBadge = m.premium_only
+      ? `<span style="background:linear-gradient(90deg,#fd79a8,var(--accent)); color:#000; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; margin-left:6px;">PREMIUM</span>`
+      : "";
 
     // Backend status is "open" until the resolver cron flips it; check
     // deadline client-side so users can't click after lock-time.
@@ -2254,7 +2353,7 @@ function renderMatchups(r) {
     return `
       <div class="card" style="border-left:4px solid var(--accent);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <div class="title" style="font-size:13px;">${_typeLabel(m.type)} · ${m.predictions_count}명 참여</div>
+          <div class="title" style="font-size:13px;">${_typeLabel(m.type)}${premiumBadge} · ${m.predictions_count}명 참여</div>
           <span class="meta" style="font-size:11px;">${statusBadge}</span>
         </div>
 

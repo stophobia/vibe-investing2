@@ -2260,7 +2260,13 @@ async def fortune_reroll(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.route(route="gamification/matchup/active", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
 async def matchup_active(req: func.HttpRequest) -> func.HttpResponse:
-    """List today's matchups (open + recently resolved). Returns gauge state."""
+    """List today's matchups (open + recently resolved). Returns gauge state.
+
+    Premium gating: 7 of 10 matchups per hour are flagged premium_only.
+    Free users see them with masked tickers + a `locked: true` flag so the
+    UI can show the upsell CTA. Premium users (donation_total_usdt ≥ $1)
+    see full data.
+    """
     if req.method == "OPTIONS":
         return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
     await _bootstrap()
@@ -2269,13 +2275,19 @@ async def matchup_active(req: func.HttpRequest) -> func.HttpResponse:
             status_code=200, mimetype="application/json", headers=_CORS_HEADERS)
 
     user_key = await _verify_telegram_init_data_get_userkey(req)
-    user_anon = ""
+    is_premium = False
     if user_key:
         try:
-            from services.user_profile import make_anon_user_id
-            user_anon = make_anon_user_id(user_key, _config.user_id_salt)
-        except Exception:
-            pass
+            profile = await _profile_repo.get_or_create(
+                user_key=user_key,
+                default_language=_detect_lang_from_init_data(req),
+                default_persona="buffett",
+            )
+        except AttributeError:
+            profile = _profile_repo.get_or_create(
+                user_key=user_key, default_language="ko", default_persona="buffett")
+        from services.referrer_milestones import is_supporter_or_higher
+        is_premium = is_supporter_or_higher(getattr(profile, "donation_total_usdt", 0) or 0)
 
     from datetime import datetime, timezone, timedelta
     kst_today = (datetime.now(timezone.utc) + timedelta(hours=9)).date().isoformat()
@@ -2285,12 +2297,40 @@ async def matchup_active(req: func.HttpRequest) -> func.HttpResponse:
 
     out = []
     for m in matchups:
+        is_locked = m.premium_only and not is_premium
         gauge_a, gauge_b = m.gauge_pct()
         my_side = ""
         if user_key:
             mine = next((p for p in m.predictions if p.user_key == user_key), None)
             if mine:
                 my_side = mine.side
+
+        # Free users see masked metadata for premium-only matchups (peek-tease)
+        if is_locked:
+            out.append({
+                "id": m.id,
+                "type": m.type,
+                "asset_a": {"ticker": "***", "name": "프리미엄 잠금",
+                            "kind": m.asset_a.kind, "yesterday_pct": 0.0,
+                            "anchor": 0.0, "last": 0.0},
+                "asset_b": {"ticker": "***", "name": "프리미엄 잠금",
+                            "kind": m.asset_b.kind, "yesterday_pct": 0.0,
+                            "anchor": 0.0, "last": 0.0},
+                "open_at_kst": m.open_at_kst,
+                "deadline_kst": m.deadline_kst,
+                "resolve_at_kst": m.resolve_at_kst,
+                "gauge_a_pct": 50.0,
+                "gauge_b_pct": 50.0,
+                "last_polled_at": "",
+                "status": m.status,
+                "winner": "",
+                "predictions_count": len(m.predictions),
+                "my_side": "",
+                "premium_only": True,
+                "locked": True,
+            })
+            continue
+
         out.append({
             "id": m.id,
             "type": m.type,
@@ -2310,16 +2350,112 @@ async def matchup_active(req: func.HttpRequest) -> func.HttpResponse:
             "winner": m.winner,
             "predictions_count": len(m.predictions),
             "my_side": my_side,
+            "premium_only": m.premium_only,
+            "locked": False,
         })
 
     headers = dict(_CORS_HEADERS)
     headers["Cache-Control"] = "private, max-age=20"
     return func.HttpResponse(
         json.dumps({"matchups": out, "kst_date": kst_today,
-                    "participation_points": 1, "correct_points": 30},
+                    "participation_points": 1, "correct_points": 30,
+                    "is_premium": is_premium,
+                    "free_per_hour": 3, "premium_per_hour": 10},
                    ensure_ascii=False),
         status_code=200, mimetype="application/json", headers=headers,
     )
+
+
+@app.route(route="gamification/matchup/history", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "OPTIONS"])
+async def matchup_history(req: func.HttpRequest) -> func.HttpResponse:
+    """Per-hour win/loss breakdown for the caller (or aggregate if no auth).
+
+    Query: ?date=YYYY-MM-DD (default today KST), ?days=1|3|7
+    Returns: {hours: [{hour, total, wins, losses, ties, win_rate}, ...]}
+    """
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS_HEADERS)
+    await _bootstrap()
+    if _matchup_repo is None:
+        return func.HttpResponse(json.dumps({"hours": []}),
+            status_code=200, mimetype="application/json", headers=_CORS_HEADERS)
+
+    user_key = await _verify_telegram_init_data_get_userkey(req)
+    from datetime import datetime, timezone, timedelta
+    import re
+    kst_today = (datetime.now(timezone.utc) + timedelta(hours=9)).date()
+    target_date_str = (req.params.get("date") or "").strip()
+    if target_date_str and not re.match(r"^\d{4}-\d{2}-\d{2}$", target_date_str):
+        return func.HttpResponse(json.dumps({"error": "invalid_date"}),
+            status_code=400, mimetype="application/json", headers=_CORS_HEADERS)
+    target_date = (datetime.strptime(target_date_str, "%Y-%m-%d").date()
+                   if target_date_str else kst_today)
+    try:
+        days = max(1, min(7, int(req.params.get("days") or 1)))
+    except ValueError:
+        days = 1
+
+    # Aggregate over `days` ending at target_date
+    by_hour: dict[int, dict[str, int]] = {}
+    for d_offset in range(days):
+        d = target_date - timedelta(days=d_offset)
+        try:
+            ms = await _matchup_repo.list_for_date(d.isoformat())
+        except Exception:
+            continue
+        for m in ms:
+            if m.status != "resolved":
+                continue
+            try:
+                hour = int(m.id.split("-h")[1].split("-m")[0])
+            except (IndexError, ValueError):
+                continue
+            slot = by_hour.setdefault(hour, {"total": 0, "wins": 0, "losses": 0, "ties": 0})
+            # If user_key provided, count only that user's predictions; else
+            # count all predictions globally.
+            if user_key:
+                mine = next((p for p in m.predictions if p.user_key == user_key), None)
+                if mine is None:
+                    continue
+                slot["total"] += 1
+                if m.winner == "tie":
+                    slot["ties"] += 1
+                elif mine.side == m.winner:
+                    slot["wins"] += 1
+                else:
+                    slot["losses"] += 1
+            else:
+                # Global: total = all predictions on this matchup, wins/losses
+                # from those whose chosen side matched winner
+                for p in m.predictions:
+                    slot["total"] += 1
+                    if m.winner == "tie":
+                        slot["ties"] += 1
+                    elif p.side == m.winner:
+                        slot["wins"] += 1
+                    else:
+                        slot["losses"] += 1
+
+    hours_out = []
+    for h in range(24):
+        s = by_hour.get(h, {"total": 0, "wins": 0, "losses": 0, "ties": 0})
+        win_rate = (s["wins"] / s["total"]) if s["total"] else 0.0
+        hours_out.append({
+            "hour": h,
+            "total": s["total"],
+            "wins": s["wins"],
+            "losses": s["losses"],
+            "ties": s["ties"],
+            "win_rate": round(win_rate, 4),
+        })
+
+    headers = dict(_CORS_HEADERS)
+    headers["Cache-Control"] = "private, max-age=120"
+    return func.HttpResponse(
+        json.dumps({"hours": hours_out, "date": target_date.isoformat(),
+                    "days": days, "scope": "user" if user_key else "global"},
+                   ensure_ascii=False),
+        status_code=200, mimetype="application/json", headers=headers)
 
 
 @app.route(route="gamification/matchup/predict", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST", "OPTIONS"])
@@ -2353,15 +2489,29 @@ async def matchup_predict(req: func.HttpRequest) -> func.HttpResponse:
         PARTICIPATION_POINTS, CORRECT_POINTS, submit_prediction,
     )
     from services.point_ledger import add_points
+    from services.referrer_milestones import is_supporter_or_higher
     from services.user_profile import make_anon_user_id
 
+    # Check premium status for matchup gate
+    try:
+        profile = await _profile_repo.get_or_create(
+            user_key=user_key,
+            default_language=_detect_lang_from_init_data(req),
+            default_persona="buffett",
+        )
+    except AttributeError:
+        profile = _profile_repo.get_or_create(
+            user_key=user_key, default_language="ko", default_persona="buffett")
+    is_premium = is_supporter_or_higher(getattr(profile, "donation_total_usdt", 0) or 0)
+
     anon = make_anon_user_id(user_key, _config.user_id_salt)
-    ok, reason = await submit_prediction(_matchup_repo, matchup_id, user_key,
-                                         anon, side)
+    ok, reason = await submit_prediction(
+        _matchup_repo, matchup_id, user_key, anon, side,
+        is_premium=is_premium,
+    )
     payload = {"success": ok, "reason": reason}
 
     if ok:
-        # Credit participation points immediately
         try:
             await add_points(_profile_repo, user_key, PARTICIPATION_POINTS,
                              reason="matchup_participation", ref=matchup_id,
@@ -2371,8 +2521,11 @@ async def matchup_predict(req: func.HttpRequest) -> func.HttpResponse:
         payload["participation_points"] = PARTICIPATION_POINTS
         payload["correct_points"] = CORRECT_POINTS
 
-    status = 200 if ok else (409 if reason == "already_submitted"
-                             else 410 if reason == "deadline_passed" else 400)
+    status = (200 if ok
+              else 409 if reason == "already_submitted"
+              else 410 if reason == "deadline_passed"
+              else 402 if reason == "premium_only"  # payment-required
+              else 400)
     return func.HttpResponse(
         json.dumps(payload, ensure_ascii=False),
         status_code=status, mimetype="application/json", headers=_CORS_HEADERS_POST,
