@@ -1,0 +1,97 @@
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "SSRN Working Papers — HoKwang Kim",
+  "alternateName": "SSRN 작업 논문 모음 — 김호광",
+  "description": "Four SSRN working papers (April–May 2026) covering cryptocurrency market microstructure, BNB Chain airdrop economics, BNB-ETH beta decomposition, and multilingual LLM evaluation in equity selection. Total 113 pages.",
+  "author": {
+    "@type": "Person",
+    "name": "HoKwang Kim",
+    "alternateName": ["Dennis Kim", "김호광"],
+    "affiliation": {"@type": "Organization", "name": "Betalabs Inc.", "url": "https://betalabs.io"},
+    "email": "gameworker@gmail.com",
+    "identifier": "https://orcid.org/0009-0002-0962-2175",
+    "sameAs": [
+      "https://orcid.org/0009-0002-0962-2175",
+      "https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=11276088",
+      "https://github.com/gameworkerkim"
+    ]
+  },
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "dateModified": "2026-05-12",
+  "inLanguage": ["en", "ko"],
+  "hasPart": [
+    {
+      "@type": "ScholarlyArticle",
+      "@id": "https://doi.org/10.2139/ssrn.6632838",
+      "headline": "The 72-Hour Shock? Preliminary Evidence from 52 Token Unlock Events on Binance",
+      "alternateName": "72시간의 쇼크? 바이낸스 52개 토큰 언락 이벤트의 예비적 증거",
+      "datePublished": "2026-04-24",
+      "url": "https://ssrn.com/abstract=6632838",
+      "identifier": [
+        {"@type": "PropertyValue", "propertyID": "DOI", "value": "10.2139/ssrn.6632838"},
+        {"@type": "PropertyValue", "propertyID": "SSRN", "value": "6632838"}
+      ],
+      "inLanguage": "en",
+      "pageStart": 1, "pageEnd": 21,
+      "keywords": "token unlock, event study, Binance, cryptocurrency, market microstructure, abnormal returns, altcoin, vesting schedule",
+      "publisher": {"@type": "Organization", "name": "SSRN"},
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "isAccessibleForFree": true
+    },
+    {
+      "@type": "ScholarlyArticle",
+      "@id": "https://doi.org/10.2139/ssrn.6688740",
+      "headline": "Distribution Asymmetry of Centralized Exchange Airdrops and the BNB Chain Ecosystem: BNB Holder Gain, Foundation Disaster, and the Decoupling Pattern of BNB Chain",
+      "alternateName": "중앙화 거래소 에어드롭의 분배 비대칭과 BNB 체인 생태계",
+      "datePublished": "2026-05-11",
+      "url": "https://ssrn.com/abstract=6688740",
+      "identifier": [
+        {"@type": "PropertyValue", "propertyID": "DOI", "value": "10.2139/ssrn.6688740"},
+        {"@type": "PropertyValue", "propertyID": "SSRN", "value": "6688740"}
+      ],
+      "inLanguage": "en",
+      "pageStart": 1, "pageEnd": 55,
+      "keywords": "airdrop, Megadrop, BNB Chain, centralized exchange, distribution asymmetry, tokenomics, foundation treasury, Binance, ecosystem decoupling",
+      "publisher": {"@type": "Organization", "name": "SSRN"},
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "isAccessibleForFree": true
+    },
+    {
+      "@type": "ScholarlyArticle",
+      "@id": "https://doi.org/10.2139/ssrn.6705598",
+      "headline": "Less Volume, More Variety: An Inverse Relationship Between LLM Output Length and Contrarian Discovery in Pharmaceutical Stock Selection",
+      "alternateName": "제약 섹터 종목 선별에서 LLM 출력 길이와 컨트라리안 발굴의 역상관 관계",
+      "datePublished": "2026-05-11",
+      "url": "https://ssrn.com/abstract=6705598",
+      "identifier": [
+        {"@type": "PropertyValue", "propertyID": "DOI", "value": "10.2139/ssrn.6705598"},
+        {"@type": "PropertyValue", "propertyID": "SSRN", "value": "6705598"}
+      ],
+      "inLanguage": "en",
+      "pageStart": 1, "pageEnd": 9,
+      "keywords": "large language model, LLM, output length, contrarian discovery, stock selection, pharmaceutical sector, compression-forces-selection, Spearman correlation, ChatGPT, Claude, DeepSeek, Gemini, model ensemble, token budget",
+      "publisher": {"@type": "Organization", "name": "SSRN"},
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "isAccessibleForFree": true
+    },
+    {
+      "@type": "ScholarlyArticle",
+      "@id": "https://doi.org/10.2139/ssrn.6750298",
+      "headline": "Directional Decoupling: Volatility-Ratio-Driven Beta Compression in the BNB-ETH Pair, May 2022 – April 2026",
+      "alternateName": "방향성 디커플링 — BNB-ETH 페어에서 변동성 비율 채널에 의한 베타 압축",
+      "datePublished": "2026-05-12",
+      "url": "https://ssrn.com/abstract=6750298",
+      "identifier": [
+        {"@type": "PropertyValue", "propertyID": "DOI", "value": "10.2139/ssrn.6750298"},
+        {"@type": "PropertyValue", "propertyID": "SSRN", "value": "6750298"}
+      ],
+      "inLanguage": "en",
+      "pageStart": 1, "pageEnd": 28,
+      "keywords": "beta decomposition, volatility ratio, directional decoupling, BNB, Ethereum, cryptocurrency, DCC-GARCH, variance decomposition, rolling beta, correlation",
+      "publisher": {"@type": "Organization", "name": "SSRN"},
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "isAccessibleForFree": true
+    }
+  ]
+}

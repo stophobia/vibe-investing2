@@ -1,0 +1,107 @@
+# Citation File Format (CFF) v1.2.0
+# https://citation-file-format.github.io/
+# This file is GitHub-recognized: GitHub renders a "Cite this repository" button.
+
+cff-version: 1.2.0
+message: "If you use any of these working papers, please cite the specific paper via its SSRN DOI."
+type: software
+title: "SSRN Working Papers — HoKwang Kim"
+abstract: >-
+  Four SSRN working papers (April–May 2026) covering cryptocurrency market
+  microstructure, BNB Chain ecosystem economics, and multilingual LLM
+  evaluation in equity selection. Total 113 pages.
+
+authors:
+  - family-names: Kim
+    given-names: HoKwang
+    alias: Dennis Kim
+    name-particle: ""
+    name-suffix: ""
+    affiliation: "Betalabs Inc."
+    email: gameworker@gmail.com
+    orcid: "https://orcid.org/0009-0002-0962-2175"
+
+contact:
+  - family-names: Kim
+    given-names: HoKwang
+    email: gameworker@gmail.com
+
+repository-code: "https://github.com/gameworkerkim/vibe-investing"
+license: CC-BY-4.0
+date-released: "2026-05-12"
+version: "2026.05.12"
+
+keywords:
+  - cryptocurrency
+  - market microstructure
+  - token unlock
+  - airdrop
+  - BNB Chain
+  - Binance
+  - beta decomposition
+  - volatility ratio
+  - large language model
+  - contrarian discovery
+  - event study
+
+# Per-paper preferred citations
+references:
+  - type: article
+    title: "The 72-Hour Shock? Preliminary Evidence from 52 Token Unlock Events on Binance"
+    authors:
+      - family-names: Kim
+        given-names: HoKwang
+        orcid: "https://orcid.org/0009-0002-0962-2175"
+        affiliation: "Betalabs Inc."
+    year: 2026
+    month: 4
+    publisher:
+      name: SSRN
+    doi: 10.2139/ssrn.6632838
+    url: "https://ssrn.com/abstract=6632838"
+    notes: "SSRN Working Paper No. 6632838"
+
+  - type: article
+    title: "Distribution Asymmetry of Centralized Exchange Airdrops and the BNB Chain Ecosystem: BNB Holder Gain, Foundation Disaster, and the Decoupling Pattern of BNB Chain"
+    authors:
+      - family-names: Kim
+        given-names: HoKwang
+        orcid: "https://orcid.org/0009-0002-0962-2175"
+        affiliation: "Betalabs Inc."
+    year: 2026
+    month: 5
+    publisher:
+      name: SSRN
+    doi: 10.2139/ssrn.6688740
+    url: "https://ssrn.com/abstract=6688740"
+    notes: "SSRN Working Paper No. 6688740"
+
+  - type: article
+    title: "Less Volume, More Variety: An Inverse Relationship Between LLM Output Length and Contrarian Discovery in Pharmaceutical Stock Selection"
+    authors:
+      - family-names: Kim
+        given-names: HoKwang
+        orcid: "https://orcid.org/0009-0002-0962-2175"
+        affiliation: "Betalabs Inc."
+    year: 2026
+    month: 5
+    publisher:
+      name: SSRN
+    doi: 10.2139/ssrn.6705598
+    url: "https://ssrn.com/abstract=6705598"
+    notes: "SSRN Working Paper No. 6705598"
+
+  - type: article
+    title: "Directional Decoupling: Volatility-Ratio-Driven Beta Compression in the BNB-ETH Pair, May 2022 – April 2026"
+    authors:
+      - family-names: Kim
+        given-names: HoKwang
+        orcid: "https://orcid.org/0009-0002-0962-2175"
+        affiliation: "Betalabs Inc."
+    year: 2026
+    month: 5
+    publisher:
+      name: SSRN
+    doi: 10.2139/ssrn.6750298
+    url: "https://ssrn.com/abstract=6750298"
+    notes: "SSRN Working Paper No. 6750298"

@@ -1,0 +1,100 @@
+TY  - GEN
+T1  - The 72-Hour Shock? Preliminary Evidence from 52 Token Unlock Events on Binance
+AU  - Kim, HoKwang
+A1  - Dennis Kim
+PY  - 2026
+DA  - 2026/04/24
+PB  - SSRN
+M3  - SSRN Working Paper
+SN  - 6632838
+DO  - 10.2139/ssrn.6632838
+UR  - https://ssrn.com/abstract=6632838
+AB  - This paper documents a preliminary empirical pattern surrounding token unlock events on Binance using 52 events from 2024 to early 2026. Short-window event studies reveal systematic negative abnormal returns concentrated in the 72-hour window following unlock, surviving market-beta adjustments and robustness checks.
+KW  - token unlock
+KW  - event study
+KW  - Binance
+KW  - cryptocurrency
+KW  - market microstructure
+KW  - abnormal returns
+KW  - altcoin
+KW  - vesting schedule
+N1  - SSRN Working Paper No. 6632838; ORCID 0009-0002-0962-2175
+LA  - en
+ER  -
+
+TY  - GEN
+T1  - Distribution Asymmetry of Centralized Exchange Airdrops and the BNB Chain Ecosystem: BNB Holder Gain, Foundation Disaster, and the Decoupling Pattern of BNB Chain
+AU  - Kim, HoKwang
+A1  - Dennis Kim
+PY  - 2026
+DA  - 2026/05/11
+PB  - SSRN
+M3  - SSRN Working Paper
+SN  - 6688740
+DO  - 10.2139/ssrn.6688740
+UR  - https://ssrn.com/abstract=6688740
+AB  - Examines the distribution-asymmetry structure of centralized-exchange airdrop campaigns, focusing on Binance's Megadrop program and the BNB Chain ecosystem. Decomposes realized economic outcomes across three stakeholder cohorts (BNB holders, project foundations, retail participants) and documents systematic BNB-holder gains, foundation losses, and a cross-domain decoupling pattern between BNB Chain on-chain activity and Megadrop token prices.
+KW  - airdrop
+KW  - Megadrop
+KW  - BNB Chain
+KW  - centralized exchange
+KW  - distribution asymmetry
+KW  - tokenomics
+KW  - foundation treasury
+KW  - Binance
+KW  - ecosystem decoupling
+N1  - SSRN Working Paper No. 6688740; ORCID 0009-0002-0962-2175
+LA  - en
+ER  -
+
+TY  - GEN
+T1  - Less Volume, More Variety: An Inverse Relationship Between LLM Output Length and Contrarian Discovery in Pharmaceutical Stock Selection
+AU  - Kim, HoKwang
+A1  - Dennis Kim
+PY  - 2026
+DA  - 2026/05/11
+PB  - SSRN
+M3  - SSRN Working Paper
+SN  - 6705598
+DO  - 10.2139/ssrn.6705598
+UR  - https://ssrn.com/abstract=6705598
+AB  - Under identical prompts to four frontier LLMs (ChatGPT, Claude, DeepSeek, Gemini), shorter-output models produce proportionally more contrarian stock picks. Spearman rank correlation between output length and contrarian discovery rate is -0.80 across four models and -1.00 excluding a stale-data outlier. Proposes a compression-forces-selection mechanism and outlines a five-study research agenda.
+KW  - large language model
+KW  - LLM
+KW  - output length
+KW  - contrarian discovery
+KW  - stock selection
+KW  - pharmaceutical sector
+KW  - compression-forces-selection
+KW  - Spearman correlation
+KW  - model ensemble
+KW  - token budget
+N1  - SSRN Working Paper No. 6705598; Letter format; ORCID 0009-0002-0962-2175
+LA  - en
+ER  -
+
+TY  - GEN
+T1  - Directional Decoupling: Volatility-Ratio-Driven Beta Compression in the BNB-ETH Pair, May 2022 – April 2026
+AU  - Kim, HoKwang
+A1  - Dennis Kim
+PY  - 2026
+DA  - 2026/05/12
+PB  - SSRN
+M3  - SSRN Working Paper
+SN  - 6750298
+DO  - 10.2139/ssrn.6750298
+UR  - https://ssrn.com/abstract=6750298
+AB  - Documents an instance of channel-specific beta change in BNB-ETH, May 2022 to April 2026. Static beta falls 16.9 percent while the Pearson correlation is essentially unchanged. A formal variance decomposition attributes 100 percent of the beta change to the volatility-ratio channel. DCC-GARCH dynamic-conditional-beta confirms the direction. Formalizes 'directional decoupling' as a distinct phenomenon from co-movement weakening.
+KW  - beta decomposition
+KW  - volatility ratio
+KW  - directional decoupling
+KW  - BNB
+KW  - Ethereum
+KW  - cryptocurrency
+KW  - DCC-GARCH
+KW  - variance decomposition
+KW  - rolling beta
+KW  - correlation
+N1  - SSRN Working Paper No. 6750298; ORCID 0009-0002-0962-2175
+LA  - en
+ER  -
