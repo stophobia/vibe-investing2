@@ -114,7 +114,7 @@
 > KYC/AML은 그대로 강하게 유지하면서 외국인 접근 규제만 자율화해도,
 > 김치 프리미엄은 구조적으로 축소될 수 있습니다."**
 >
-> — 김호광(HoKwang Kim), 베타랩스 대표 · Cyworld Z 전 CEO
+> — 김호광(HoKwang Kim), 베타랩스 대표 · CyworldZ 전 CEO
 
 ---
 
