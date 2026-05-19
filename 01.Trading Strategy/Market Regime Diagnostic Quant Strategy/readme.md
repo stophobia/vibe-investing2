@@ -2,6 +2,8 @@
 
 > **Market Regime Diagnostic Strategy (MRDS) 프롬프트** 를 ChatGPT · Claude · DeepSeek · Gemini 4개 frontier LLM 에 *동일 시점·동일 사양* 으로 실행한 결과의 공통점·차이점·시사점 종합 분석
 
+한 줄 요약: DeepSeek는 기관 수준의 보고서를 뽑아줬고, Claude는 괜찮은 보고서, ChatGPT는 부실한 내용을 줬다. 지금은 단기 조정이라고 판단하고 있다.
+
 ![MRDS 4-LLM 교차검증 인포그래픽](./infographic.png)
 
 ---
