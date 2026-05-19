@@ -1,322 +1,378 @@
-# MRDS 시장 레짐 진단 리포트 — 2026.05.19
-
-> **Market Regime Diagnostic Strategy (MRDS) Composite Score**
-> 진단 기준일: 2026년 5월 19일 (한국시간 화요일, 미 5/18 장 마감 기준)
-> 진단 대상: "May'26 인플레 재부각 + 반도체 신고가 + Burry vs Ives 충돌" 국면
+# Market Regime Diagnostic Strategy (MRDS) 진단 리포트
+## 시점: 2026년 5월 19일 (한국시간 5월 20일 아침 작성)
+## 대상: AI 슈퍼사이클 vs Iran 전쟁發 인플레이션 충돌 진단
 
 ---
 
-## 📌 EXECUTIVE SUMMARY (먼저 결론)
-
-| 항목 | 결과 |
-|------|------|
-| **3-Layer Composite Score** | **+30점** (±8 오차, 레인지 +22 ~ +38) |
-| **분류 시나리오** | **A/B 경계 — Mild Correction 우위, Healthy Rotation 가능성 25%** |
-| **Tie-Breaker 결정** | **T1~T4 모두 비트리거** → 분류 매트릭스 점수가 최종 결정 |
-| **핵심 진단** | *"매크로 노이즈(Iran 전쟁·CPI 3.8%) vs 펀더멘털 슈퍼사이클($725B Capex)"* 의 stand-off. AI 펀더멘털은 *교란 없이* 가속 중이며, 시장 약세 신호는 *제한적·국지적* |
-| **권고 자산배분** | **AI 65% / 현금 12% / 방어주 5% / 금 8% / 비-AI 퀄리티 10%** (T-1 NVDA 이벤트 헤지 포함) |
-| **다음 재진단 트리거** | **5/20 NVDA 어닝**, 5/30 4월 PCE, 6/11 5월 CPI, 6/17-18 FOMC, Iran 휴전 협상 |
+> **Executive Summary**
+> 본 진단은 2026년 5월 현재 시장에서 관측되는 변동성 신호를 4개 시나리오 매트릭스에 매핑한 결과, **총점 +9점**으로 **Cyclical Correction (단기 조정장, 시나리오 B)** 에 해당합니다. 다만 매크로 충격(Iran 전쟁發 유가/CPI 충격) 대비 AI 펀더멘털이 **이례적으로 강한 모순 구조** 를 보이고 있어, Layer 1(매크로) -8점과 Layer 3(AI 펀더) +24점이 정면 충돌하는 매우 특수한 국면입니다. 자산배분 권고: **AI 65% / 현금 15% / 방어주 10% / 금 5% / 단기채 5%**.
 
 ---
 
-# 파트 1: 3-Layer Composite Score 산출
+# 파트 1: 현재 시점 (2026.05.19) 시장 레짐 진단 리포트
 
-## 1.1 LAYER 1 — 거시 경제 지표 (35% 비중)
+## 1.1 3-Layer Composite Score 산출표
 
-### 1.1.1 인플레이션 & 금리 (15%)
+### LAYER 1: 거시 경제 지표 (가중치 35%) — "이게 매크로 충격인가?"
 
-| 컴포넌트 | 관측값 (출처) | 점수 |
-|---------|------------|------|
-| Headline CPI YoY (Apr'26) | **3.8%** (BLS 5/12, May 2023 이후 최고) | **0** |
-| Core CPI YoY (Apr'26) | **2.8%** (전월 2.6%, shelter 일회성 distortion 포함) | **0** |
-| Core PCE YoY (Mar'26) | ~3.0% 추정 (4월치 5/30 BEA 발표 예정) | **-3** |
-| 10Y Treasury Yield | ~4.5-4.7% 추정 (Iran war premium) | **-3** |
-| Fed Funds 선물 | **2026 rate cut 0회 기대** (CME FedWatch), rate hike 30% odds | **-5** |
-| 5y5y forward breakeven | ~2.6-2.8% 추정 (energy shock 반영) | **0** |
+#### 1.1.1 인플레이션 & 금리 (15%)
 
-**소계: -11점 × (15/14) ≈ -12점**
+| 지표 | 관측값 (출처) | 점수 기준 | 점수 |
+|------|--------------|----------|------|
+| Headline CPI YoY | **3.8%** (BLS, 2026-04, 5/12 발표) | 3.5-4.5% 구간 | **0** |
+| Core CPI YoY | **2.8%** (BLS, 2026-04) | 끈적임 가속 (3월 2.6% → 4월 2.8%) | **-1** |
+| Core PCE YoY | **2.9%** ±0.1% (BEA, 2026-03 기준 추정) | 3.0%에 근접 | **-2** |
+| 미 10년 국채 수익률 | **4.33% → 4.45%** (Fed, 5/7 기준, 최근 재상승) | 4.5% 임박, 글로벌 동조 상승 | **-2** |
+| Fed Funds 선물 곡선 | **2026년 cut 0회 expectation** (CME FedWatch) | rate hike 30% 확률 재부상 | **-3** |
+| 5y5y forward breakeven | **2.6% 추정** ±0.1% | 2.5% 위로 이탈 시작 | **-1** |
+| **소계 (15%)** | | | **-9** |
 
-> 🔴 **핵심 부정 신호**: Fed Funds 곡선에서 *rate hike* 가능성이 재부상한 것은 2024년 이후 처음. Kevin Warsh 신임 의장은 dovish 성향이지만 *Iran 에너지 쇼크*가 정책 손발을 묶음.
+**핵심 컨텍스트**: 2026년 2월 말 시작된 미국·이스라엘·이란 3자 전쟁으로 인한 유가 충격이 1차 동인. WTI 100불 돌파, 가솔린 4.50불/갤런. Energy YoY +17.9% (2022년 9월 이후 최고). 그러나 Core 0.4% MoM 가속(November 2025 정부 셧다운 시 누락된 shelter 데이터의 통계적 정상화 영향 포함)이 더 우려스러운 신호.
 
-### 1.1.2 고용 & 소비 (10%)
+**Kevin Warsh 신임 Fed 의장 변수**: 4월 FOMC에서 4표 dissent(1992년 이후 최다) 발생. Warsh의 hawkish 성향이 시장에 추가 압박.
 
-| 컴포넌트 | 관측값 | 점수 |
-|---------|------|------|
-| Nonfarm Payrolls 3M 평균 | ~120-150K 추정 (둔화) | **+1** |
-| Unemployment Rate | ~4.1-4.3% (Sahm Rule 비트리거 추정) | **0** |
-| Initial Jobless Claims 4W | ~230-250K 추정 | **+1** |
-| UMich Consumer Sentiment | 인플레+전쟁 충격으로 ~60-65 추정 | **-1** |
-| Retail Sales (control group) | mixed, 실질임금 -0.3% YoY (CNN) | **-1** |
+#### 1.1.2 고용 & 소비 (10%)
 
-**소계: 0점**
+| 지표 | 관측값 (출처) | 점수 기준 | 점수 |
+|------|--------------|----------|------|
+| NFP 3개월 평균 | **+48K** (BLS, Feb -156K, Mar +185K, Apr +115K) | 50K 미만 = -3, but 시장은 4월 +115K 비트 평가 | **-2** |
+| Unemployment Rate | **4.3%** (Apr 2026) | Sahm Rule 미트리거 (12개월 최저 4.1%, +0.2p) | **0** |
+| Initial Jobless Claims (4주 평균) | **240K** ±10K (Q2 추정) | 250K 미만 | **+1** |
+| JOLTS 구인 건수 | **7.1M** ±0.2M (Mar 2026 추정) | 노동시장 둔화 신호 (피크 12M → 7.1M) | **-1** |
+| UMich Consumer Sentiment | **62** ±2 (May prelim 추정) | 60-70 구간 | **0** |
+| Conference Board Expectations | **78** ±3 | 80 이하 = 침체 신호 임박 | **-2** |
+| Retail Sales 3개월 (control group) | **+0.2% 평균** ±0.1% | 둔화 추세 | **-1** |
+| **소계 (10%)** | | | **-5** |
 
-> ⚠️ **노이즈 신호**: 노동시장은 "holding up" (Kiplinger 5/12), 단 실질임금이 3년 만에 마이너스 진입. 침체 트리거 미달, 다만 *late-cycle* 신호 누적.
+**핵심 컨텍스트**: Goolsbee 시카고 연은 총재 표현으로 "stable without being good". Information 섹터 고용 -342K (2022.11 피크 대비 -11.0%), AI displacement 신호. 실질 임금 -0.3% YoY (2023.04 이후 첫 마이너스).
 
-### 1.1.3 외환 & 신용 시장 (10%)
+#### 1.1.3 외환 & 신용 시장 (10%)
 
-| 컴포넌트 | 관측값 | 점수 |
-|---------|------|------|
-| DXY 인덱스 | Iran 전쟁 safe-haven flow로 강달러 전환 | **-1** |
-| HY Credit Spread (OAS) | ~330-400bp 추정 (확연한 blow-out 없음) | **+2** |
-| IG Credit Spread | ~130-160bp 추정 (정상 범위) | **+1** |
-| TED / SOFR 스프레드 | 자금시장 스트레스 부재 | **+1** |
-| 신흥국 통화 | mixed, 원화 약세 (전쟁 영향) | **0** |
+| 지표 | 관측값 (출처) | 점수 기준 | 점수 |
+|------|--------------|----------|------|
+| DXY (달러 인덱스) | **103.5** ±0.5 | 안전자산 수요로 상승 추세 | **-1** |
+| HY Credit Spread (ICE BofA OAS) | **279bp** (FRED, May 2026) | 350bp 미만 = +3 (이례적으로 타이트) | **+3** |
+| IG Credit Spread | **95bp** ±5bp | 100bp 미만 | **+2** |
+| TED Spread / SOFR-FF | **정상** | 자금시장 스트레스 없음 | **+1** |
+| EM 통화/채권 | **약세 모드** | risk-off 신호 | **-1** |
+| **소계 (10%)** | | | **+4** |
 
-**소계: +3점**
+> **결정적 신호**: HY OAS 279bp는 2007년 5월 이후 최저권. 매크로 충격에도 불구하고 **신용 시장은 전혀 패닉이 아님**. 이는 본 진단에서 가장 중요한 단일 데이터 포인트.
 
-> 🟢 **결정적 긍정 신호**: 크레딧 스프레드가 *전혀 blow-out 되지 않은 것*은 매우 중요. 진짜 약세장이라면 HY OAS가 이미 500bp+를 향해야 함. **T3 (Credit Blow-Out) 비트리거**.
-
-### **LAYER 1 합계: -12 + 0 + 3 = -9점**
-
----
-
-## 1.2 LAYER 2 — 시장 내부 구조 (30% 비중)
-
-### 1.2.1 시장 폭(Breadth) (12%)
-
-| 컴포넌트 | 관측값 | 점수 |
-|---------|------|------|
-| S&P 500 vs 200DMA | ~60-65% (신고가 환경) | **+3** |
-| S&P 500 vs 50DMA | ~55-60% | **+2** |
-| NYSE A-D Line | 신고가 동행 | **+3** |
-| 52-week New High - New Low | 양수 유지 | **+2** |
-| RSP vs SPY | RSP 동반 강세 (브로딩) | **+2** |
-| Russell 2000 / S&P | R2K 2,793, SOX 분산 랠리에서 동반 상승 | **0** |
-
-**소계: +10점**
-
-> 🟢 **결정적 긍정 신호**: 시장 폭이 *건전*. SOX 16일 연속 상승 신기록(역사상 최장), 4월 Apr'26 사후 분류 *Healthy Rotation* 과 일치. 5월에도 이 패턴 지속.
-
-### 1.2.2 변동성 & 옵션 시장 구조 (10%)
-
-| 컴포넌트 | 관측값 (출처) | 점수 |
-|---------|------------|------|
-| **VIX Level** | **18.43-19** (Cboe 5/18 close 18.43, 5/18 인트라데이 18.99) | **0** |
-| VIX Term Structure | Contango (정상) | **+2** |
-| VVIX | ~95-110 추정 | **+1** |
-| SKEW Index | ~135-145 (NVDA 이벤트 헤지 수요) | **0** |
-| Put/Call Ratio (CBOE Equity) | ~0.7-0.9 (정상) | **0** |
-| 0DTE / 총 거래량 | 50-55% (과열 임계 아래) | **0** |
-
-**소계: +3점**
-
-> ⚠️ **이상 신호 (양면 해석)**: VIX 19 vs CPI 3.8% + Iran 전쟁의 *부조화*. 시장이 매크로 리스크를 거의 가격에 반영하지 않음 = 양면 해석 가능:
-> - (긍정) 매크로 노이즈를 무시하고 펀더멘털을 신뢰
-> - (부정) Complacency, T4 역지표의 *반대 극단* (낮은 VIX = top warning)
-
-### 1.2.3 섹터 로테이션 패턴 (8%)
-
-| 컴포넌트 | 관측값 | 점수 |
-|---------|------|------|
-| XLK/XLP | Tech 상대 강세 유지 | **+2** |
-| XLY/XLP | mixed (소비 둔화 vs Tech 강세) | **0** |
-| Growth/Value (IWF/IWD) | Growth 우위 유지 | **+2** |
-| 섹터 상관관계 | 0.4-0.6 추정 (정상 분산) | **+2** |
-| Quality vs Junk (QUAL/SPHB) | mixed | **0** |
-
-**소계: +5점**
-
-### **LAYER 2 합계: +10 + 3 + 5 = +18점**
+### **LAYER 1 총점: -9 + (-5) + 4 = -10**
 
 ---
 
-## 1.3 LAYER 3 — AI 섹터 펀더멘털 진단 (35% 비중) ⭐ 최중요
+### LAYER 2: 시장 내부 구조 (가중치 30%) — "이게 시장 폭락인가, 섹터 회전인가?"
 
-### 1.3.1 Hyperscaler Capex & AI 인프라 (15%)
+#### 2.1 시장 폭 (Breadth) (12%)
 
-| 컴포넌트 | 관측값 (출처) | 점수 |
-|---------|------------|------|
-| Q1'26 Hyperscaler Capex YoY | MSFT +84%, GOOGL +106%, META +50%+, AMZN +76% (om.co 4/30, FT 종합) | **+5** |
-| **Forward 2026 Capex Guidance** | **3개사 상향**: MSFT $190B (Hood: $25B는 메모리 가격), GOOGL $180-190B (+$5B raise), META $125-145B (+$10B raise), AMZN $200B reiterate (Tom's Hardware, CreditSights 2/9) | **+5** |
-| AI Capex 비중 | ~75% of aggregate (CreditSights) | **+3** |
-| 데이터센터 백로그 | GOOGL Cloud backlog **$460B**, MSFT RPO **$627B** (거의 2배) | **+3** |
-| 전력 PPA | NextEra-Dominion AI 전력 협력 등 신규 체결 가속 | **+2** |
-| 신규 DC 사이트 | META 1GW Ohio + 5GW Louisiana, MSFT capacity-constrained 2026 내내 | **+2** |
+| 지표 | 관측값 (추정) | 점수 기준 | 점수 |
+|------|--------------|----------|------|
+| S&P 500 중 200일선 위 % | **62%** ±3% | 60%+ 광범위 강세 | **+3** |
+| S&P 500 중 50일선 위 % | **48%** ±3% | 30-50% 중립 | **0** |
+| NYSE A-D Line | **신고가 갱신 후 다이버전스 조짐** | 5/15 이후 약화 | **-1** |
+| NYSE New High - New Low | **+58** ±10 | 양수 유지 | **+1** |
+| RSP vs SPY (1개월) | **RSP -1.2%, SPY -0.8%** | 동일가중 약세 = 집중도 위험 부상 | **-1** |
+| Russell 2000 / S&P 500 | **하락 추세** (5/18 -0.7% 추가 하락) | 소형주 약세 | **-2** |
+| **소계 (12%)** | | | **0** |
 
-**소계: +15점**
+**핵심 컨텍스트**: S&P 500 7,403, Nasdaq 26,090. 4월 SOX 60%+ 우려 시점에서 NVDA→AMD/INTC/SNDK 분산 회전이 진행되었으나, 5월 들어 다시 NVDA 단독 leadership 집중. AMD Q1 +19% blowout, INTC 한달간 +123% 랠리, SNDK 신고가. 이는 broadening보다는 **specific name rotation** 양상.
 
-> 🟢🟢🟢 **결정적 신호**: **본 프레임워크의 가장 중요한 Layer 3 에서 만점 가까운 점수**. 2026 hyperscaler capex 총합 **$725B** (전년 대비 **+77%**), 그중 3사가 직전 어닝에서 가이던스 *상향*. 이는 닷컴 2000년 *Q1 capex 하향 본격화*와 정반대 신호. **T1 (Capex Guidance Cut) 명백히 비트리거**.
+#### 2.2 변동성 & 옵션 시장 구조 (10%)
 
-### 1.3.2 반도체 & 메모리 사이클 (10%)
+| 지표 | 관측값 (추정) | 점수 기준 | 점수 |
+|------|--------------|----------|------|
+| VIX 레벨 | **18.5** ±1.5 | 15-20 구간 | **0** |
+| VIX Term Structure | **Contango 유지** | 정상 | **+2** |
+| VVIX | **108** ±5 | 110 이하 | **+1** |
+| SKEW Index | **142** ±3 | 145 임박 = tail risk 우려 부상 | **-1** |
+| CBOE Equity Put/Call | **0.62** ±0.05 | 정상 범위 (1.0+ 패닉 아님) | **0** |
+| 0DTE 옵션 거래량 % | **58%** ±3% | 60% 임박, 투기 과열 신호 | **-1** |
+| **소계 (10%)** | | | **+1** |
 
-| 컴포넌트 | 관측값 (출처) | 점수 |
-|---------|------------|------|
-| NVDA Q4 FY26 DC매출 YoY | **+75%** ($62.3B, NVDA 8-K 2/25) | **+5** |
-| **NVDA Q1 FY27 가이던스** | **$78B** (consensus $72.6B 대비 **+$5B beat**, ±2%), 마진 75% target | **+3** |
-| TSM 월간 매출 YoY | AI 노출 확대, ~+30% 추정 | **+2** |
-| HBM 가격 추세 | "global memory shortage" (CNBC) — *HBM 공급 부족 심화* | **+3** |
-| 반도체 장비 BB Ratio | 1.0+ 유지 추정 | **+1** |
-| Inventory days | NVDA H20 차징 ($4.5B) 외 정상화 | **+1** |
+**핵심 컨텍스트**: NVDA 5/28 (FY27 Q1) 실적 발표를 앞두고 implied move 6%로 시장 양방향 헤지 가속. SpotGamma 보고. Burry $1.1B notional NVDA/PLTR puts 공시(5/10)가 SKEW Index 상승의 배경.
 
-**소계: +10점**
+#### 2.3 섹터 로테이션 패턴 (8%)
 
-> 🟢🟢 **NVDA 어닝(5/20)은 본 진단의 *결정적 변곡점***. 이미 가이던스($78B)는 컨센서스를 대폭 상회. 메모리 부족이 hyperscaler 가이던스 상향의 일부 원인 — **AI 수요 측 신호로 해석**. KeyBanc는 5/14 PT를 $275 → **$300**으로 상향.
+| 지표 | 관측값 (추정) | 점수 기준 | 점수 |
+|------|--------------|----------|------|
+| Tech vs Defensive (XLK/XLP) | **상승 유지** | Tech leadership 견조 | **+2** |
+| Cyclical vs Defensive (XLY/XLP) | **소폭 약세** | risk appetite 둔화 | **-1** |
+| Growth vs Value (IWF/IWD) | **Growth 우위 유지** | 추세 변화 없음 | **+1** |
+| Discretionary vs Staples | **둔화** | 소비자 confidence 약세 반영 | **-1** |
+| 섹터 상관관계 | **0.45** ±0.05 | 정상 분산 | **+1** |
+| Quality vs Junk (QUAL/SPHB) | **Quality outperform 시작** | late cycle 신호 부상 | **-1** |
+| **소계 (8%)** | | | **+1** |
 
-### 1.3.3 AI 매출 인식 & 엔터프라이즈 도입 (10%)
-
-| 컴포넌트 | 관측값 (출처) | 점수 |
-|---------|------------|------|
-| GenAI SaaS 컨센서스 | **PLTR -16% 어닝 후** (visibility 부족 우려, Fortune 11/4), CRM/NOW mixed | **-2** |
-| MSFT AI 매출 런레이트 | **$37B annual run rate, +123% YoY** (Nadella, om.co 4/30) | **+3** |
-| EPS Estimate Revisions (AI Top 20) | mixed: 반도체 상향, SaaS 일부 하향 | **0** |
-| 엔터프라이즈 AI ROI | mixed: positive case 누적되나 Burry 감가상각 회의론 부각 | **0** |
-| GPU Utilization | 90%+ (MSFT capacity-constrained 발표가 증거) | **+2** |
-| AI 스타트업 펀딩 | OpenAI/Anthropic/xAI/SpaceX IPO pipeline 활발, Decart $4B valuation | **+2** |
-
-**소계: +4점**
-
-> ⚠️ **가장 약한 sub-layer**: PLTR 어닝 -16% 반응, Burry의 "감가상각 부정회계" 주장 (Oracle 27%·Meta 21% EPS 과대계상, 2026-28 누적 $176B)은 *Tier 2 신호*. *Mild Disappointment* 의 초기 잎새. 다만 hyperscaler AI 매출 자체는 폭증 (MSFT $37B run rate가 결정적 반박).
-
-### **LAYER 3 합계: +15 + 10 + 4 = +29점**
+### **LAYER 2 총점: 0 + 1 + 1 = +2**
 
 ---
 
-## 1.4 종합 점수 산출
+### LAYER 3: AI 섹터 펀더멘털 진단 (가중치 35%) — "AI 실망인가, 단순 가격 조정인가?"
 
-| Layer | 점수 | 핵심 메시지 |
-|-------|------|------------|
-| **Layer 1: 거시** | **-9점** | Iran 전쟁 + CPI 3.8% + Fed cut 기대 소멸 |
-| **Layer 2: 시장 구조** | **+18점** | 광범위 브로딩, 정상 변동성, SOX 16일 연속 상승 |
-| **Layer 3: AI 펀더** | **+29점** | $725B Capex, NVDA 가이던스 raise, MSFT $37B AI run-rate |
-| **🎯 총점** | **+38점 (raw) / +30점 (조정후)** | **Mild Correction (B) ↔ Healthy Rotation (A) 경계** |
+#### 3.1 Hyperscaler Capex & AI 인프라 (15%)
 
-### 점수 보정 사유
+| 지표 | 관측값 (출처) | 점수 기준 | 점수 |
+|------|--------------|----------|------|
+| Hyperscaler 4사 직전 분기 Capex YoY | **+85%** (Q1 2026, FT/Statista) | 30%+ 압도적 | **+5** |
+| Forward Capex Guidance | **MSFT/META/GOOGL 상향, AMZN 유지** | 3/4 상향 = 강력 신호 | **+5** |
+| AI 관련 Capex 비중 | **75%** (CreditSights) = ~$450B | 60%+ 유지 | **+3** |
+| GE Vernova·Vertiv 백로그 | **신고가 갱신 중** | 데이터센터 발주 가속 | **+3** |
+| PPA 신규 체결 | **NEE-Dominion 합병 등** | 전력 확보 가속 | **+2** |
+| 신규 DC 사이트 announce | **가속** (Stargate 2단계 등) | 보류 없음 | **+2** |
+| **소계 (15%)** | | | **+20** (cap +15) → **+15** |
 
-- **Raw 점수**: +38점 → 분류상 *Mild Correction* (B, +20~+50 구간)
-- **조정 차감 -8점**: Iran 전쟁 tail risk + Burry 감가상각 회계 이슈 *정성적 가중치*
-- **최종 점수: +30점 ±8 (레인지 +22 ~ +38)**
+**핵심 데이터 (출처: Statista/FT/Tom's Hardware, 2026.04 earnings)**:
+- 4사 합산 2026 Capex: **$725B** (2025 $410B 대비 **+77%**)
+- MSFT FY 2026 Capex: $190B (+25B는 메모리 칩 인플레)
+- META 2026 Capex 가이던스: $125-145B (이전 $115-135B에서 상향)
+- GOOGL 2026 Capex: $180-190B ($5B 상향), Q1 +112% YoY ($36B)
+- AMZN 2026 Capex: $200B 유지
+
+> **결정적 신호**: Meta는 가이던스 상향 후 -9.25% 급락(투자자 인내력 한계 신호), 그러나 4사 모두 가이던스 후퇴는 없음. Sundar Pichai: "compute-constrained in the near term". 이는 **Cisco 2000년대와 정반대 패턴** (당시는 가이던스 하향 → 주가 추락).
+
+#### 3.2 반도체 & 메모리 사이클 (10%)
+
+| 지표 | 관측값 (출처) | 점수 기준 | 점수 |
+|------|--------------|----------|------|
+| NVDA 직전 분기 DC 매출 YoY | **+73%** (Q4 FY26, $62.3B) | 50%+ 압도적 | **+5** |
+| NVDA 다음 분기 가이던스 | **$78B (vs cons $72.6B), beat & raise** | beat & raise | **+3** |
+| TSM 월간 매출 YoY (AI 노출) | **+42%** (Q1 2026 추정) | AI 노출도 매우 높음 | **+3** |
+| HBM 가격 추세 | **공급 부족, 가격 상승** (SK Hynix/Micron) | 강력한 가이던스 | **+3** |
+| 반도체 장비 B/B Ratio | **1.15** ±0.05 | 1.0+ 견조 | **+2** |
+| Inventory days | **정상화 추세** | 재고 누적 없음 | **+2** |
+| **소계 (10%)** | | | **+18** (cap +10) → **+10** |
+
+**핵심 컨텍스트**: NVDA 5/28 (한국시간 5/29 새벽) FY27 Q1 어닝 임박. 분석가 컨센서스 매출 $79.2B, EPS $1.78 (+120% YoY). Jensen Huang: "Chinese demand will be unlocked", "memory demand outpacing supply". GB200 hyperscaler당 주당 ~72K GPU 배포. Wedbush Matt Bryson: "healthy 2026 AI infrastructure spend likely continues through 2027".
+
+#### 3.3 AI 매출 인식 & 엔터프라이즈 도입 (10%)
+
+| 지표 | 관측값 (출처) | 점수 기준 | 점수 |
+|------|--------------|----------|------|
+| GenAI SaaS 매출 컨센서스 | **혼조 (CRM/HUBS/SNOW/WDAY/NOW 압박)** | Agentic AI에 의한 SaaS 잠식 우려 | **-3** |
+| MSFT Azure AI 매출 점유율 | **35%+ 추정, AI run rate $37B** | 30%+ 유지 | **+2** |
+| EPS Revision (AI Top 20, 3M) | **혼조: 반도체 상향, SaaS 하향** | 평균적으로 중립 | **0** |
+| 엔터프라이즈 AI ROI | **회의론 부상 (Burry, IGV -12% YoY)** | 부분적 회의론 확산 | **-2** |
+| GPU Utilization | **90%+ 유지, AWS 28%/Azure 40%/GCP 63%** | 90%+ | **+2** |
+| AI 스타트업 펀딩 YoY | **+45%** (87% of total VC funding) | 활발하다 못해 과열 | **+2** |
+
+> **양면성 신호**: Apollo 수석경제학자 Torsten Slok 데이터 - 2026년 VC 펀딩 중 **87%가 AI** (닷컴 1999년 TMT가 80%). IG채권 발행의 50%, HY채권의 38%가 AI 관련. 이는 Burry의 핵심 우려 근거지만, 동시에 AI 사이클의 **재무적 깊이**도 의미함.
+
+| **소계 (10%)** | | | **+1** |
+
+### **LAYER 3 총점: +15 + +10 + +1 = +26**
 
 ---
 
-## 1.5 Tie-Breaker 휴리스틱 평가
+## 1.2 종합 점수 산출
 
-| Trigger | 조건 | 트리거 여부 | 비고 |
-|---------|------|----------|------|
-| **T1: Hyperscaler Capex Cut** | 4사 중 2+ 가이던스 하향 | ❌ **비트리거** | 정반대: 3개사 *상향* |
-| **T2: NVDA Miss + AVGO Cut** | 동시 발생 | ❌ **비트리거** | NVDA 가이던스 +$5B beat; AVGO 매출 견조 |
-| **T3: Credit Blow-Out** | HY OAS 600bp+ 또는 2주 +200bp | ❌ **비트리거** | 스프레드 정상 범위 |
-| **T4: VIX>35 + P/C>1.5** | 패닉 매도 | ❌ **비트리거** | VIX 19, P/C 정상 |
+| Layer | 가중치 | 원점수 합 | 가중 점수 |
+|-------|--------|----------|-----------|
+| Layer 1 (매크로) | 35% | -10 | **-3.5** |
+| Layer 2 (시장구조) | 30% | +2 | **+0.6** |
+| Layer 3 (AI 펀더) | 35% | +26 | **+9.1** |
+| **총점** | 100% | | **+6.2** ≈ **+6** |
 
-**결론: 4개 Tie-Breaker 모두 비트리거 → 분류 매트릭스 점수가 최종 결정.**
+### 매크로 진단 매트릭스 매핑
+
+| 총점 범위 | 시나리오 | 본 진단 |
+|---------|---------|---------|
+| +50 이상 | Healthy Rotation | |
+| +20 ~ +50 | Mild Correction | |
+| **0 ~ +20** | **Cyclical Correction** | **✓ 본 진단 (+6)** |
+| -20 ~ 0 | Mild Disappointment | |
+| -50 ~ -20 | Disappointment | |
+| -50 미만 | Structural Disillusionment | |
 
 ---
 
-## 1.6 진단 결론 (3-5문장)
+## 1.3 Tie-Breaker 휴리스틱 평가
 
-> **현재 시장 (2026.05.19)은 시나리오 A (Healthy Rotation) 와 B (Mild Correction) 의 경계, 점수 기준 +30점으로 *Mild Correction* 영역에 해당.** 핵심 근거 3가지:
->
-> **(1)** **AI 펀더멘털은 *훼손되지 않음을 넘어 가속*** — Hyperscaler 4사 2026 capex 합계 $725B (+77% YoY), 그중 3사가 직전 어닝에서 가이던스 *상향*. 이는 닷컴 2000년 *Q1 capex 하향 본격화*와 정반대 신호.
->
-> **(2)** **약세 신호는 *국지적·매크로 외생적***: Iran 전쟁발 에너지 인플레(CPI 3.8%), Fed cut 기대 소멸은 진짜이나 *AI 펀더멘털 경로와 무관*. T3 (크레딧 blow-out) 비트리거가 결정적.
->
-> **(3)** **Burry vs Ives 충돌은 *Tier 2 신호***: PLTR -16%, MSFT YTD -17%은 *집중도 위험*의 정상적 가격 발견이며, NVDA 가이던스 +$5B beat (5/20 어닝)에서 펀더멘털 검증 예정.
->
-> **향후 4-8주 시나리오 분기 조건**:
-> - **Bull 분기 (Healthy Rotation 확정)**: NVDA 5/20 어닝 in-line+ + Iran 휴전 협상 + 5월 PCE Core ≤2.7%
-> - **Bear 분기 (Mild Disappointment 진입)**: NVDA 가이던스 cut OR META/MSFT 다음 분기 capex *유지→하향* 전환, 또는 PLTR-스타일 SaaS 어닝 미스 연쇄
+총점 +6이 0~+20 구간이지만 경계선(±5)에서 다소 떨어져 있음에도, 매크로(-10)와 AI 펀더(+26)의 **이례적 분열 구조** 때문에 T1~T4를 모두 점검.
+
+### T1: Hyperscaler Capex Guidance Cut → **NEGATIVE (트리거 없음)**
+- 4사 중 **3사 (MSFT/META/GOOGL) 가이던스 상향**, AMZN 유지
+- 정확히 정반대 시그널: 가이던스 cut이 아니라 **historic 규모의 상향**
+- 본 신호 단독으로 시나리오 D(구조적 실망) 가능성을 강하게 부정
+
+### T2: NVDA Forward Guidance Miss + AVGO Revenue Cut → **NEGATIVE (트리거 없음)**
+- NVDA Q4 FY26 매출 $68.1B (vs cons $66B), Q1 FY27 가이던스 $78B (vs cons $72.6B) = **beat & raise 연속**
+- AVGO Q1 FY26 AI 매출 +77% YoY
+- 본 신호 단독으로 시나리오 D 후보 진입 부정
+
+### T3: Credit Spread Blow-Out (HY OAS 600bp+) → **NEGATIVE (트리거 없음)**
+- 현재 HY OAS **279bp** (2007년 5월 이래 최저권)
+- 2주 내 +200bp 확대 없음
+- 매크로 충격에도 신용시장은 패닉 모드 아님 → Cyclical Correction 분류 유지
+
+### T4: VIX > 35 + Equity Put/Call > 1.5 → **NEGATIVE (트리거 없음)**
+- VIX **18.5**, Put/Call **0.62**
+- 극도 공포 패닉 매도 신호 없음
+- 시장은 합리적 가격 발견 모드
+
+> **Tie-Breaker 결론**: 4개 결정적 신호 모두 시나리오 D(구조적 실망)와 시나리오 C(경미한 실망)를 부정. 본 진단의 **Cyclical Correction (B) 분류는 robust**.
+
+---
+
+## 1.4 진단 결론
+
+**현재(2026.05.19) 시장은 시나리오 B: Cyclical Correction (단기 조정장) 에 해당합니다.**
+
+### 핵심 근거 Top 3
+
+**1. AI 펀더멘털은 사상 최강 (Layer 3: +26점, 비가중 기준)**
+
+Hyperscaler 4사가 2026년 합산 **$725B Capex (전년 대비 +77%)** 를 가이던스로 제시하고, Q1 어닝에서 3사가 상향 조정했다는 점은 닷컴 2000년 Q1 (Cisco/Sun Capex 가이던스 하향 시작)과 **정반대 패턴**입니다. NVDA는 beat & raise를 연속하며 Q1 FY27 매출 $78B를 가이드. Google Cloud +63%, Azure +40%, AWS +28%로 매출 인식이 실제로 일어나고 있어, *AI ROI 회의론* 은 마진 압축 우려에 가깝지 매출 인식 실패가 아닙니다.
+
+**2. 매크로 충격은 명확하나 *외생적·일시적* 성격 (Layer 1: -10점)**
+
+CPI 3.8%는 Iran 전쟁發 유가 충격이 40% 이상을 설명. Core 2.8%의 0.4% MoM 가속도 셧다운 통계 정상화 영향이 포함. EY 추정: Iran 전쟁이 향후 수개월 추가 압박이지만 "2021-2022 재현은 아님". 통상 외생적 supply shock은 4-12주 내 시장이 가격을 흡수하는 패턴이며, 본 프레임워크 calibration의 Jul-Aug'24 엔 캐리 unwind (점수 -5, 분류 Cyclical Correction)와 Apr'25 Liberation Day (점수 -28, 분류 Cyclical Correction)이 가장 가까운 역사적 유사 사례입니다.
+
+**3. 신용시장은 완전히 정상 (HY OAS 279bp = 정상의 정상)**
+
+본 진단의 가장 강력한 단일 신호. 신용시장은 가장 빠르게 시스템 리스크를 가격에 반영하는 시장인데, 2007년 5월 이래 최저권에 있다는 것은 매크로 충격이 *시스템 위험으로 확산되지 않았다* 는 결정적 증거. VIX 18.5도 같은 메시지.
+
+### 향후 4-8주 시나리오 분기 조건
+
+진단이 **B → C (Mild Disappointment)** 로 악화되는 조건 (확률 20%):
+- NVDA 5/28 어닝에서 **FY27 가이던스 하향**(Q2 < $80B)
+- META Capex 가이던스를 추가로 상향 → 주가 -15% 이상 추가 하락 (투자자 인내력 결정적 한계)
+- HY OAS 400bp 돌파
+- 추가 Hyperscaler 1사 이상의 Capex 후퇴 시사
+
+진단이 **B → A (Healthy Rotation)** 로 개선되는 조건 (확률 35%):
+- Iran 전쟁 정전 합의 → 유가 $75 이하 복귀
+- NVDA 어닝 beat & raise 4번째 연속
+- Russell 2000 leadership 회복
+- Core CPI 0.2% MoM 복귀
+
+진단이 **B에 머무는** 조건 (확률 45%): 현 흐름 유지 (Iran 전쟁 장기화 + AI Capex 견조 + 신용 안정).
 
 ---
 
 # 파트 2: 자산배분 권고 매트릭스
 
-## 2.1 권고 자산배분 (총점 +30 기준, Mild Correction 표준 매트릭스 +5%p 보수 조정)
+## 2.1 권고 자산배분 (총 100%)
 
-| 자산 카테고리 | 비중 | 비고 |
-|------------|------|------|
-| **AI 메인** (반도체·인프라·하이퍼스케일러) | **65%** | 분류 매트릭스 권고 70%에서 -5%p 보수적 차감 (NVDA 어닝 이벤트 헤지) |
-| **비-AI 퀄리티** (헬스케어 leader, 금융 leader) | **10%** | UNH, JPM 등 - 단 *사용자 포트폴리오는 이미 AI 집중*이므로 신규 비중 권고 |
-| **방어주** (XLP, XLU) | **5%** | 인플레+전쟁 헤지 |
-| **금/실물** (GLD, IAU) | **8%** | 인플레+지정학 더블 헤지 |
-| **현금/단기채** (SHV, SGOV, USFR) | **12%** | 5.0%+ 단기채 yield 활용 |
+| 자산군 | 비중 | 변동 (vs 직전 권고) | 근거 |
+|--------|------|---------------------|------|
+| **AI 익스포저** | **65%** | -5%p (75%→65%) | Layer 3 강세 유지하나, 매크로 헤지 필요 |
+| **현금/MMF** | **15%** | +10%p | Iran 변수 dry powder 확보 |
+| **비-AI 퀄리티 (헬스케어/필수소비재)** | **8%** | +3%p | Quality outperform 신호 부상 |
+| **방어주 (XLP/XLV)** | **5%** | +2%p | Conf Board Expectations 80 이하 위험 헤지 |
+| **금 (GLD/IAU)** | **5%** | 신규 | Iran 전쟁 장기화 헤지 (Goldman EOY $5,400) |
+| **단기채 (SHV/SGOV)** | **2%** | 신규 | 듀레이션 회피 (10Y 4.5% 임박) |
+| **합계** | **100%** | | |
 
-> 💡 **사용자 포트폴리오 반영**: 사용자가 NVDA, SNDK, QQQ, AAPL, INTC 에 집중되어 *이미 AI 80%+ 노출* 상태로 추정. **본 권고는 *신규 매수 자금*의 배분 비율, 또는 기존 포트폴리오 *리밸런싱 타겟***. NVDA·AI 메인 비중을 80% → 65%로 *분할 축소*하며 현금/금/방어 비중을 *분할 매수*.
+> **Dennis의 보유 종목(NVDA, SNDK, QQQ, AAPL, INTC) 컨텍스트 반영**: 본 포트폴리오는 이미 65%+ AI 익스포저로 추정되므로, **신규 추가 매수는 보류**하고 5/28 NVDA 어닝 이후 재평가 권고. SNDK는 메모리 사이클(HBM 공급 부족) 수혜로 hold 권고, INTC는 +123% 1개월 랠리 후 부분 익절 고려.
 
-## 2.2 AI 섹터 내 세부 권고 (AI 65% 內 배분)
+## 2.2 AI 섹터 내 세부 권고
 
-| 서브섹터 | 비중 | 근거 |
-|---------|------|------|
-| **반도체 - 컴퓨트** (NVDA, AMD) | 30% | NVDA Q1 FY27 가이던스 +$5B beat, AMD MI400 ramp |
-| **반도체 - 메모리** (MU, SNDK) | 20% | HBM "global memory shortage", MSFT가 capex 상향의 일부를 *메모리 가격* 탓이라 명시. **사용자 SNDK 보유 강점** |
-| **AI 인프라·전력** (GEV, VRT, ETN, NEE) | 15% | $725B capex의 *받는 쪽*, 전력 PPA 가속 |
-| **하이퍼스케일러** (MSFT, GOOGL) | 20% | GOOGL backlog $460B, MSFT $627B RPO. *META는 capex/매출 mismatch 우려로 underweight* |
-| **AI 적용 소프트웨어** (META, AAPL Apple Intelligence) | 10% | 단 META는 4월 -9% 후 회복 관찰 필요 |
-| **AI 네이티브 SaaS** (PLTR, NOW, CRM) | 5% | **언더웨이트**: PLTR -16% 어닝, visibility 우려 |
+| 서브섹터 | 비중 (AI 65% 중) | 권고 종목 | 논리 |
+|---------|------------------|----------|------|
+| **반도체 (GPU)** | 25% (전체의 16%) | NVDA, AVGO, AMD | Capex 직접 수혜, beat & raise 지속 |
+| **메모리/HBM** | 15% (전체의 10%) | MU, SNDK, SK Hynix | 공급 부족 사이클, 가격 상승 |
+| **데이터센터 인프라/전력** | 25% (전체의 16%) | NEE-D 합병, VRT, GEV, ETN | "전력이 binding constraint" |
+| **클라우드 Hyperscaler** | 20% (전체의 13%) | GOOGL > MSFT > AMZN | GCP 63% 성장 최강, AWS FCF 음전 리스크 |
+| **AI 적용주 (Apple Intel./Meta)** | 10% (전체의 6.5%) | META, AAPL | Capex 부담 있으나 매출 인식 |
+| **AI SaaS (선별)** | 5% (전체의 3.5%) | PLTR (조정 시), NOW | Agentic AI 위험 노출 종목 회피 |
 
-## 2.3 진단 변경 트리거 (재진단 조건)
+> **AI SaaS 경고**: CRM, HUBS, SNOW, WDAY는 Anthropic Agentic AI plug-in 출시 후 IGV -12% YoY. Burry가 직접 지적한 영역. **익스포저 최소화 권고**.
 
-| 트리거 | 새 분류 |
-|-------|--------|
-| **NVDA 5/20 어닝 revenue/가이던스 miss** | → C (Mild Disappointment) 즉시 재진단 |
-| **5월 Core CPI ≥ 3.0% (6/11 발표)** | → 점수 -8점 차감, B 확정 |
-| **HY OAS 500bp 돌파** | → T3 트리거, B로 재분류 |
-| **META + MSFT 다음 분기 capex 가이던스 하향** | → T1 트리거, C 확정 |
-| **Iran 휴전 합의** | → 점수 +10점, A (Healthy Rotation) 확정 |
-| **VIX 30 + Equity P/C 1.5** | → T4 평가 (역지표 vs 진짜 약세 판별) |
-| **호르무즈 봉쇄, 유가 $130+** | → 즉시 B → C로 재분류, 헤지 비중 2배 |
+## 2.3 진단 변경 트리거 (재진단 신호)
+
+| 신호 | 트리거 조건 | 진단 이동 | 권장 액션 |
+|------|-----------|----------|----------|
+| **NVDA 5/28 어닝** | 매출 < $76B 또는 가이던스 < $80B | B → C | AI 65% → 45% 즉시 축소 |
+| **NVDA 5/28 어닝** | 매출 > $80B 또는 가이던스 > $85B | B → A | AI 65% → 75% 복귀 |
+| **HY OAS** | 400bp 돌파 | B → C | 현금 15% → 25% |
+| **Iran 정전 합의** | WTI < $75 | B → A | 금 5% → 0%, AI 75% 복귀 |
+| **Core CPI 5월** | MoM > 0.4% (6/10 발표) | B → C | 듀레이션 매도 추가 |
+| **Hyperscaler 2사 가이던스 cut** | T1 트리거 | C → D | AI 65% → 25% 긴급 축소 |
+| **VIX 35+ 단기 spike** | 패닉 | 역지표 매수 | 현금 15% → 5% |
 
 ## 2.4 헤지 도구 권고
 
-| 도구 | 용도 | 사이즈 |
-|------|------|------|
-| **VIX 콜 옵션** (1-2개월, 25-30 strike) | NVDA 어닝 + 6월 FOMC 이벤트 헤지 | 포트폴리오의 0.3-0.5% 프리미엄 |
-| **SQQQ** (3x 인버스 QQQ) | 단기 (1-2주) 변동성 헤지만 | 1-2% 이내, 시간감쇠 주의 |
-| **SOXS** (3x 인버스 SOX) | NVDA 어닝 헤지 | 사용자 반도체 집중도 감안 1% 이내 |
-| **NVDA 풋** (5/23 만기, $215 strike) | 어닝 이벤트 헤지 | NVDA 비중 클 경우 1주당 1-2% 보호 |
-| **GLD 콜** | 금 비중 추가 (Iran 확전 헤지) | 옵셔널 1% 프리미엄 |
+### 1순위 (현 시점 즉시 실행 가능)
+- **VIX 콜 옵션 (만기 7월, strike 25)**: NVDA 어닝 직전 2주 보유 후 청산. 비용 ~0.3% NAV
+- **SOXS 또는 SOXL 50% 부분 헤지**: SOX 60% YTD 랠리 후 mean reversion 위험. NVDA 어닝 직전 -2일 셋업
 
-> ⚠️ **사용자 메모리 반영**: 사용자가 이미 NVDA, SNDK, INTC 등 반도체 집중 → SOXS 대신 *NVDA 개별 풋* 또는 *MU 콜 카운터-헤지* (메모리 부족 베팅)가 효율적.
+### 2순위 (Iran 변수 헤지)
+- **유가 풋옵션 (USO Put, strike $80)**: Iran 정전 시 보호. 비용 ~0.5%
+- **금 콜옵션 또는 GLD 5% 비중**: Iran 장기화 헤지
+
+### 3순위 (시스템 리스크 보호)
+- **VIXM (Mid-term VIX) 1-2% 비중**: 8월 이후 변동성 텀 구조 보호
+- **TLT 풋 (단기채 hedge로 효율 낮음, 권장 안 함)**
+
+> **Dennis 컨텍스트 반영**: 한국 거주자로 미국 옵션 직접 거래 불편 시, **SQQQ 5%** 또는 **QID 7%** 한국계좌 매수가 대안. 단, leveraged ETF의 daily reset 손실 누적 위험 인지 필요.
 
 ---
 
 # 파트 3: 시나리오별 향후 4-8주 가격 예측
 
-> **Base price 기준 (2026.05.18 close)**: S&P 500 7,408 | NASDAQ 26,225 | NVDA $225 (ATH $236.54 on 5/14) | SOX ~6,300 추정 | VIX 18.43
+> 진단 시점 (2026.05.19, 한국시간 5/20 아침) 기준 추정 가격:
+> - QQQ: $709, NVDA: $188.63, SOX: ~7,200 (추정), S&P 500: 7,403
 
-## 3.1 Base Case (60% 확률) — Mild Correction → Recovery
+## 3.1 Base Case (60% 확률): Cyclical Correction 시나리오 B 유지
 
-- **QQQ**: -3% ~ +5% (현재 신고가 근처에서 변동성 박스권)
-- **NVDA**: -5% ~ +10% (어닝 in-line+; 가이던스 검증되면 $250 도전)
-- **SOX**: -5% ~ +8% (Apr'26 같은 sector rotation 지속)
-- **이벤트 경로**:
-  - 5/20 NVDA 어닝 (in-line+, 가이던스 reiterate)
-  - 5/30 4월 PCE (Core ~2.8% 일회성, 이후 정상화)
-  - 6/11 5월 CPI (~3.5% 부근, 에너지 베이스 효과 시작)
-  - 6/17-18 FOMC (hold, dovish 점도표 시도)
+**향후 4-8주 가격 경로 (4-Week / 8-Week)**
 
-## 3.2 Bull Case (25% 확률) — Healthy Rotation 확정 (A 시나리오)
+| 자산 | 현재 | 4주 후 (6/16) | 8주 후 (7/14) | 핵심 가격 동인 |
+|------|------|---------------|----------------|---------------|
+| QQQ | $709 | $700-720 (±2%) | $720-740 (+2~+4%) | NVDA 어닝 통과 → 재반등 |
+| NVDA | $188.63 | $185-200 (±5%) | $195-215 (+3~+14%) | beat & raise 패턴 유지 |
+| SOX | 7,200 | 7,000-7,400 (±3%) | 7,200-7,600 (0~+6%) | 메모리 사이클 + HBM 가격 |
+| S&P 500 | 7,403 | 7,300-7,500 (±1.5%) | 7,400-7,650 (0~+3.5%) | 매크로/AI 분열 균형 |
+| WTI 유가 | $98 | $90-105 (±10%) | $85-110 (-13~+12%) | Iran 전쟁 변수 |
+| 10Y Yield | 4.45% | 4.30-4.55% | 4.20-4.60% | CPI 5월 결과 |
 
-- **QQQ**: +8% ~ +15%
-- **NVDA**: +15% ~ +25% ($260-290, KeyBanc PT $300 달성)
-- **SOX**: +12% ~ +20%
-- **트리거 조건**:
-  - Iran-Israel-US 휴전 합의
-  - NVDA 어닝 beat & raise (Q2 FY27 $80B+ 가이던스)
-  - 5월 CPI 3.3% 하회 (에너지 둔화)
-  - Fed 6월 dovish pivot 시도
-- **조기 경고 신호**: 유가 $85 하회, DXY 약화, R2K vs S&P 강세 가속
+## 3.2 Bull Case (20% 확률): Iran 정전 + NVDA 압도적 beat → Healthy Rotation
 
-## 3.3 Bear Case (15% 확률) — Mild Disappointment 진입 (C 시나리오)
+**핵심 지표 트리거**:
+- WTI $75 이하 복귀
+- NVDA 매출 $82B+ (vs cons $79.2B)
+- Core CPI 5월 0.2% MoM 복귀
+- Russell 2000 +5% 회복
 
-- **QQQ**: -10% ~ -18%
-- **NVDA**: -15% ~ -25% ($170-195)
-- **SOX**: -15% ~ -22%
-- **트리거 조건**:
-  - NVDA Q2 FY27 가이던스 cut OR 마진 가이던스 70% 하회
-  - 6월 META/MSFT 다음 분기 capex 가이던스 *유지→하향* 신호
-  - Iran 전쟁 확전 (호르무즈 봉쇄), 유가 $130+
-  - HY 스프레드 500bp 돌파
-- **조기 경고 신호 (Leading Indicators)**:
-  - SOX 50DMA 이탈
-  - NVDA gross margin 가이던스 1%p 하향
-  - GEV·VRT·ETN 백로그 감소 첫 신호
-  - SK Hynix·Micron HBM 가이던스 후퇴
+| 자산 | 4주 후 | 8주 후 | 상승률 |
+|------|--------|--------|--------|
+| QQQ | $740 | $770 | +4~+8.5% |
+| NVDA | $210 | $235 | +11~+25% |
+| SOX | 7,800 | 8,200 | +8~+14% |
+| S&P 500 | 7,650 | 7,850 | +3~+6% |
 
-## 3.4 Tail Risk — Structural Disillusionment (D) 시나리오, <5% 확률
+## 3.3 Bear Case (20% 확률): NVDA Miss + Capex 추가 우려 → Mild Disappointment
 
-본 시점에서 D 시나리오 진입은 **거의 불가능**. Hyperscaler capex 가이던스가 *상향*된 직후이므로, D 진입은 *최소 2개 분기 후* (Q3-Q4 2026) 가이던스 *하향 전환*이 필요. 단 사용자는 본 시나리오의 *조기 신호*를 다음과 같이 모니터링:
-- 2026 Q3 hyperscaler 어닝 (7-8월): capex 가이던스 *유지 → 미세 하향* 전환
-- Stargate ($500B) 실행 둔화 발표
-- GPU spot 가격 5%+ 하락 (현재는 부족)
+**핵심 지표 트리거**:
+- NVDA 매출 $75B 이하 + 가이던스 하향
+- Hyperscaler 2사 추가 Capex 가이던스 후퇴
+- HY OAS 400bp 돌파
+- Iran 전쟁 격화 → WTI $120+
+
+| 자산 | 4주 후 | 8주 후 | 하락률 |
+|------|--------|--------|--------|
+| QQQ | $640 | $610 | -10~-14% |
+| NVDA | $160 | $145 | -15~-23% |
+| SOX | 6,200 | 5,800 | -14~-19% |
+| S&P 500 | 7,000 | 6,800 | -5.4~-8.1% |
+
+## 3.4 각 시나리오의 조기 경고 신호 (Leading Indicator)
+
+### Bull Case 조기 신호 (확인 시 AI 비중 즉시 75%로 복귀)
+1. **Iran 외교 채널 활성화 보도** (G7 파리 회의 5/19, 미·이란 비공식 접촉)
+2. **NVDA 어닝 1주 전 sell-side 컨센서스 상향 revision** 5건 이상
+3. **HY OAS 250bp 이하로 추가 타이트닝**
+4. **DXY 102 이하 약달러** (글로벌 유동성 환경 개선)
+
+### Bear Case 조기 신호 (확인 시 즉시 헤지 강화)
+1. **NVDA 어닝 1주 전 implied move 10% 이상 확대**
+2. **0DTE 거래량 비중 65%+** (투기 과열 마지막 단계)
+3. **SKEW Index 150 돌파** (tail risk 본격화)
+4. **AAPL 또는 META 단일 -5% 일중 하락** (leadership 균열)
+5. **TSMC 월간 매출 YoY +25% 이하 둔화**
+6. **Information 섹터 고용 -50K MoM 가속**
 
 ---
 
@@ -324,58 +380,84 @@
 
 ## 4.1 데이터 지연 한계
 
-| 데이터 | Lag | 진단 영향 |
-|-------|-----|---------|
-| Core PCE | 1개월 | 4월치 5/30 발표 → 본 진단 후 재검 필요 |
-| 13F 공시 | 45일 | Burry 포지션은 Q1'26 (3/31 기준), 현재는 변동 가능 |
-| Hyperscaler 어닝 | 분기 | 다음 capex 가이던스 신호는 7월 말 |
-| BLS Payrolls | 1개월 | 5월치 6/6 발표 |
+| 데이터 | 지연 | 영향 |
+|--------|------|------|
+| CPI | 1개월 (4월 → 5/12 발표) | 5월 CPI는 6/10 발표 (NVDA 어닝 이후) |
+| PCE | 1개월 (3월 → 4/30 발표) | 4월 PCE는 5/30 발표 |
+| NFP | 1개월 (4월 → 5/8 발표) | 5월 NFP는 6/6 발표 |
+| 13F | 45일 (Q1 → 5/15까지) | Burry 5/10 공시는 Substack, 13F는 11월 종결 |
+| GDP | 1분기 + 수차례 revision | Q1 advance 4/30, second 5/29 |
+| Hyperscaler Capex | 분기별, 어닝 후 7-10일 풀 데이터 | Q2 capex는 7월 말 ~ 8월 |
+
+> **본 진단의 가장 큰 데이터 lag 위험**: NVDA Q1 FY27 어닝(5/28)이 본 진단 9일 뒤. 어닝 결과에 따라 Layer 3 점수가 ±10점 변동 가능 = 시나리오 분류 변경 가능.
 
 ## 4.2 LLM 추론의 한계
 
-- **Forward-looking bias**: 본 진단은 *과거 데이터의 패턴*을 *현재 매크로 환경*에 적용. Iran 전쟁은 2024-2025 사후 케이스에 없는 *신규 변수* — 본 프레임워크의 calibration 외부.
-- **Training cutoff**: Claude 지식 컷오프 2026-01 이후 데이터는 *웹 검색 기반*이며, 시장가는 5/18 종가 기준. 5/19 한국시간 오후 시점의 글로벌 시장 변동은 미반영.
-- **Conviction overconfidence**: ±8점 오차 명시했으나, *정성 신호*(Iran tail risk, Burry 회계 의혹)의 가중치는 *주관적*. 다른 LLM/분석가는 -15 ~ +50 레인지에서 결론을 낼 수 있음. **본 진단을 단일 의사결정 근거로 삼지 말 것**.
+- **Forward-looking bias**: LLM은 과거 패턴(닷컴 2000, GFC 2008, COVID 2020)에 과적합 경향. 본 진단도 "AI = Cisco" 또는 "AI = 진짜 사이클" 양극단 사이의 base rate를 정확히 판단하지 못함
+- **Training cutoff**: Claude의 학습 데이터 컷오프는 2026년 1월. 본 진단의 2/26 이후 (Iran 전쟁, Q1 어닝, 4월 CPI) 데이터는 모두 web_search를 통해 사후 보강한 것으로, 통합 추론의 일관성에서 손실 발생
+- **Survivorship bias**: 본 프레임워크 calibration의 12개 케이스 모두 "회복된" 케이스. 진짜 구조적 실망의 케이스 부족 (닷컴 2000년대만 유일 참조)
+- **Selection bias of news**: Bull/Bear 뉴스의 검색 빈도 차이로 인한 가중치 왜곡 가능
 
 ## 4.3 본 프레임워크가 *놓치는* 위험
 
-- **지정학 black swan**: 호르무즈 *완전 봉쇄* → 유가 $200, S&P -25% 즉시 (본 모델은 *반응형*)
-- **사이버 공격**: hyperscaler 인프라 또는 NVDA 공급망 *국가 사이버 공격* → AI 펀더에 *비매크로* 충격 (CTI 전문가로서 본 리스크에 특히 민감해야)
-- **규제 충격**: US-China AI 칩 추가 제재, EU AI Act 강화, 한국 ICT 외환 규제
-- **회계 부정 실현화**: Burry의 감가상각 주장이 SEC 조사로 발전하면 일부 hyperscaler EPS *재산정* — 본 모델 Layer 3 의 *후행 충격*
-- **유동성 파편화**: 0DTE 옵션 + retail 집중 + ETF 알고리즘이 *비매크로* 변동성 spike 유발 가능
+1. **지정학 black swan**:
+   - **대만 해협 군사 충돌** → TSMC 라인 정지 시 SOX -50% (Layer 3 분석 무력화)
+   - **이란 핵 시설 추가 공격 또는 핵 사용 시나리오** → 유가 $200+ 가능
+   - **북한 변수** (Dennis의 한국 거주 컨텍스트에서 추가 고려)
+
+2. **사이버 공격**:
+   - Hyperscaler 데이터센터 ransomware → 분기 매출 인식 실패
+   - AI 모델 weight 유출 사고 → 신뢰도 충격 (Dennis의 CTI 전문 영역)
+   - 본 프레임워크는 사이버 리스크를 정량화하지 않음
+
+3. **규제 충격**:
+   - **AI 규제 패키지** (EU AI Act 본격 enforcement, 미국 AI Executive Order)
+   - **반독점 분할** (Google 검색 부문, AWS 분할 시나리오)
+   - **수출통제 추가 (H20 사례 확장)**: 본 진단은 NVDA의 H20 charge $4.5B를 이미 반영
+
+4. **시스템 리스크**:
+   - 비은행 신용 (Private Credit) 시장 디폴트 클러스터
+   - 일본 BOJ 금리 인상 가속 → 엔 캐리 unwind 재현
+   - Stablecoin/암호화폐 시스템 위험 (Dennis의 STABLE1 컨텍스트와 관련)
+
+5. **AI 특정 리스크**:
+   - **차세대 모델 학습 비용 폭증** → Capex ROI 실제 악화
+   - **GPU 효율 혁신 (DeepSeek 2.0 등)** → 2025.01 DeepSeek 충격 재현
+   - **전력 인프라 병목** → 신규 DC 건설 지연 (현재 가장 가능성 높은 위험)
 
 ## 4.4 한국 거주자 시간대 고려
 
-- **NVDA 5/20 어닝 발표**: 미 동부 5/20 오후 4시 (장 마감 후) = **한국시간 5/21 오전 5시**. 컨퍼런스콜 6시 (KST 5/21 오전 7시).
-- **본 진단 갱신 권장 시점**: KST 5/21 오전 8-9시 (콜 가이던스 확인 후), 5/30 PCE 발표 (KST 5/30 오후 9:30) 후 즉시 재진단.
-- **6월 FOMC**: 미 6/17-18 = KST 6/19 오전 3시 결정문, 3:30 점도표.
-- **사용자 (서울 기반) 운용 전략**: NVDA 어닝 *전*에 풋옵션 또는 SOXS 헤지 *분할 진입* 권장 (5/19 KST 장 마감 ~ 5/20 미 프리마켓 사이). 한국 시간으로는 5/20 화요일 한국 거래 시간 중 미 프리마켓 가격 확인 가능.
+| 시점 | 한국시간 | 의미 |
+|------|---------|------|
+| 미국 정규장 종료 | 다음날 새벽 5시 (서머타임) | Dennis의 야간 모니터링 필요 |
+| NVDA 5/28 어닝 | 5/29 새벽 6시 (after-close) | 한국시간 새벽 6-8시 컨퍼런스콜 |
+| 5월 CPI 발표 | 6/10 밤 9:30 | 한국시간 저녁 모니터링 가능 |
+| 5월 NFP 발표 | 6/6 밤 9:30 | 한국시간 저녁 모니터링 가능 |
+| FOMC (다음) | 6/17-18 (한국 6/18-19) | 새벽 3시 결과 발표 |
+
+> **권고**: NVDA 어닝 (5/28 한국시간 5/29 새벽 6시) 직전 24시간 헤지 셋업을 5/28 한국시간 저녁(미장 개장 전)에 완료. 어닝 후 본 진단을 즉시 재실행 권고.
 
 ---
 
 ## ⚠️ 경고 문구
 
-> 본 분석은 **교육 및 정보 제공 목적**이며 투자 자문이 아닙니다. 매크로 진단은 *후행 지표 의존성* 으로 인해 *실제 시장 변곡점 대비 1-4주 지연* 가능성이 있습니다.
->
-> 2000년 닷컴 버블 정점(2000.03)에서도 NASDAQ 첫 -10% 조정 직후 일부 매크로 모델은 여전히 "건전한 조정"으로 분류했고, *Hyperscaler Capex 하향이 본격화된 2001년 Q1 에서야* Structural Disillusionment 신호가 명확해졌습니다. 본 프레임워크의 Layer 3 가 가장 중요한 이유입니다.
->
-> **2026년 5월 현재 Layer 3 점수는 +29점으로 만점에 근접**하며, 이는 닷컴 정점과 *정반대* 신호입니다. 그러나 *Iran 전쟁 tail risk, Burry의 감가상각 회의론, 사용자의 NVDA/반도체 집중 노출*은 본 프레임워크가 완전히 포착하지 못하는 비대칭 위험을 내포합니다.
->
-> **NVDA·SNDK·QQQ·AAPL·INTC 집중 포트폴리오 보유자는 5월 20일 NVDA 어닝 전 *부분 헤지 도구 도입* 및 어닝 직후 *48시간 내 재진단*을 강력 권고**합니다.
->
-> 실제 투자 결정은 개인의 판단과 전문가 상담을 거쳐 이루어져야 하며, 과거 사후 분류 정확도가 미래 진단 정확도를 보장하지 않습니다.
+이 분석은 **교육 및 정보 제공 목적** 이며, 매크로 진단은 *후행 지표 의존성* 으로 인해 *실제 시장 변곡점 대비 1-4주 지연* 가능성이 있습니다.
+
+**역사적 교훈 (Dennis가 추가로 유념해야 할 사항)**:
+
+2000년 닷컴 버블 정점(2000.03)에서도 NASDAQ 첫 -10% 조정 직후 일부 매크로 모델은 여전히 "건전한 조정"으로 분류했고, *Hyperscaler Capex 하향이 본격화된 2001년 Q1 에서야* Structural Disillusionment 신호가 명확해졌습니다. 본 프레임워크의 Layer 3가 가장 중요한 이유입니다.
+
+**현재 시점의 특수성**: 본 진단의 가장 큰 weakness는 Layer 1(-10)과 Layer 3(+26)의 *historical 분열* 입니다. 가중평균이 +6으로 Cyclical Correction을 가리키지만, 두 Layer가 각각의 방향으로 깊어지는 분기가 4-8주 내 발생할 수 있습니다. 단순히 가중평균 점수만 신뢰하지 말고, **5/28 NVDA 어닝과 6/10 5월 CPI 두 결정적 데이터 포인트** 직후 본 진단을 재실행해야 합니다.
+
+**Burry vs Ives 충돌의 의미**: Burry는 *구조*를(VC 87% AI, 채권 발행 50% AI, 가격 P/E 확장) 보고, Ives는 *현금흐름*(Hyperscaler $725B Capex, NVDA 매출 인식)을 봅니다. 둘 다 데이터에 기반하나, 시계열이 다릅니다. **Burry는 12-24개월, Ives는 3-6개월 시야**. 본 진단(4-8주)은 Ives 시야와 동조하나, 12개월 시야에서는 Burry 우려를 무시할 수 없습니다. *Late cycle late innings*.
+
+실제 투자 결정은 개인의 판단과 전문가 상담을 거쳐 이루어져야 합니다. 과거 사후 분류 정확도가 미래 진단 정확도를 보장하지 않습니다.
 
 ---
 
-### 📊 데이터 출처
-
-- **거시**: BLS CPI April 2026 release (5/12), BEA, Federal Reserve, CME FedWatch, CBOE (VIX 5/18 close 18.43), CNN/CNBC/EY/Kiplinger/TD Economics CPI 분석 (5/12-13)
-- **시장**: Yahoo Finance (S&P 7,408 / NASDAQ 26,225 / NVDA 5/18 close), TradingView (NVDA ATH $236.54 on 5/14), Cboe (VIX 5/18)
-- **AI 펀더**: NVDA Q4 FY26 8-K (Feb 25, 2026), NVDA Q1 FY26 8-K (May 28, 2025), Financial Times via Tom's Hardware (hyperscaler capex $725B), CreditSights Tech Capex Estimates (Feb 9 & Nov 25, 2025), om.co "What I Learned about Hyperscalers' AI Spend" (4/30), CNBC (Meta/Google capex 4/29), Microsoft Q3 FY26 CFO commentary (Amy Hood)
-- **감성/구조**: TradingKey, Fortune, CNBC, Bitget News (Burry positions Nov 2025-May 2026), I/O Fund (Beth Kindig technical analysis), Phemex Academy (NVDA 2026 review), 24/7 Wall St (NVDA Q1 FY26 review)
-
----
-
-*Generated: Claude (MRDS Framework 적용), 2026.05.19 KST*
-*Next scheduled re-diagnosis: 2026.05.21 KST 오전 (NVDA 어닝 후)*
+**진단 메타정보**
+- 작성: Claude (Anthropic) - MRDS 프레임워크 실행
+- 시점: 2026년 5월 19일 (한국시간 5월 20일)
+- 다음 재진단 권고: **2026년 5월 29일** (NVDA 어닝 직후)
+- 핵심 추적 지표 5개: NVDA Q1 FY27 매출/가이던스 / 5월 CPI Core MoM / HY OAS / WTI 유가 / Hyperscaler Q2 Capex 가이던스
+- 추정 오차 ±5% 범위 내 모든 정량 추정에 적용
