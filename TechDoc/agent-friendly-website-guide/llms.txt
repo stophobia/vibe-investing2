@@ -1,0 +1,45 @@
+# Agent-Friendly Website Construction Guide
+
+> A trilingual practical guide to making websites that AI agents can navigate, understand, and act on. Consolidates Google web.dev's "Building Agent-Friendly Websites" (2026-04-01), Chrome's WebMCP Early Preview Program (2026-02-10), and Jeremy Howard's llms.txt standard. Authored by Dennis Kim (Betalabs CEO, former Cyworld Z CEO, Microsoft Azure MVP). CC BY 4.0 licensed.
+
+Key concepts covered:
+- The three modalities by which AI agents perceive websites (screenshots, DOM, accessibility tree)
+- Google's 7 agent-friendly design principles, with working code examples
+- Semantic HTML, ARIA, and Schema.org JSON-LD patterns
+- The llms.txt and llms-full.txt standard
+- WebMCP — Chrome's proposed declarative and imperative agent interface
+- A 4-phase adoption roadmap and an audit checklist
+- Reference implementations from Anthropic, Vercel, Cloudflare, Stripe, and Maryland.gov
+
+This very folder is structured to demonstrate what the guide teaches: this `llms.txt` is the entry-point file, each language version has YAML frontmatter with machine-readable metadata, and each document ends with an embedded Schema.org `TechArticle` block. Eat your own dog food.
+
+## Language versions
+
+- [Korean / 한국어 (source)](./agent-friendly-website-guide.ko.md): 원본 한국어 버전. 11장 + 부록 A·B 구성으로 약 35분 분량.
+- [English](./agent-friendly-website-guide.en.md): Naturalized English edition. Same 11-chapter structure, ~35 min read.
+- [Japanese / 日本語](./agent-friendly-website-guide.ja.md): です・ます調による日本語版。同じく11章構成、所要時間およそ35分。
+
+## Topics
+
+- [Chapter 1 — The New Visitor: AI Agents](./agent-friendly-website-guide.en.md#1-the-new-visitor-ai-agents): Defines what an agent is (model + rules + memory + tools), the four-step task loop, and how humans, crawlers, and agents differ.
+- [Chapter 2 — How Agents Perceive a Website](./agent-friendly-website-guide.en.md#2-how-agents-perceive-a-website): The three modalities — screenshots, DOM, accessibility tree — and how modern agents combine them.
+- [Chapter 3 — Google's 7 Agent-Friendly Principles](./agent-friendly-website-guide.en.md#3-googles-7-agent-friendly-principles): Visibility, layout stability, ghost-element avoidance, semantic HTML, cursor cues, label-for binding, and minimum target sizes — all with code.
+- [Chapter 4 — Semantic HTML and the Accessibility Tree](./agent-friendly-website-guide.en.md#4-semantic-html-and-the-accessibility-tree): Landmark tags, page-skeleton patterns, and the four ARIA attributes that matter most (aria-label, aria-describedby, aria-expanded/controls, role).
+- [Chapter 5 — Layout Stability and Visual Cues](./agent-friendly-website-guide.en.md#5-layout-stability-and-visual-cues): Core Web Vitals through an agent lens, four overlay traps that kill agent clicks, and a visual-cue checklist.
+- [Chapter 6 — Structured Data: Schema.org and JSON-LD](./agent-friendly-website-guide.en.md#6-structured-data-schemaorg-and-json-ld): Why JSON-LD, plus working schemas for Organization, Product, FAQPage, BreadcrumbList, Article, and Event.
+- [Chapter 7 — The AI Entry Point: llms.txt](./agent-friendly-website-guide.en.md#7-the-ai-entry-point-llmstxt): The llms.txt standard, llms-full.txt, per-page .md alternates, and the most common failure mode (a stale index).
+- [Chapter 8 — WebMCP — The Next-Generation Agent Interface](./agent-friendly-website-guide.en.md#8-webmcp-the-next-generation-agent-interface): Chrome's declarative and imperative WebMCP APIs, high-value use cases, and the EPP rollout strategy.
+- [Chapter 9 — Reference Implementations](./agent-friendly-website-guide.en.md#9-reference-implementations): Detailed analyses of Anthropic Docs, Vercel, Cloudflare Developers, Stripe Docs, Maryland.gov, and Mintlify-hosted ecosystems.
+- [Chapter 10 — Audit Checklist](./agent-friendly-website-guide.en.md#10-agent-friendliness-audit-checklist): A weighted 6-category checklist (HTML structure, a11y tree, layout, structured data, AI entry point, next-gen) and a tooling table.
+- [Chapter 11 — A Phased Adoption Roadmap](./agent-friendly-website-guide.en.md#11-a-phased-adoption-roadmap): Phase 1 (1–2 weeks, quick wins) through Phase 4 (week 11+, WebMCP), plus KPI targets per phase.
+
+## About the author
+
+Dennis Kim (HoKwang Kim / 김호광 / キム・ホグァン) is the CEO of Betalabs Inc. in Seoul, former CEO of Cyworld Z, a long-tenured Microsoft Azure MVP, and the publisher of Web3Paper. He works at the intersection of Web3 infrastructure, cyber threat intelligence, and AI research, publishing technical content in Korean, English, Japanese, and Chinese. GitHub: [@gameworkerkim](https://github.com/gameworkerkim).
+
+## Optional
+
+- [Repository root](https://github.com/gameworkerkim/vibe-investing): The broader `vibe-investing` repository where this guide is published.
+- [Web3Paper](https://web3paper.net/ko): Dennis Kim's multilingual blockchain media platform, the primary publication channel for follow-up commentary.
+- License: This guide is released under [Creative Commons Attribution 4.0 (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/). Free to translate, adapt, and quote with attribution.
+- Primary sources: [Google web.dev — Building Agent-Friendly Websites](https://web.dev/articles/ai-agent-site-ux) · [Chrome — WebMCP EPP](https://developer.chrome.com/blog/webmcp-epp) · [llmstxt.org](https://llmstxt.org).
