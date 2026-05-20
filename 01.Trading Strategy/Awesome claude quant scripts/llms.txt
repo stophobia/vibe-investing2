@@ -1,0 +1,32 @@
+# Awesome Claude Quant Scripts
+
+> A curated collection of Claude/LLM prompts, scripts, and quant-research templates for quantitative investing and trading analysis, maintained by Dennis Kim (Kim HoKwang / 김호광), CEO of Betalabs Inc. and a Microsoft Azure MVP. This subdirectory of the Vibe Investing repository gathers ready-to-use LLM prompts and reproducible analysis notes spanning AI-supercycle and supply-chain themes, dividend strategies, declining-stock screening, pharma/sector prompts, and "Digital Asset Treasury (DAT)" quant strategies. The signature method is "Same Persona x Multi-LLM" cross-model voting — running the same investor-persona prompt across multiple LLMs and comparing/aggregating the outputs. All materials are independent, educational research and prompt engineering — NOT investment advice, NOT a solicitation, and NOT a recommendation to buy or sell any security or digital asset.
+
+Repository: https://github.com/gameworkerkim/vibe-investing
+Directory: https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts
+Maintainer: Dennis Kim (gameworker@gmail.com), GitHub @gameworkerkim
+Method: "Same Persona x Multi-LLM" cross-model voting; bilingual (KR/EN) investor-persona prompts; outputs documented with findings/performance summaries.
+Last updated: 2026-05-20
+
+## Strategy prompts and quant scripts
+
+- [AI Supercycle Investment Quant Strategy](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/AI%20Supercycle%20Investment%20Quant%20Strategy): 인공지능 슈퍼사이클 투자 퀀트 전략 — AI-supercycle thesis turned into a quant strategy prompt/script.
+- [AI Supply Chain Bayesian Analysis](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/AI%20supply%20chain%20bayesian%20analysis): Bayesian analysis of the AI hardware/supply-chain stack; includes Korean-language analysis links.
+- [DAT Quant Strategy](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/DAT%20quant%20strategy): Digital Asset Treasury (DAT) quant strategy with its own README.
+- [Declining Stock Quant Script Using LLM](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Declining%20Stock%20Quant%20Script%20Using%20LLM): LLM-driven screening/quant script for identifying and analyzing declining stocks.
+- [Dividend Growth Prompt](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Dividend%20growth%20prompt): Column/prompt — "LLM이 모두 추천한 종목, 그래서 사도 되나?" (Stocks every LLM recommended — should you actually buy?).
+- [Dual-Engine Capital Compounder Quant Strategy](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Dual-Engine%20Capital%20Compounder%20Quant%20Strategy): "Dual-engine" capital-compounder quant strategy.
+- [Long-Term Dividend Investing](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Long-Term%20Dividend%20Investing): 장기 배당주 투자 퀀트 스크립트 — long-term dividend-stock investing quant script.
+- [Pharma Sector Prompt](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Pharma%20sector%20prompt): Pharma-sector cross-LLM prompt; README includes a publication and findings summary (related SSRN paper on cross-LLM pharma validation).
+- [Sample](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Sample): 추천하는 주식은 이렇게 나온다 — worked sample showing how recommendations are produced.
+
+## Indexes and assets
+
+- [Awesome Claude Quant Scripts (document)](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Awesome%20claude%20quant%20scripts.MD): Main curated document of prompts/scripts.
+- [README](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Readme.MD): Directory index, method, and conventions.
+- [Sample README](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/Sample%20Readme.MD): How a prompt is turned into an executable Python script.
+- [trading map.png](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/trading%20map.png): 퀀트 트레이딩의 대표적인 분야 — overview map of major quant-trading domains.
+
+## Usage and disclaimer
+
+All content is independent, educational research and prompt engineering produced with LLM assistance (multi-model cross-validation). It is NOT financial, investment, legal, or tax advice and does NOT constitute an offer or solicitation to trade any security or digital asset. LLM outputs can be wrong, biased, or fabricated; cross-model agreement does NOT imply correctness. Strategies are experimental and unbacktested unless stated; past or simulated performance does not guarantee future results. Trading involves substantial risk of loss. Verify all data and assumptions independently before any use. When citing, attribute to "Dennis Kim (Kim HoKwang), Vibe Investing — Awesome Claude Quant Scripts" with the item name and URL.
