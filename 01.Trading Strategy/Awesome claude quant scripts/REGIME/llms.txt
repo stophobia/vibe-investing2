@@ -1,1 +1,46 @@
+# Macro-Regime Quant Prompts for M7 & AI-Infrastructure Stocks
 
+> An honest quant prompt + Python pipeline analyzing whether macro variables (FX, rates, inflation, consumer sentiment, oil/petrodollar) predict prices of the Magnificent 7 (AAPL, MSFT, GOOGL, AMZN, META, NVDA, TSLA) and AI-infrastructure stocks (semiconductors: AVGO, AMD, TSM, ASML, MU; power/datacenter/network: VRT, ETN, SMCI, DLR, GEV). Period 2020-01 to 2026-04. The framework is designed to refuse manufacturing signals the data does not support.
+
+Key empirical finding: Macro variables explain only 1-3% of weekly big-tech/AI-infra price variation (low regression R-squared). Macro regimes help with market timing and drawdown defense (max-drawdown improved in 16 of 17 names) but NOT stock selection. After removing market beta (QQQ) via regression, the number of stocks whose stock-specific alpha depends significantly on macro regime drops from 3/17 to 1/17. Conclusion: macro tells you WHEN to be in the market, not WHICH stock to pick.
+
+This repo contains three prompt variants (A: rule-based regime + momentum; B: macro regression fair-value; C: unsupervised KMeans/HMM regime + beta-neutral residual alpha), bilingual (Korean/English), plus runnable Python for correlation analysis, regime classification, signal generation, and backtesting. Intended for the vibe-investing curated quant resource. Educational/research use only; not investment advice.
+
+## Core documents
+
+- [README](README.md): Project overview, key findings, quick start, methodology notes, and bilingual summary prompts.
+- [Full prompt template](QUANT_PROMPT_TEMPLATE.md): Complete Korean/English text of Prompts A, B, and C, plus the decisive empirical findings and file index.
+
+## Prompts (what each one does)
+
+- Prompt A (rule-based regime + momentum): Classifies 4 macro regimes (Goldilocks, Reflation, Deflation/Recession, Stagflation/Shock) from rate trend x risk appetite, combines per-regime edge with 50-day momentum, validates with Kruskal-Wallis. Best for portfolio-level drawdown defense.
+- Prompt B (macro regression fair-value): Weekly multivariate regression of stock returns on macro changes to estimate fair value and gap z-score. Weak (R-squared 1-3%); use only as a supplementary indicator.
+- Prompt C (unsupervised regime + beta-neutral alpha): Uses KMeans and HMM to auto-detect regimes (no human-set thresholds), then regresses out QQQ to test whether stock-specific residual alpha depends on regime. Demonstrates that regime effects are mostly market-wide, not stock-specific.
+
+## Python pipeline
+
+- [Synthetic data generator](00_generate_data.py): Builds a 2020-2026 dataset of macro variables plus stock prices with realistic embedded macro betas and a QQQ market factor; used because the demo environment blocks yfinance/FRED.
+- [Regression engine - Prompt B](01_quant_engine.py): Daily and weekly correlation with significance tests, lead-lag analysis, macro regression fair-value, signal table, and backtest.
+- [Regime engine - Prompt A](03_regime_engine.py): Rule-based 4-regime classification, per-regime edge table, Kruskal-Wallis validation, regime+momentum signals, and look-ahead-safe backtest.
+- [Unsupervised regime + alpha - Prompt C](05_unsup_regime_alpha.py): KMeans and HMM regime extraction (with Adjusted Rand Index agreement and HMM persistence), QQQ beta-neutral residual alpha, and raw-vs-residual regime-dependence comparison.
+- [Real-data version](quant_macro_signal_REALDATA.py): Same logic against live yfinance prices and FRED macro series for the user's own environment.
+
+## Visualizations
+
+- [Correlation dashboard](02_visualize.py): Weekly macro-vs-stock correlation heatmap, fair-value gap, backtest Sharpe, macro time series.
+- [Regime dashboard](04_visualize_regime.py): Regime timeline over NVDA, regime-edge heatmap, drawdown improvement comparison.
+- [Unsupervised dashboard](06_visualize_unsup.py): HMM regime timeline with CPI, QQQ betas, and the total-return-vs-residual-alpha regime-dependence plot.
+
+## Data and results
+
+- [Backtest dataset](market_data_2020_2026.csv): Daily macro + stock + QQQ data, 2020-01-01 to 2026-04-30.
+- [Correlation output](out_correlations.csv): Stock-by-macro Pearson correlations with p-values.
+- [Regime signals](out_signals_regime.csv): Current regime+momentum signal per stock.
+- [Residual alpha](out_residual_alpha.csv): Per-regime annualized stock-specific alpha after removing QQQ.
+- [Betas](out_betas.csv): Each stock's QQQ market beta.
+
+## Optional
+
+- [Regime backtest](out_backtest_regime.csv): Strategy vs buy-and-hold CAGR/Sharpe/max-drawdown for the regime+momentum approach.
+- [Unsupervised regime labels](out_unsup_regime.csv): Daily KMeans and HMM regime assignments.
+- Topics for extension: separating statistically significant residual-alpha names (e.g. TSLA in the demo) as long-short or pairs-trade candidates; HMM state-count selection; adding transaction costs to backtests.
