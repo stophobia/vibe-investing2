@@ -5,6 +5,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+
+## 주의: 아직 미완성입니다. 금융공학적 지식이 없다면 이 퀀트로 투자에 이용하지 마세요!
+
 ---
 
 ## TL;DR — 핵심 결론 / Key Finding
