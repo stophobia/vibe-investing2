@@ -1,0 +1,41 @@
+# ARDS-Defense
+
+> Adaptive Recession-Defensive Strategy for the Defense and AI-Weaponization sectors. A multilingual, web-search-driven LLM prompt that diagnoses the macro regime (5-Factor Recession Composite), overlays a Defense Sentiment Score, and auto-allocates Korean and US defense equities across three tiers. This directory also documents a multi-LLM cross-validation study (Claude vs DeepSeek) on the same prompt, including an identified arithmetic error in one model and the resulting case for multi-LLM correction.
+
+This project lives in the `vibe-investing` repository under `01.Trading Strategy/ARDS-Defense/`. All numeric figures are LLM simulation outputs for research and education only, not investment advice. Defense names are extremely sensitive to geopolitical events; LLM outputs are non-deterministic and must be cross-validated.
+
+## Core strategy logic
+
+- STEP 0 — 5-Factor Recession Composite (Yield Curve 30%, Sahm Rule 25%, ISM 15%, LEI 15%, Credit Stress 15%) to set macro Phase 1-4.
+- STEP 1 — Defense Sentiment Score (Geopolitics 30%, Defense Budget Momentum 25%, AI-Defense Contracts 25%, K-Defense Exports 20%) adjusts Phase by +/-1.
+- STEP 2 — 3-Tier universe: Core Defense, AI-Defense, Tactical.
+- STEP 3 + 3.5 — 5-Dimension Scoring (Defense purity, AI exposure, financial resilience, valuation discipline, export momentum) with score-weighted intra-tier allocation and a 40% single-name cap.
+- STEP 4 — Phase-based allocation matrix.
+- STEP 5-7 — AI-Defense special rules (e.g., PLTR weight halved when forward PE > 50x), execution rules, counter-scenarios.
+
+## Key documents
+
+- [Korean master README](README.md): Full strategy, multilingual prompts, universe tables, and the multi-LLM analysis section.
+- [English README](README_EN.md): English version of the full strategy and multi-LLM analysis.
+- [Korean execution prompt](prompts/ARDS-Defense_KO.md): Primary v1.1 prompt, paste-and-run.
+- [English execution prompt](prompts/ARDS-Defense_EN.md): Global v1.1 prompt.
+- [Chinese execution prompt](prompts/ARDS-Defense_ZH.md): Greater China v1.1 prompt.
+
+## Multi-LLM run results and analysis (2026-05-24)
+
+- [Claude run output](result/claude_0524.md): Composite 22.5%, Phase 1, diversified portfolio (4.6-5.3% per name), no arithmetic errors.
+- [DeepSeek run output](result/DeepSeek_0524.md): Composite 15.0%, Phase 1, concentrated portfolio (top 9-14%), contains a 142% country-weight summation error later self-patched.
+- [Cross-LLM comparison](result/readme.md): Detailed Claude vs DeepSeek diff across macro, scoring, weights, and rule consistency.
+- [DeepSeek self-critique](result/deepseek_markdown_20260524_371f74.md): DeepSeek acknowledging its own arithmetic error, LEI inconsistency, and illusion-of-precision.
+- [Live-trading critique](result/ARDS_Defense_Critique.md): External critique on slippage, latency, overfitting, and LLM sycophancy bias.
+
+## Key findings
+
+- Both models converged on Phase 1 (Expansion), Korea-US 50:50, defense super-strength, top names Hanwha Aerospace / LIG Nex1 / Lockheed Martin, and exclusion of BigBear.ai (BBAI).
+- Divergence: Recession Composite (22.5% vs 15.0%) driven entirely by how the undefined 0 to -2% LEI band was handled (50% midpoint vs 0%); per-name weights; portfolio concentration; and Boeing inclusion (excluded by Claude at 44.2, borderline for DeepSeek at 61.5).
+- DeepSeek's main error: country weights summing to 142%, likely from double-counting the double-listed Hanwha Systems and confusing within-tier vs portfolio weight baselines, compounded by sequential-generation cumulative error.
+- Conclusion: single-LLM outputs need multi-LLM cross-validation. Treat convergence-zone results as robust, re-verify divergence-zone items by human or a third model, and enforce arithmetic and weight-sum checks with deterministic code rather than the LLM.
+
+## Optional
+
+- Prompt v1.2 improvement candidates: unify between-threshold handling to 50% across all factors; add a country-weight 100% verification step; provide a quantitative scoring rubric; codify cap-application order.
