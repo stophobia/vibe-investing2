@@ -2,6 +2,8 @@
 
 > *"미래의 퀀트 시스템은 하나의 초지능 AI 가 아니라, 서로 다른 투자 철학을 가진 AI 들의 committee 일 가능성이 높다. 본 연구는 그 가설을 4-LLM 교차검증으로 실증한 초기 사례다."*
 
+주의: 이 전략은 매우 위험한 전략이며, 투자자의 경험과 인사이트가 있어야 합니다.
+
 **시리즈**: vibe-investing — AMQS 의 대칭 헤지 (Counter-Strategy)
 **저자**: 김호광 (Dennis Kim / HoKwang Kim) · Betalabs Inc. · ORCID [0009-0002-0962-2175](https://orcid.org/0009-0002-0962-2175)
 **작성일**: 2026-05-18
