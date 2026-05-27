@@ -7,7 +7,7 @@ AI를 엑셀과 같은 도구로 보고, 시장의 소음에서 신호를 가려
 미국 나스닥·S&P500, 가상화폐, 명품 섹터, 크립토-주식 상관관계를 리서치하며 파과적 혁신 산업에서 알파 수익을 추구하고 있습니다.
 
 이 레포는 Dennis 저의 산만한 성격처럼 일본의 만물상 돈키호테와 같이 산만한 가운데서 보석이 있습니다. 
-매주 readme 업데이트는 불가능하며 주기적으로 업데이트될 예정입니다.
+매주 readme 업데이트는 가능성이 낮으며 랜덤 주기로 업데이트됩니다.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Made with](https://img.shields.io/badge/Made%20with-Claude%20%2B%20Python-blue)](https://github.com/gameworkerkim/vibe-investing/blob/main)
