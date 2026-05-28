@@ -1,25 +1,43 @@
-# 🧠 Brain — 뇌과학·행동경제학으로 읽는 인생 설계 칼럼
+# Brain — 뇌과학·행동경제학으로 읽는 인생 설계 칼럼
 
-> *투자 아이디어가 시장을 다루듯, 이 폴더는 **자기 자신**을 다룬다.*
-> 뇌과학, 게임이론, 행동경제학의 렌즈로 35세 이후의 삶·실행력·불안·태도를 재설계하는 5편의 에세이 모음입니다.
+> 투자 아이디어가 시장을 다루듯, 이 폴더는 **자기 자신**을 다룬다.
+> 뇌과학·게임이론·행동경제학의 렌즈로 35세 이후의 삶·실행력·불안·태도를 재설계하는 5편의 에세이 모음입니다.
+
+[메인 칼럼 인덱스로 돌아가기](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Readme.MD)
 
 이 폴더(`02.Investment Idea Column/Brain`)는 돈을 굴리기 전에 **그 돈을 굴리는 사람의 뇌를 먼저 정비**하자는 문제의식에서 출발합니다. 자기교정, 실행력, 매몰비용, 불안, 자기표현 — 투자자가 반복적으로 마주치는 심리적 함정을 과학적으로 해부하고 실천 처방을 제시합니다.
 
 ---
 
-## 📚 글 목록
+## 빠른 검색 (Quick Find)
 
-| # | 글 | 핵심 키워드 | 한 줄 요약 |
+각 항목을 클릭하면 **원문 칼럼**으로 바로 이동합니다.
+
+| # | 글 (원문 바로가기) | 핵심 키워드 | 한 줄 요약 |
 |---|-----|------------|-----------|
-| 1 | **35세, 아무도 말해주지 않는다는 것의 진짜 의미** | 침묵의 카르텔 · 자기교정 · 게임이론 | 피드백이 사라지면 뇌는 잘못된 상태를 '정상'으로 학습한다 |
-| 2 | **의지를 탓하지 마라, 뇌를 설계하라** | 실행력 · 로터스 방법 · 도파민 | 미루는 건 의지가 아니라 구조의 문제다 |
-| 3 | **인생을 달리다 길을 잃었을 때, 선택해야 할 다섯 가지** | 위기 대응 · 매몰비용 · 편도체 납치 | 길 잃음은 실패가 아니다, 인정하지 않는 질주가 실패다 |
-| 4 | **미래가 불안한 당신에게 — 인생 망해도 괜찮은 진짜 이유** | 불안 관리 · 진화심리 · 멘탈 | 인간은 미래 고통을 과대평가하고 회복력을 과소평가한다 |
-| 5 | **중년의 품격, 지식보다 '스타일'에 투자해야 하는 이유** | 자기표현 · 신호이론 · 첫인상 | 옷차림은 허영이 아니라 신뢰를 전달하는 '고비용 신호'다 |
+| 1 | [**35세, 아무도 말해주지 않는다는 것의 진짜 의미**](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/35%E1%84%89%E1%85%A6_%E1%84%8E%E1%85%B5%E1%86%B7%E1%84%86%E1%85%AE%E1%86%A8%E1%84%8B%E1%85%B4_%E1%84%8F%E1%85%A1%E1%84%85%E1%85%B3%E1%84%90%E1%85%A6%E1%86%AF_%E1%84%8F%E1%85%A1%E1%86%AF%E1%84%85%E1%85%A5%E1%86%B7.md) | 침묵의 카르텔 · 자기교정 · 게임이론 | 피드백이 사라지면 뇌는 잘못된 상태를 '정상'으로 학습한다 |
+| 2 | [**의지를 탓하지 마라, 뇌를 설계하라**](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/%EC%9D%98%EC%A7%80%EB%A5%BC%20%ED%83%93%ED%95%98%EC%A7%80%20%EB%A7%88%EB%9D%BC%20%EB%87%8C%EB%A5%BC%20%EC%84%A4%EA%B3%84%ED%95%98%EB%9D%BC.MD) | 실행력 · 로터스 방법 · 도파민 | 미루는 건 의지가 아니라 구조의 문제다 |
+| 3 | [**인생을 달리다 길을 잃었을 때, 선택해야 할 다섯 가지**](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/%E1%84%80%E1%85%B5%E1%86%AF%E1%84%8B%E1%85%B3%E1%86%AF_%E1%84%8B%E1%85%B5%E1%86%B6%E1%84%8B%E1%85%A5%E1%86%BB%E1%84%8B%E1%85%B3%E1%86%AF_%E1%84%84%E1%85%A2_5%E1%84%80%E1%85%A1%E1%84%8C%E1%85%B5.md) | 위기 대응 · 매몰비용 · 편도체 납치 | 길 잃음은 실패가 아니다, 인정하지 않는 질주가 실패다 |
+| 4 | [**미래가 불안한 당신에게 — 인생 망해도 괜찮은 진짜 이유**](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/%EC%9D%B8%EC%83%9D%20%EB%A7%9D%ED%95%B4%EB%8F%84%20%EA%B4%9C%EC%B0%AE%EC%9D%80%20%EC%A7%84%EC%A7%9C%20%EC%9D%B4%EC%9C%A0.MD) | 불안 관리 · 진화심리 · 멘탈 | 인간은 미래 고통을 과대평가하고 회복력을 과소평가한다 |
+| 5 | [**중년의 품격, 지식보다 '스타일'에 투자해야 하는 이유**](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/Style.MD) | 자기표현 · 신호이론 · 첫인상 | 옷차림은 허영이 아니라 신뢰를 전달하는 '고비용 신호'다 |
+
+### 개념·키워드로 찾기
+
+찾는 개념(국문·영문)으로 해당 글을 바로 여세요. `Ctrl/Cmd + F`로 아래 키워드를 검색해도 됩니다.
+
+| 개념 / 키워드 (KO · EN) | 관련 글 |
+| --- | --- |
+| 자기교정 · self-correction · 예측부호화 · predictive coding · 침묵의 카르텔 · 체면문화 · 눈치 · 손타쿠 · sontaku · 게임이론 · 내쉬 균형 · Nash equilibrium · 정보 비대칭 · 레몬마켓 · 개인 이사회 · Personal Board of Directors | [글 1](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/35%E1%84%89%E1%85%A6_%E1%84%8E%E1%85%B5%E1%86%B7%E1%84%86%E1%85%AE%E1%86%A8%E1%84%8B%E1%85%B4_%E1%84%8F%E1%85%A1%E1%84%85%E1%85%B3%E1%84%90%E1%85%A6%E1%86%AF_%E1%84%8F%E1%85%A1%E1%86%AF%E1%84%85%E1%85%A5%E1%86%B7.md) |
+| 실행력 · 미루기 · procrastination · 로터스 방법 · Lotus method · 도파민 · dopamine · 타임블록 · time blocking · 몰입 · flow · 시작의 문턱 · 습관 설계 · 정체성 | [글 2](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/%EC%9D%98%EC%A7%80%EB%A5%BC%20%ED%83%93%ED%95%98%EC%A7%80%20%EB%A7%88%EB%9D%BC%20%EB%87%8C%EB%A5%BC%20%EC%84%A4%EA%B3%84%ED%95%98%EB%9D%BC.MD) |
+| 위기 대응 · 의사결정 · decision making · 매몰비용 · sunk cost · 편도체 납치 · amygdala hijack · 선택의 역설 · paradox of choice · 감정 명명 · affect labeling · 감정 예측 · affective forecasting | [글 3](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/%E1%84%80%E1%85%B5%E1%86%AF%E1%84%8B%E1%85%B3%E1%86%AF_%E1%84%8B%E1%85%B5%E1%86%B6%E1%84%8B%E1%85%A5%E1%86%BB%E1%84%8B%E1%85%B3%E1%86%AF_%E1%84%84%E1%85%A2_5%E1%84%80%E1%85%A1%E1%84%8C%E1%85%B5.md) |
+| 불안 관리 · anxiety · 진화심리 · evolutionary psychology · 구석기 뇌 · 편도체 · amygdala · 회복력 · resilience · 멘탈 · 최악의 시나리오 · 닌자 전략 · 사회적 도태 | [글 4](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/%EC%9D%B8%EC%83%9D%20%EB%A7%9D%ED%95%B4%EB%8F%84%20%EA%B4%9C%EC%B0%AE%EC%9D%80%20%EC%A7%84%EC%A7%9C%20%EC%9D%B4%EC%9C%A0.MD) |
+| 자기표현 · 신호이론 · signaling theory · 고비용 신호 · costly signal · 메라비언 법칙 · Mehrabian · 첫인상 · first impression · 스프레차투라 · sprezzatura · 자기 테크놀로지 · technologies of the self · 푸코 · Foucault · 뺄셈의 미학 | [글 5](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/Style.MD) |
+
+> **검색 팁:** GitHub 검색창에 `repo:gameworkerkim/vibe-investing 키워드`로 레포 전체를 검색하거나, 이 페이지에서 `Ctrl/Cmd + F`로 개념어(편도체, 매몰비용, 신호이론, predictive coding 등)를 직접 찾으세요.
 
 ---
 
-## 1. 35세, 아무도 말해주지 않는다는 것의 진짜 의미
+## 1. [35세, 아무도 말해주지 않는다는 것의 진짜 의미](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/35%E1%84%89%E1%85%A6_%E1%84%8E%E1%85%B5%E1%86%B7%E1%84%86%E1%85%AE%E1%86%A8%E1%84%8B%E1%85%B4_%E1%84%8F%E1%85%A1%E1%84%85%E1%85%B3%E1%84%90%E1%85%A6%E1%86%AF_%E1%84%8F%E1%85%A1%E1%86%AF%E1%84%85%E1%85%A5%E1%86%B7.md)
 *— 뇌과학과 게임이론으로 읽는 '침묵의 카르텔', 그리고 한국 체면문화의 함정*
 
 **문제 제기:** 과소비·술버릇·과금·식습관·경력 중단 — 30대 중반 이후 누구도 직언하지 않고, 직언하는 사람이 오히려 '이상한 사람'이 된다.
@@ -41,7 +59,7 @@
 
 ---
 
-## 2. 의지를 탓하지 마라, 뇌를 설계하라
+## 2. [의지를 탓하지 마라, 뇌를 설계하라](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/%EC%9D%98%EC%A7%80%EB%A5%BC%20%ED%83%93%ED%95%98%EC%A7%80%20%EB%A7%88%EB%9D%BC%20%EB%87%8C%EB%A5%BC%20%EC%84%A4%EA%B3%84%ED%95%98%EB%9D%BC.MD)
 *— 로터스 방법으로 해킹하는 실행과 몰입의 기술*
 
 **핵심 통찰:** 미루기와 집중력 저하는 의지박약이 아니라, 뇌가 '이 일이 이득인가 손해인가'를 계산하는 **정상적 작동의 결과**다. "집중은 시작한 뒤에 온다."
@@ -55,7 +73,7 @@
 
 ---
 
-## 3. 인생을 달리다 길을 잃었을 때, 선택해야 할 다섯 가지
+## 3. [인생을 달리다 길을 잃었을 때, 선택해야 할 다섯 가지](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/%E1%84%80%E1%85%B5%E1%86%AF%E1%84%8B%E1%85%B3%E1%86%AF_%E1%84%8B%E1%85%B5%E1%86%B6%E1%84%8B%E1%85%A5%E1%86%BB%E1%84%8B%E1%85%B3%E1%86%AF_%E1%84%84%E1%85%A2_5%E1%84%80%E1%85%A1%E1%84%8C%E1%85%B5.md)
 
 **핵심 통찰:** 길을 잃었을 때 뇌가 가장 먼저 하는 거짓말은 *"지금 당장 결정해야 한다"*이다.
 
@@ -69,7 +87,7 @@
 
 ---
 
-## 4. 미래가 불안한 당신에게 — 인생 망해도 괜찮은 진짜 이유
+## 4. [미래가 불안한 당신에게 — 인생 망해도 괜찮은 진짜 이유](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/%EC%9D%B8%EC%83%9D%20%EB%A7%9D%ED%95%B4%EB%8F%84%20%EA%B4%9C%EC%B0%AE%EC%9D%80%20%EC%A7%84%EC%A7%9C%20%EC%9D%B4%EC%9C%A0.MD)
 
 **핵심 통찰:** 우리 뇌는 아직 구석기 시대에 산다. 생존 위협이 사라진 시대에도 편도체는 사회적 도태를 '죽음'으로 인식해 과도한 불안을 만든다.
 
@@ -83,7 +101,7 @@
 
 ---
 
-## 5. 중년의 품격, 지식보다 '스타일'에 투자해야 하는 이유
+## 5. [중년의 품격, 지식보다 '스타일'에 투자해야 하는 이유](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/Style.MD)
 
 **핵심 통찰:** 중장년의 외모 관리는 허영이 아니라 자신을 정의하고 소통하는 **'자기 테크놀로지(Self-technology)'**이자 사회적 생존 전략이다.
 
@@ -106,20 +124,20 @@
 
 ---
 
-## 🔗 관통하는 주제
+## 관통하는 주제
 
 다섯 편은 서로 다른 소재를 다루지만 하나의 메시지로 수렴합니다.
 
 > **"의지를 탓하지 말고 뇌를 이해하라. 그리고 그 뇌가 빠지기 쉬운 함정을 구조적으로 우회하도록 환경을 설계하라."**
 
-- **자기교정** (글1) → 외부 피드백 시스템을 의도적으로 구축
-- **실행력** (글2) → 의지 대신 구조로 몰입을 끌어냄
-- **위기 대응** (글3) → 편도체 납치·매몰비용을 인지하고 멈춤
-- **불안 관리** (글4) → 구석기 뇌의 과잉 경보를 재해석
-- **자기표현** (글5) → 신호이론으로 사회적 신뢰를 설계
+- **자기교정** ([글 1](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/35%E1%84%89%E1%85%A6_%E1%84%8E%E1%85%B5%E1%86%B7%E1%84%86%E1%85%AE%E1%86%A8%E1%84%8B%E1%85%B4_%E1%84%8F%E1%85%A1%E1%84%85%E1%85%B3%E1%84%90%E1%85%A6%E1%86%AF_%E1%84%8F%E1%85%A1%E1%86%AF%E1%84%85%E1%85%A5%E1%86%B7.md)) — 외부 피드백 시스템을 의도적으로 구축
+- **실행력** ([글 2](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/%EC%9D%98%EC%A7%80%EB%A5%BC%20%ED%83%93%ED%95%98%EC%A7%80%20%EB%A7%88%EB%9D%BC%20%EB%87%8C%EB%A5%BC%20%EC%84%A4%EA%B3%84%ED%95%98%EB%9D%BC.MD)) — 의지 대신 구조로 몰입을 끌어냄
+- **위기 대응** ([글 3](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/%E1%84%80%E1%85%B5%E1%86%AF%E1%84%8B%E1%85%B3%E1%86%AF_%E1%84%8B%E1%85%B5%E1%86%B6%E1%84%8B%E1%85%A5%E1%86%BB%E1%84%8B%E1%85%B3%E1%86%AF_%E1%84%84%E1%85%A2_5%E1%84%80%E1%85%A1%E1%84%8C%E1%85%B5.md)) — 편도체 납치·매몰비용을 인지하고 멈춤
+- **불안 관리** ([글 4](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/%EC%9D%B8%EC%83%9D%20%EB%A7%9D%ED%95%B4%EB%8F%84%20%EA%B4%9C%EC%B0%AE%EC%9D%80%20%EC%A7%84%EC%A7%9C%20%EC%9D%B4%EC%9C%A0.MD)) — 구석기 뇌의 과잉 경보를 재해석
+- **자기표현** ([글 5](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Brain/Style.MD)) — 신호이론으로 사회적 신뢰를 설계
 
 투자에서든 인생에서든, **감정과 본능에 휘둘리지 않고 시스템으로 의사결정하는 사람**이 결국 살아남는다는 것이 이 폴더의 일관된 관점입니다.
 
 ---
 
-*※ 본 문서는 Brain 폴더 내 5편의 칼럼을 정리·요약한 인덱스입니다. 인용된 과학적 개념(메라비언의 법칙, 도파민 D2 수용체 변화 등)은 대중적 해석을 포함하며, 정확한 출처는 각 원문을 참조하세요.*
+*본 문서는 Brain 폴더 내 5편의 칼럼을 정리·요약한 인덱스입니다. 인용된 과학적 개념(메라비언의 법칙, 도파민 D2 수용체 변화 등)은 대중적 해석을 포함하며, 정확한 출처는 각 원문을 참조하세요.*
