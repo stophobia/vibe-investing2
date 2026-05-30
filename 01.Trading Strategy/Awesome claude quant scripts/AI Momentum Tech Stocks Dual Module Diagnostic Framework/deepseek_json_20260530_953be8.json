@@ -1,0 +1,72 @@
+{
+  "ticker": "SNOW",
+  "as_of": "2026-05-29",
+  "fundamental": {
+    "fqs": 64,
+    "grade": "C",
+    "subscores": {
+      "growth": 60,
+      "margin": 30,
+      "recurrence": 75,
+      "fcf": 58,
+      "dilution": 50,
+      "moat": 70,
+      "accounting": 70
+    }
+  },
+  "timing": {
+    "ohs": 41,
+    "phase": "Hold",
+    "subscores": {
+      "valuation": 20,
+      "technical": 40,
+      "positioning": 50,
+      "durability_inv": 40,
+      "macro": 60
+    }
+  },
+  "quadrant": "Avoid/Value-Trap",
+  "gaap_bridge": "GAAP-비GAAP 격차의 주성분은 주식보상비용(SBC)으로, FY2025 기준 SBC가 매출의 29%에 달해 GAAP 영업손실을 지속시키는 구조",
+  "price_bands_12m": {
+    "bull": [220, 260],
+    "base": [175, 215],
+    "bear": [130, 170]
+  },
+  "instruments": {
+    "single_lev": "부재 → 섹터 레버리지 대체: CLOU(2x Cloud Computing) 검토",
+    "single_inv": "부재 → 인버스 지수 대체: SQQQ(-3x 나스닥100) 검토",
+    "sector_long": "CLOU / WCLD / SKYY",
+    "index_hedge": "PSQ / SQQQ"
+  },
+  "confidence": 0.4,
+  "bull_points": [
+    "NRR 126%로 구독·소비 기반의 높은 리텐션 유지",
+    "FCF 마진 30%대, 대규모 계약(RPO) 증가로 가시성 확보",
+    "데이터 플랫폼 전환비용과 생태계 록인 효과로 경쟁 해자 보유"
+  ],
+  "bear_points": [
+    "GAAP 영업적자 지속, 비GAAP만 흑자인 전형적 SBC 의존 구조",
+    "제품 매출 성장률 30%대에서 20% 초반으로 둔화 추세",
+    "연간 4% 내외의 지속적 희석, 높은 SBC가 주주가치 침식"
+  ],
+  "estimated_fields": [
+    "[추정] 제품 매출 YoY: FY2027 Q1 기준 약 23% (FY2025 실적 31% 대비 둔화, 컨센서스 기준)",
+    "[추정] NRR: 126% (FY2025 4Q 127%에서 소폭 하락 가정)",
+    "[추정] FCF/SBC 비율: 1.2배 (FY2025 1.21배 유지 가정)",
+    "[추정] SBC/매출: 27~29% (FY2025 29%에서 완만한 개선 가정)",
+    "[추정] 가중평균 주식수 YoY 증가율: 4% 내외",
+    "[추정] RSI(14) 55 / 200일 이평 이격 +5% (2026년 5월말 가격 약 $200 가정)",
+    "[추정] Fwd P/S: 12.7배 (FY2027 매출 컨센서스 $5.3B, 시총 $67.2B 가정)",
+    "[추정] 5년 P/S 백분위: 하위 10% (고성장 구간 대비 저평가 영역)",
+    "[추정] ARDS Phase: 2 (Late-Cycle, 2026년 상반기 거시 판단)"
+  ],
+  "data_gaps": [
+    "현재가 미입력 (종목/기준일/현재가 항목에 구체적 주가 없음)",
+    "최근 실적 갭(%) 미입력",
+    "30일 목표가 상향 건수 미입력",
+    "공매도 비중 미입력",
+    "가이던스 상향/하향 정보 미입력",
+    "백로그/수주잔고 상세 미입력",
+    "경쟁구도 세부 분석용 정량 데이터 미입력"
+  ]
+}
