@@ -1,32 +1,30 @@
-# 주식시황 (Stock Market Analysis)
+# 주식시황 / Stock Market Analysis (vibe-investing)
 
-> 미국·한국 주식시장 투자 칼럼 및 분석 리포트 모음. 서학개미(해외주식 투자자) 관점에서 반도체, 환율, 달러 패권, 개별 기업 밸류에이션 등 주요 이슈를 분석합니다. 작성: HoKwang Kim (김호광) / Betalabs Inc. / 전자신문 칼럼니스트.
+> 미국·한국 주식시장 투자 칼럼 및 분석 리포트 모음. 서학개미(해외주식 투자자) 관점에서 반도체, 환율, 달러 패권, 개별 기업 밸류에이션, 콘텐츠 산업 구조, 디지털자산을 데이터 기반으로 다룬다. AI를 보조 분석 도구로 활용하되, 최종 판단은 사람이 한다는 원칙("LLM은 엑셀이지 정답을 알려주는 오라클이 아니다")을 따른다.
 
-본 자료는 정보 제공 목적이며 투자 권유가 아닙니다.
+본 자료는 정보 제공·교육 목적이며 투자 권유가 아니다. 모든 투자 판단과 책임은 투자자 본인에게 있다. 작성자: HoKwang Kim (김호광), Betalabs Inc. (ORCID 0009-0002-0962-2175).
 
-## 반도체 (Semiconductors)
+## Columns
 
-- [미국 반도체 주식 조정 분석 (2026-05-27~28)](./Analysis%20of%20the%20US%20Semiconductor%20Stock%20Correction%20on%20May%2027%E2%80%9328%2C%202026.md): 2026년 5월 27–28일 미국 반도체 섹터 조정의 원인과 영향 분석
-- [노무라증권 SK하이닉스 가치 재평가](./market_analysis_2026.md): 노무라증권의 하이닉스 밸류에이션 재평가 분석
+- [2026년 5월 29–30일 미국 주식시장 특성 분석](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/Analysis%20of%20US%20Stock%20Market%20Characteristics%20on%20May%2029%E2%80%9330.md)
+- [2026년 5월 27–28일 미국 반도체 주식 조정 분석](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/Analysis%20of%20the%20US%20Semiconductor%20Stock%20Correction%20on%20May%2027%E2%80%9328%2C%202026.md)
+- [달러 패권 전쟁과 환변동 대비 자산 보호 전략](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/Dollar_Hegemony_War.md)
+- [드림어스컴퍼니 밸류에이션 분석](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/Dreamus%20valuation.md)
+- [웹툰·K드라마 산업의 정산 구조와 몰락 (영문 칼럼)](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/How%20Webtoons%20and%20K-Dramas%20Collapse.md)
+- [웹툰·K드라마 산업의 정산 구조와 몰락 (PDF)](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/How%20Webtoons%20and%20K-Dramas%20Collapse.pdf)
+- [MEET48 IDOL 토큰 투자 분석 (IOI)](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/IDOL_IOI.md)
+- [원/달러 1,500원 환율의 영향 분석](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/Won_USD%2020260523.md)
+- [노무라증권 SK하이닉스 가치 재평가](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/market_analysis_2026.md)
+- [게이츠 재단 MSFT 매도의 의미 (PDF)](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/%EC%B9%BC%EB%9F%BC%20%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C%EC%86%8C%ED%94%84%ED%8A%B8%20%EA%B2%8C%EC%9D%B4%EC%B8%A0%EC%9E%AC%EB%8B%A8%20%EB%A7%A4%EB%8F%84%EC%9D%98%20%EC%9D%98%EB%AF%B8.pdf)
+- [게이츠 재단 MSFT 매도의 의미](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/%EC%B9%BC%EB%9F%BC_%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C%EC%86%8C%ED%94%84%ED%8A%B8_%EA%B2%8C%EC%9D%B4%EC%B8%A0%EC%9E%AC%EB%8B%A8_%EB%A7%A4%EB%8F%84%EC%9D%98_%EC%9D%98%EB%AF%B8.md)
+- [서학개미 시장 리포트 (5/16)](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/%EC%84%9C%ED%95%99%EA%B0%9C%EB%AF%B8%20%EB%A6%AC%ED%8F%AC%ED%8A%B8%200516.md)
 
-## 환율 / 거시 (FX / Macro)
+## Assets
 
-- [달러 패권 전쟁](./Dollar_Hegemony_War.md): 달러 패권과 환변동에 대비한 자산 보호 전략
-- [원/달러 환율 분석 (2026-05-23)](./Won_USD%2020260523.md): 원/달러 1,500원 환율 수준이 미치는 영향 분석
-
-## 개별 기업 (Single Stocks)
-
-- [드림어스컴퍼니 밸류에이션](./Dreamus%20valuation.md): 드림어스컴퍼니 기업가치 분석
-- [마이크로소프트 게이츠 재단 매도의 의미 (MD)](./%EC%B9%BC%EB%9F%BC_%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C%EC%86%8C%ED%94%84%ED%8A%B8_%EA%B2%8C%EC%9D%B4%EC%B8%A0%EC%9E%AC%EB%8B%A8_%EB%A7%A4%EB%8F%84%EC%9D%98_%EC%9D%98%EB%AF%B8.md): 게이츠 재단의 MSFT 매도 의미 분석
-- [마이크로소프트 게이츠 재단 매도의 의미 (PDF)](./%EC%B9%BC%EB%9F%BC%20%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C%EC%86%8C%ED%94%84%ED%8A%B8%20%EA%B2%8C%EC%9D%B4%EC%B8%A0%EC%9E%AC%EB%8B%A8%20%EB%A7%A4%EB%8F%84%EC%9D%98%20%EC%9D%98%EB%AF%B8.pdf): 동일 칼럼 PDF 버전
-
-## 시장 종합 (Market Overview)
-
-- [서학개미 리포트 (2026-05-16)](./%EC%84%9C%ED%95%99%EA%B0%9C%EB%AF%B8%20%EB%A6%AC%ED%8F%AC%ED%8A%B8%200516.md): 해외주식 투자자 대상 시장 종합 리포트
+- [마이크로소프트 주가 차트 (칼럼 첨부 이미지)](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/msft_chart.png)
 
 ## Author
 
-- HoKwang Kim (김호광), Betalabs Inc.
-- ORCID: 0009-0002-0962-2175
-- GitHub: https://github.com/gameworkerkim
+- [GitHub: gameworkerkim](https://github.com/gameworkerkim)
 - Email: gameworker@gmail.com
+- 전자신문(Etnews) 블록체인/Web3 칼럼니스트
