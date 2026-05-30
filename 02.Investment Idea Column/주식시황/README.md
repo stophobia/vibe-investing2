@@ -14,7 +14,7 @@
 | [Dreamus valuation.md](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/Dreamus%20valuation.md) | 드림어스컴퍼니 밸류에이션 분석 | 개별 기업 |
 | [How Webtoons and K-Dramas Collapse.md](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/How%20Webtoons%20and%20K-Dramas%20Collapse.md) | 웹툰·K드라마 산업의 정산 구조와 몰락 (영문 칼럼) | 산업/섹터 |
 | [How Webtoons and K-Dramas Collapse.pdf](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/How%20Webtoons%20and%20K-Dramas%20Collapse.pdf) | 웹툰·K드라마 산업의 정산 구조와 몰락 (PDF) | 산업/섹터 |
-| [IDOL\_IOI.md](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/IDOL_IOI.md) | MEET48 IDOL 토큰 투자 분석 (IOI) | 디지털자산 |
+| [IDOL\_IOI.md](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/IDOL_IOI.md) | KPOP 걸그룹 IOI | 엔터산업  |
 | [Won\_USD 20260523.md](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/Won_USD%2020260523.md) | 원/달러 1,500원 환율의 영향 분석 | 환율/거시 |
 | [market\_analysis\_2026.md](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/market_analysis_2026.md) | 노무라증권 SK하이닉스 가치 재평가 | 반도체 |
 | [msft\_chart.png](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/msft_chart.png) | 마이크로소프트 주가 차트 (칼럼 첨부 이미지) | 차트 |
@@ -42,10 +42,7 @@
 ### 산업 / 섹터 (Sector)
 
 - 웹툰·K드라마 산업의 정산 구조와 몰락
-
-### 디지털자산 (Digital Assets)
-
-- MEET48 IDOL 토큰 투자 분석 (IOI)
+- 다시 모인 소녀들, 아이오아이(I.O.I) '갑자기'의 성공 방정식
 
 ### 시장 종합 (Market Overview)
 
@@ -54,13 +51,12 @@
 
 ## 작성자 (Author)
 
-HoKwang Kim (김호광) / Betalabs Inc.
+HoKwang Kim (김호광) / Cwyrold ex-CEO, Betalabs CEO
 
 - ORCID: 0009-0002-0962-2175
 - GitHub: [github.com/gameworkerkim](https://github.com/gameworkerkim)
 - Email: <gameworker@gmail.com>
 
-전자신문(Etnews) 블록체인/Web3 칼럼니스트
 
 ---
 
