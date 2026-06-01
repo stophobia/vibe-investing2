@@ -13,7 +13,8 @@
 
 이 문서는 `mu_hynix_pairs_full.py`를 **실데이터 3년**으로 실행한 결과(`result/`)를 포함해
 갱신되었다. 칼럼 [`마이크론이 오르면, 다음 날 하이닉스도 오를까?`](Column%20mu%20hynix%20leadlag.md)와
-[`퀀트 페어 분석 프롬프트`](quant_prompt.md)의 가설을 데이터로 검증한 기록이다.
+[`퀀트 페어 분석 프롬프트`](quant_prompt.md)의 가설을 데이터로 검증하고, 그 신호를
+[`시그널 봇`](Signal_Bot/)으로 제품화한 기록이다.
 
 ---
 
@@ -22,8 +23,10 @@
 | 경로 | 설명 |
 |---|---|
 | `Column mu hynix leadlag.md` | 가설 칼럼: MU가 하이닉스를 하루 선행하는가? |
+| `Column_signal_bot.md` | 칼럼(개정판): 직관 → 통계 → 백테스트 → 봇 전 과정 + 워드 동봉 |
 | `quant_prompt.md` | LLM에 직접 넣는 분석 프롬프트(계산 강제형, 5단계) |
 | `script/` | `mu_hynix_pairs_full.py` 풀버전: 거래비용 + CSV 로그 3종 + 통계적 유의성 판정 |
+| `Signal_Bot/` | 매수/매도 시그널 봇 + 웹뷰 대시보드 (아래 §0) |
 | `data/` | 입력/참고 데이터 |
 | `result/` | 아래 §3의 백테스트 산출물 |
 
@@ -37,6 +40,35 @@
 | `leadlag_corr.csv` | -3 ~ +3일 교차상관표 |
 | `mu_hynix_charts.png` | 누적수익 / z-score / 전략 에쿼티 차트 |
 | `run_console_output.txt` | 실행 콘솔 로그 |
+
+---
+
+## 0. 시그널 봇 / Signal Bot
+
+검증된 신호를 매일 자동 계산해 **간단한 웹뷰 대시보드**로 보여주는 봇이다. 기본 전략
+두 가지(A 모멘텀 / B 평균회귀)와 추가 전략 7종을 한 번에 산출한다. 전체 안내는
+[`Signal_Bot/README.md`](Signal_Bot/README.md).
+
+```bash
+cd Signal_Bot
+python signal_bot.py --years 3 --outdir .   # signals.json / signals.js 생성
+python -m http.server 8011                   # http://localhost:8011/ 접속
+```
+
+**대시보드 — 종합 시그널과 현재가**
+
+![시그널 봇 대시보드 상단](Signal_Bot/assets/dashboard_top.png)
+
+**기본 전략 시그널 + 리드-래그 교차상관표** (결론보다 근거를 먼저 보인다)
+
+![기본 전략 시그널](Signal_Bot/assets/dashboard_core.png)
+
+**추가 전략 7종**
+
+![추가 전략 7종](Signal_Bot/assets/dashboard_strategies.png)
+
+> 현재 종합 시그널은 **LONG** (모멘텀 A: 하이닉스 BUY / 평균회귀 B: BUY-SPREAD, z=-2.1).
+> 모든 신호는 참고용이며 실제 투자에는 상당한 리스크가 따른다(§4·§5 참조).
 
 ---
 
@@ -329,6 +361,16 @@ python script/mu_hynix_pairs_full.py --mock --mock-no-leadlag --outdir result_nu
 권유하지 않는다.** 위에 제시한 모든 전략과 백테스트 수치는 **참고용**이며, 인샘플 특성과
 레짐 의존성으로 인해 **실제 투자에는 상당한 리스크가 따른다.** 임계치는 워크포워드로 보정할
 대상이고, 모든 투자 판단과 그 결과의 책임은 사용자 본인에게 있다.
+
+---
+
+## 링크 / Links
+
+- 레포지토리: [vibe-investing](https://github.com/gameworkerkim/vibe-investing)
+- 이 전략 전체: [MU_Hynix](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/MU_Hynix)
+- 시그널 봇: [Signal_Bot](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/MU_Hynix/Signal_Bot)
+- 백테스트 결과: [result](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Awesome%20claude%20quant%20scripts/MU_Hynix/result)
+- 칼럼(개정판): [Column_signal_bot.md](Column_signal_bot.md) · [워드(.docx)](Column_signal_bot.docx)
 
 ---
 
