@@ -2,6 +2,8 @@
 
 > [vibe-investing/AMQS](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Adaptive%20Momentum%20Quant%20Strategy%20(AMQS)) 와 [AMQS-M7](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Adaptive%20Momentum%20Quant%20Strategy%20(AMQS)%20for%20M7) 의 **AI 인프라 특화 확장판**. 원본의 *4-Factor Momentum Composite*, *단기 하락 매수 모멘텀(Pullback-in-Uptrend)*, *거시 레짐 필터*, *-12% 손절*, *주간 리밸런싱* 을 계승하고, M7 에서 빠졌던 **Top-N 선별을 복원**하되 **서브테마 분산 캡**으로 GPU 과집중을 막는다.
 
+본 투자 방식은 인공지능과 인공지능 인프라 관련 주식이 메인스트림에서 주변으로 테마 이동되며 상승될 것이라는 가정으로 만들어진 프롬프트, 퀀트이다. 고위험이며 변동성이 극심할 수 있으며 원금 손실 가능성이 있다.
+
 ![python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![data](https://img.shields.io/badge/data-yfinance-orange)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey)
