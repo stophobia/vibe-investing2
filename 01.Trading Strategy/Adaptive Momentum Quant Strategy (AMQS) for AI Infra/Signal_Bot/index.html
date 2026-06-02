@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMQS-AI-Infra 매수 시그널 봇</title>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#141b24; --panel2:#1b2430; --border:#28323f;
+    --tx:#e8eef5; --tx2:#94a3b4; --muted:#64748b;
+    --buy:#2ea043; --buy2:#39d353; --sell:#f85149; --warn:#d29922; --info:#58a6ff;
+    --chip:#1f2937;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.55;font-size:15px}
+  .wrap{max-width:1080px;margin:0 auto;padding:26px 18px 50px}
+  header h1{font-size:23px;margin:0 0 4px}
+  header .sub{color:var(--tx2);font-size:13px}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 20px;font-size:12.5px;color:var(--tx2)}
+  .meta .pill{background:var(--chip);border:1px solid var(--border);border-radius:999px;padding:3px 11px}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:18px 20px;margin-bottom:18px}
+  .panel h2{font-size:13px;margin:0 0 14px;color:var(--tx2);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+  /* regime */
+  .regime{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .rbadge{font-size:13px;font-weight:700;padding:7px 15px;border-radius:8px}
+  .r-on{background:rgba(46,160,67,.16);color:var(--buy2);border:1px solid rgba(46,160,67,.4)}
+  .r-off{background:rgba(248,81,73,.16);color:var(--sell);border:1px solid rgba(248,81,73,.4)}
+  .r-def{background:rgba(168,85,247,.16);color:#c084fc;border:1px solid rgba(168,85,247,.4)}
+  .regime .det{font-size:13px;color:var(--tx2)}
+  .regime .inv{margin-left:auto;font-size:13px;color:var(--tx2)}
+  /* buy cards */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:12px}
+  .card{background:var(--panel2);border:1px solid var(--border);border-radius:11px;padding:14px 15px;position:relative}
+  .card.dip{border-color:rgba(57,211,83,.5);box-shadow:0 0 0 1px rgba(57,211,83,.25) inset}
+  .card .tk{font-size:18px;font-weight:700}
+  .card .th{font-size:11px;color:var(--muted);margin-bottom:8px}
+  .card .wt{font-size:24px;font-weight:800;color:var(--buy2);line-height:1}
+  .card .wlbl{font-size:11px;color:var(--tx2);margin-top:2px}
+  .card .tier{display:inline-block;margin-top:10px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;
+    background:rgba(46,160,67,.14);color:var(--buy2)}
+  .card .tier.dipt{background:rgba(57,211,83,.2)}
+  .card .mini{margin-top:10px;font-size:11.5px;color:var(--tx2);display:flex;justify-content:space-between;gap:6px}
+  .card .sc{position:absolute;top:13px;right:14px;font-size:12px;color:var(--tx2)}
+  .card .sc b{color:var(--tx);font-size:15px}
+  /* dip alert */
+  .dipalert{font-size:13.5px;background:rgba(57,211,83,.08);border:1px solid rgba(57,211,83,.3);
+    border-radius:9px;padding:10px 13px;margin-bottom:9px}
+  .dipalert b{color:var(--buy2)}
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--border);white-space:nowrap}
+  th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+  th{color:var(--tx2);font-weight:600;font-size:11.5px}
+  tr.buy td{background:rgba(46,160,67,.06)}
+  tr.exit td{color:var(--muted)}
+  .tag{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px}
+  .t-buy{background:rgba(46,160,67,.16);color:var(--buy2)}
+  .t-dip{background:rgba(57,211,83,.22);color:var(--buy2)}
+  .t-red{background:rgba(210,153,34,.16);color:var(--warn)}
+  .t-exit{background:rgba(248,81,73,.16);color:var(--sell)}
+  .t-x{background:var(--chip);color:var(--muted)}
+  .pos{color:var(--buy2)} .neg{color:var(--sell)}
+  /* disclaimer */
+  .disclaimer{background:rgba(248,81,73,.06);border:1px solid rgba(248,81,73,.28);border-radius:11px;
+    padding:16px 18px;margin-top:22px}
+  .disclaimer h3{margin:0 0 8px;font-size:13px;color:var(--sell);letter-spacing:.03em}
+  .disclaimer p{margin:0;font-size:12.5px;color:var(--tx2)}
+  .foot{margin-top:16px;font-size:11.5px;color:var(--muted);text-align:center}
+  .foot a{color:var(--info)}
+  .err{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.35);border-radius:10px;padding:18px;font-size:14px}
+  code{background:var(--chip);padding:2px 6px;border-radius:4px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>AMQS-AI-Infra 매수 시그널 봇</h1>
+    <div class="sub">AI 인프라 밸류체인 적응형 모멘텀 전략 · 매수 후보 · 단기 하락 매수(DIP) 알림 · 참고용 보조 지표</div>
+  </header>
+  <div id="app"></div>
+</div>
+
+<script src="signals.js" onerror="window.__noJs=true"></script>
+<script>
+const esc = s => String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const pct = (x,d=1) => (x==null||isNaN(x)) ? "—" : (x>=0?"+":"")+(x*100).toFixed(d)+"%";
+const pctCls = x => (x==null||isNaN(x)) ? "" : (x>=0?"pos":"neg");
+
+const REGIME = {
+  RISK_ON:  ["r-on","RISK-ON","100% 투자"],
+  RISK_OFF: ["r-off","RISK-OFF","50% 현금화"],
+  DEFENSIVE:["r-def","DEFENSIVE","방어 바스켓 전환"],
+};
+const TAG = sig => {
+  if(sig==="DIP_BUY") return ["t-dip","단기 하락 매수"];
+  if(["CENTER","SATELLITE","TACTICAL"].includes(sig)) return ["t-buy",{CENTER:"중심 매수",SATELLITE:"위성 매수",TACTICAL:"전술 매수"}[sig]];
+  if(sig==="REDUCE") return ["t-red","비중 축소"];
+  if(sig==="EXIT") return ["t-exit","청산"];
+  if(sig==="EXCLUDED") return ["t-x","필터 탈락"];
+  return ["t-x",sig];
+};
+
+function render(d){
+  const r = d.regime, s = d.summary;
+  let h = "";
+
+  h += `<div class="meta">
+    <span class="pill">전략: ${esc(d.strategy)}</span>
+    <span class="pill">데이터: ${esc(d.source)}</span>
+    <span class="pill">기준일: ${esc(d.price_date)}</span>
+    <span class="pill">생성: ${esc(d.generated_at)}</span>
+    <span class="pill">Top-${d.config.top_n} · 서브테마당 최대 ${d.config.max_per_subtheme}</span>
+  </div>`;
+
+  // regime
+  const rg = REGIME[r.label] || ["r-on",r.label,""];
+  h += `<div class="panel"><h2>거시 레짐 (Macro Regime)</h2><div class="regime">
+    <span class="rbadge ${rg[0]}">${esc(rg[1])}</span>
+    <span class="det">${esc(r.reason)}</span>
+    <span class="inv">투자 비중 ${(r.invested_fraction*100).toFixed(0)}% · ${esc(rg[2])}</span>
+  </div></div>`;
+
+  // buy signals (headline)
+  h += `<div class="panel"><h2>매수 시그널 — ${s.n_buys}종목 (총 비중 ${(s.total_weight*100).toFixed(0)}%)</h2>`;
+  if(d.dip_buys.length){
+    d.dip_buys.forEach(x=>{
+      h += `<div class="dipalert"><b>[단기 하락 매수] ${esc(x.ticker)}</b> (${esc(x.subtheme)}) → 목표 ${(x.weight*100).toFixed(1)}% · ${esc(x.reason)}</div>`;
+    });
+  }
+  if(!d.buy_signals.length){
+    h += `<div class="det" style="color:var(--tx2)">현재 매수 시그널 없음 (레짐/필터 조건 미충족).</div>`;
+  } else {
+    h += `<div class="cards">`;
+    d.buy_signals.forEach(x=>{
+      const isDip = x.signal==="DIP_BUY";
+      const tlbl = TAG(x.signal)[1];
+      h += `<div class="card ${isDip?'dip':''}">
+        <div class="sc">점수 <b>${x.score.toFixed(0)}</b></div>
+        <div class="tk">${esc(x.ticker)}</div>
+        <div class="th">${esc(x.subtheme)}</div>
+        <div class="wt">${(x.weight*100).toFixed(1)}%</div>
+        <div class="wlbl">목표 비중</div>
+        <span class="tier ${isDip?'dipt':''}">${esc(tlbl)}</span>
+        <div class="mini"><span>12-1 <span class="${pctCls(x.factor_A_12_1)}">${pct(x.factor_A_12_1,0)}</span></span>
+          <span>5D <span class="${pctCls(x.ret_5d)}">${pct(x.ret_5d)}</span></span>
+          <span>RSI ${x.rsi_14==null?'—':x.rsi_14.toFixed(0)}</span></div>
+      </div>`;
+    });
+    h += `</div>`;
+  }
+  h += `</div>`;
+
+  // full table
+  h += `<div class="panel"><h2>전체 종목 점수표</h2>
+    <table><thead><tr>
+      <th>종목</th><th>서브테마</th><th>가격</th><th>점수</th><th>비중</th>
+      <th>12-1</th><th>6-1</th><th>5D</th><th>20D</th><th>RSI</th><th>52W</th><th>시그널</th>
+    </tr></thead><tbody>`;
+  d.all.forEach(x=>{
+    const [tc,tl] = TAG(x.signal);
+    const cls = (x.signal==="DIP_BUY"||["CENTER","SATELLITE","TACTICAL"].includes(x.signal)) ? "buy"
+              : (x.signal==="EXIT"||x.signal==="EXCLUDED") ? "exit" : "";
+    h += `<tr class="${cls}">
+      <td><b>${esc(x.ticker)}</b></td><td>${esc(x.subtheme)}</td>
+      <td>${x.price==null?'—':x.price.toFixed(2)}</td>
+      <td>${x.score.toFixed(1)}</td>
+      <td>${x.weight>0?(x.weight*100).toFixed(1)+'%':'—'}</td>
+      <td class="${pctCls(x.factor_A_12_1)}">${pct(x.factor_A_12_1,0)}</td>
+      <td class="${pctCls(x.factor_B_6_1)}">${pct(x.factor_B_6_1,0)}</td>
+      <td class="${pctCls(x.ret_5d)}">${pct(x.ret_5d)}</td>
+      <td class="${pctCls(x.ret_20d)}">${pct(x.ret_20d)}</td>
+      <td>${x.rsi_14==null?'—':x.rsi_14.toFixed(0)}</td>
+      <td class="${pctCls(x.dist_52w_high)}">${pct(x.dist_52w_high)}</td>
+      <td><span class="tag ${tc}">${esc(tl)}</span></td>
+    </tr>`;
+  });
+  h += `</tbody></table></div>`;
+
+  // disclaimer (하단 리스크 고지)
+  h += `<div class="disclaimer"><h3>⚠ 리스크 고지 (Risk Disclaimer)</h3>
+    <p>${esc(d.disclaimer)}</p></div>`;
+  h += `<div class="foot">AMQS-AI-Infra · part of
+    <a href="https://github.com/gameworkerkim/vibe-investing">vibe-investing</a> ·
+    신호 산출: <code>signal_bot.py</code> · 투자 권유 아님</div>`;
+
+  document.getElementById("app").innerHTML = h;
+}
+
+function showErr(){
+  document.getElementById("app").innerHTML =
+    `<div class="err"><b>데이터를 불러오지 못했습니다.</b><br><br>
+    먼저 봇을 실행해 <code>signals.json</code>(과 <code>signals.js</code>)를 생성하세요:<br><br>
+    <code>python signal_bot.py --period 2y --outdir .</code><br><br>
+    또는 로컬 서버로 여세요: <code>python -m http.server</code></div>`;
+}
+
+fetch("signals.json").then(r=>{ if(!r.ok) throw 0; return r.json(); })
+  .then(render)
+  .catch(()=>{ if(window.SIGNALS) render(window.SIGNALS); else showErr(); });
+</script>
+</body>
+</html>

@@ -54,8 +54,25 @@ AMQS_AI_Infra/
 ├── prompts/
 │   ├── AMQS_AI_Infra_kr.MD  # 한국어 LLM 프롬프트
 │   └── AMQS_AI_Infra_EN.MD  # English (토큰 ~30% 절감)
+├── Signal_Bot/              # 매수 시그널 봇 + 웹뷰 대시보드 (아래 §매수 시그널 봇)
 └── data/                    # 백테스트/런타임 CSV 출력 (동봉)
 ```
+
+---
+
+## 매수 시그널 봇 / Signal Bot
+
+전략 엔진으로 **매수 시그널**을 산출해 간단한 웹뷰 대시보드로 보여주는 봇. Top-N 매수 후보,
+단기 하락 매수(DIP) 알림, 거시 레짐, 전체 점수표를 한 화면에 띄우고 **하단에 리스크 고지**를 둔다.
+전체 안내는 [`Signal_Bot/README.md`](Signal_Bot/README.md).
+
+```bash
+cd Signal_Bot
+python signal_bot.py --period 2y --outdir .   # signals.json / signals.js 생성
+python -m http.server 8011                     # http://localhost:8011/ 접속
+```
+
+![매수 시그널 대시보드](Signal_Bot/assets/dashboard_top.png)
 
 ---
 
