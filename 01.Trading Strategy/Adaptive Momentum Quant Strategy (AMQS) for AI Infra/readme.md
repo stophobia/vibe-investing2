@@ -2,7 +2,21 @@
 
 > [vibe-investing/AMQS](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Adaptive%20Momentum%20Quant%20Strategy%20(AMQS)) 와 [AMQS-M7](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Adaptive%20Momentum%20Quant%20Strategy%20(AMQS)%20for%20M7) 의 **AI 인프라 특화 확장판**. 원본의 *4-Factor Momentum Composite*, *단기 하락 매수 모멘텀(Pullback-in-Uptrend)*, *거시 레짐 필터*, *-12% 손절*, *주간 리밸런싱* 을 계승하고, M7 에서 빠졌던 **Top-N 선별을 복원**하되 **서브테마 분산 캡**으로 GPU 과집중을 막는다.
 
-본 투자 방식은 인공지능과 인공지능 인프라 관련 주식이 메인스트림에서 주변으로 테마 이동되며 상승될 것이라는 가정으로 만들어진 프롬프트, 퀀트이다. 고위험이며 변동성이 극심할 수 있으며 원금 손실 가능성이 있다.
+### 투자 철학 / 컨셉
+
+이 전략은 **파괴적 혁신과 그 모멘텀에 투자**한다. 투자는 과감하되 한 바구니에 몰지 않아야 하고
+(2000년 닷컴 버블의 교훈), 무엇보다 *자신만의 투자 철학*이 있어야 작전·소음에 휘둘리지 않는다.
+
+AMQS-AI-Infra의 철학은 명확하다 — 인공지능과 그 인프라가 **메인스트림(엔비디아)에서 주변 혁신
+기업(메모리·스토리지·서버·네트워킹·전력 등)으로 테마가 확산되며 상승**한다는 가정 아래, 그
+**모멘텀이 이동하는 순간을 규칙으로 포착**한다. 잘 달리는 종목에 올라타되, 잠깐 넘어졌을 때
+(단기 하락) 더 싸게 담고, 거시 날씨가 나빠지면 규칙에 따라 현금으로 피한다. 감정이 아니라 점수와
+규칙이 사고팔기를 결정하며, 한 서브테마(예: GPU)에 쏠리지 않도록 분산한다.
+
+> 다만 본 전략은 인공지능·인공지능 인프라 주식의 테마 이동·상승을 가정한 **고위험 퀀트**다.
+> 변동성이 극심할 수 있고 **원금 손실 가능성**이 있으며, 모든 수치는 강세장 표본 기준의 참고용이다.
+> 쉬운 풀이는 [`AMQS_AI_Infra_Idea_Note.md`](AMQS_AI_Infra_Idea_Note.md) ·
+> [PDF](AMQS_AI_Infra_Idea_Note.pdf) 참고.
 
 ![python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![data](https://img.shields.io/badge/data-yfinance-orange)
@@ -178,6 +192,7 @@ MIT. 출처 표기 권장: "Built on AMQS by Dennis Kim, vibe-investing reposito
 
 ## 링크
 
+- 쉽게 읽는 설명(아이디어 노트): [AMQS_AI_Infra_Idea_Note.md](AMQS_AI_Infra_Idea_Note.md) · [PDF](AMQS_AI_Infra_Idea_Note.pdf)
 - 레포지토리: [vibe-investing](https://github.com/gameworkerkim/vibe-investing)
 - 원본 AMQS: [Adaptive Momentum Quant Strategy (AMQS)](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Adaptive%20Momentum%20Quant%20Strategy%20(AMQS))
 - AMQS-M7: [for M7](https://github.com/gameworkerkim/vibe-investing/tree/main/01.Trading%20Strategy/Adaptive%20Momentum%20Quant%20Strategy%20(AMQS)%20for%20M7)
