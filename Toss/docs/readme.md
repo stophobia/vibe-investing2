@@ -8,7 +8,7 @@
 | 문서 | 설명 |
 | --- | --- |
 | [Toss_OpenAPI_Guide.md](./Toss_OpenAPI_Guide.md) | **토스증권 Open API 기술 분석 문서** — 인증·토큰 정책, 20개 엔드포인트 전체 리스트, 6가지 활용 시나리오(트레이딩 봇·LLM 연동·백테스트 파이프라인 등), 설계 제약사항, 정보 검증 등급 |
-| [토스증권_OpenAPI_분석문서.pdf](./%E1%84%90%E1%85%A9%E1%84%89%E1%85%B3%E1%84%8C%E1%85%B3%E1%86%BC%E1%84%80%E1%85%AF%E1%86%AB_OpenAPI_%E1%84%87%E1%85%AE%E1%86%AB%E1%84%89%E1%85%A5%E1%86%A8%E1%84%86%E1%85%AE%E1%86%AB%E1%84%89%E1%85%A5.pdf) | 위 분석 문서의 **PDF 버전** (배포·인쇄용) |
+| [Toss_OpenAPI_Analysis.pdf](./Toss_OpenAPI_Analysis.pdf) | 위 분석 문서의 **PDF 버전** (배포·인쇄용) |
 
 ## 🖼 대시보드 스크린샷
 

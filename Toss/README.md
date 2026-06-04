@@ -138,7 +138,7 @@ npm start          # http://localhost:3000 (키 없으면 MOCK 모드로 즉시 
 | [GUIDE.md](./GUIDE.md) | **사용 설명서** — 설치 · API 키 연동 · 서버 API · 종목 교체 |
 | [backtest/BACKTEST.md](./backtest/BACKTEST.md) | **국내 3년 백테스트 리포트** — AMQS vs KODEX 200 vs 동일가중, 정직한 성과 분석·데이터 한계 |
 | [docs/Toss_OpenAPI_Guide.md](./docs/Toss_OpenAPI_Guide.md) | **토스증권 Open API 기술 분석** — 인증·토큰 정책, 20개 엔드포인트, 6가지 활용 시나리오(트레이딩 봇·LLM 연동·백테스트), 설계 제약, 정보 검증 등급 |
-| [docs/토스증권_OpenAPI_분석문서.pdf](./docs/%E1%84%90%E1%85%A9%E1%84%89%E1%85%B3%E1%84%8C%E1%85%B3%E1%86%BC%E1%84%80%E1%85%AF%E1%86%AB_OpenAPI_%E1%84%87%E1%85%AE%E1%86%AB%E1%84%89%E1%85%A5%E1%86%A8%E1%84%86%E1%85%AE%E1%86%AB%E1%84%89%E1%85%A5.pdf) | 위 분석 문서의 **PDF 버전** |
+| [docs/Toss_OpenAPI_Analysis.pdf](./docs/Toss_OpenAPI_Analysis.pdf) | 위 분석 문서의 **PDF 버전** |
 | [docs/](./docs/readme.md) | 문서·스크린샷 인덱스 |
 
 ---
