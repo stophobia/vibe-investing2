@@ -1,0 +1,4 @@
+strategy,total_return_pct,cagr_pct,vol_pct,mdd_pct,sharpe,calmar
+AMQS,221.6,47.43,30.3,-28.0,1.48,1.7
+KODEX200_BuyHold,332.2,62.65,28.5,-21.6,1.92,2.9
+EqualWeight_BuyHold,163.0,37.9,24.2,-15.8,1.5,2.39

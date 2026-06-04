@@ -18,6 +18,14 @@
 | [02-search.png](./02-search.png) | 종목 검색 결과 (`?q=삼성전자`) |
 | [03-overview.png](./03-overview.png) | 레짐 + ETF + 섹터 전체 개요 |
 
+## 📊 백테스트
+
+| 파일 | 설명 |
+| --- | --- |
+| [../backtest/BACKTEST.md](../backtest/BACKTEST.md) | **국내 3년 백테스트 리포트** (정직한 성과 분석 + 데이터 한계) |
+| [backtest_nav.png](./backtest_nav.png) | NAV·낙폭 비교 차트 |
+| [../data/](../data) | 백테스트 로그 CSV (일간 NAV · 리밸런싱 로그 · 종목별 통계) |
+
 ## 🔗 상위 문서
 
 - [../README.md](../README.md) — **투자 철학 문서** (왜 이렇게 만들었나 · 주의점)
