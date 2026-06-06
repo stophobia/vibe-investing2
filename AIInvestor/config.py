@@ -23,6 +23,10 @@ class Config:
     storage_backend: str  # 'sqlite' (1차 / dev) or 'blob' (2차 / Azure)
     storage_account_name: str
     log_level: str
+    finnhub_key: str
+    cf_ingest_url: str
+    ingest_secret: str
+    alphavantage_key: str
 
     @staticmethod
     def load() -> "Config":
@@ -45,6 +49,10 @@ class Config:
             storage_backend=os.getenv("STORAGE_BACKEND", "sqlite").lower(),
             storage_account_name=os.getenv("STORAGE_ACCOUNT_NAME", "").strip(),
             log_level=os.getenv("LOG_LEVEL", "INFO").upper(),
+            finnhub_key=os.getenv("FINNHUB_KEY", "").strip(),
+            cf_ingest_url=os.getenv("CF_INGEST_URL", "").strip(),
+            ingest_secret=os.getenv("INGEST_SECRET", "").strip(),
+            alphavantage_key=os.getenv("ALPHAVANTAGE_KEY", "").strip(),
         )
 
 

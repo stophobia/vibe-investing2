@@ -3013,6 +3013,29 @@ async def memory_signal_refresh_timer(timer: func.TimerRequest) -> None:
 
 
 # ---------------------------------------------------------------------
+# §NEWS — Finnhub US 금융 뉴스 → DeepSeek 한국어 요약 → Cloudflare Worker POST
+# ---------------------------------------------------------------------
+# Schedule: UTC 01/03/06/09/12/14/18/21/23 → KST 10/12/15/18/21/23/03/06/08
+# = 9 회/일 (장 전, 장중, 장 마감 직후 분포)
+@app.timer_trigger(
+    schedule="0 0 1,3,6,9,12,14,18,21,23 * * *",
+    arg_name="timer",
+    run_on_startup=False,
+    use_monitor=True,
+)
+async def news_collect_timer(timer: func.TimerRequest) -> None:
+    await _bootstrap()
+    if not _config:
+        return
+    from services.news_service import collect_and_post_news
+    try:
+        summary = await collect_and_post_news(_config)
+        logger.info("news_collect %s", summary)
+    except Exception:
+        logger.exception("news_collect_timer failed")
+
+
+# ---------------------------------------------------------------------
 # §DONATION — TON/TRON USDT donation intents + on-chain verification
 # ---------------------------------------------------------------------
 
