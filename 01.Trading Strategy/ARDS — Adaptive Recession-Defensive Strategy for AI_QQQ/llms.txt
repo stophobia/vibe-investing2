@@ -1,0 +1,50 @@
+# ARDS-X Regime Classifier
+
+> ARDS 의 실데이터 확장 모듈. 미국 빅테크 + AI/인프라 복합체와 S&P500·Nasdaq100 이
+> 지금 조정(Correction) / 단기 과매도(Oversold) / 하락(Downtrend) / 침체 리밸런싱
+> (Recession) 중 어느 국면인지 2-축 레짐 맵으로 분류한다. 모든 데이터는 무료
+> (yfinance + FRED 무료 CSV, API 키 불필요).
+
+## 핵심 개념
+- X축 = 거시 침체축: ARDS 5-Factor Recession Composite 를 실데이터로 계산 (LLM 추정 아님)
+- Y축 = 가격 스트레스축: 52주 고점 드로다운 + 추세 붕괴(200일선/데드크로스/폭) + 모멘텀
+- 오버레이 = 단기 과매도: RSI(14) / Bollinger %B / 20일선 ATR 이탈
+- 5개 상태 + 각 상태별 자매전략 핸드오프 (AMQS 모멘텀 / ARDS 방어)
+
+## 5-Factor (ARDS 동일 가중치, 실데이터)
+- A 수익률곡선 30% : FRED T10Y3M·T10Y2Y → (폴백) yfinance ^TNX-^IRX
+- B Sahm Rule 25%  : FRED UNRATE
+- C ISM 프록시 15% : 구리/금(CPER/GLD) + 산업재(XLI/SPY)
+- D LEI 프록시 15% : FRED ICSA(신규청구) + PERMIT(주택허가)
+- E 신용/금융 15%  : FRED HY OAS(BAMLH0A0HYM2) + NFCI → (폴백) HYG/IEF
+
+## 파일
+- README.md / README_EN.md : 설명 + 철학 + 백테스트 결과
+- prompts/ARDS-X_{kr,en,cn}.MD : LLM 교차검증용 프롬프트 (코드와 동일 로직)
+- quant/config.py     : 유니버스·가중치·임계값
+- quant/datafeed.py   : yfinance + FRED 무료 CSV (병렬·캐시·폴백)
+- quant/macro.py      : 5-Factor Recession Composite
+- quant/technical.py  : 드로다운·추세·과매도·폭 지표
+- quant/classifier.py : 2-축 레짐 분류 엔진 (핵심)
+- quant/run.py        : 파이프라인 → dashboard/data/latest.json
+- quant/backtest.py   : 과거 레짐 분류 검증 (룩어헤드 없음) → backtest_*.csv
+- dashboard/          : 정적 대시보드 (index.html, app.js, styles.css, serve.py)
+
+## 실행
+- python quant/run.py            # latest.json 생성
+- python quant/backtest.py       # 백테스트 CSV 생성
+- python dashboard/serve.py 3142 # 대시보드 서빙
+
+## 백테스트 핵심 (2014–2026, ^NDX 2,914일)
+- 조정/단기과매도 구간 60일 수익률 +5%대(승률 77%) → 저점매수 가설 유효
+- 하락/분배 구간 60일 -0.4%(승률 44%) → 경계 정당
+- 침체 분류는 역신호(+11%): 시장 프록시만으론 2022-24 곡선역전을 BEAR_TRAP 으로 과다발화
+  → 실데이터 FRED Sahm/LEI 가 진짜 침체 판별에 필수임을 입증
+- 레짐 스위치 vs Buy&Hold: 수익은 낮지만(190% vs 594%) MDD -25.6% vs -35.6%
+
+## 주의
+교육·연구용. 투자 권유 아님. 레짐 분류는 후행/동행 지표 기반이라 전환점을 예측하지
+않으며, 임계값은 휴리스틱(config.py 에서 보정 가능). FRED 다운 시 시장 프록시로
+계속 동작하되 결측 성분은 'missing' 으로 표시하고 신뢰도를 낮춘다.
+
+저자: 김호광 (Dennis Kim) · Betalabs Inc. · MIT License

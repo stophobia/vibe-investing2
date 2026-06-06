@@ -32,6 +32,8 @@ The most recent direction of this repo is to run the distinct personalities of m
 
 [ARDS — Adaptive Recession-Defensive Strategy](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/ARDS%3A%20Adaptive%20Recession-Defensive%20Strategy/readme.md) (2026-05-18, Korean, 4-LLM cross-validation). The newest research, built directly on the hedge-fund-committee concept above. A dynamic defensive portfolio pursuing asymmetric alpha at recession onset, designed as the symmetric hedge to AMQS-M7. The key finding: macro diagnosis converges (all four models at Phase 3 Recession-Warning, std dev 2.29pp) while execution diverges — total weights ranged from 85% (Claude) to 225% (DeepSeek), a 14x gap, and the only unanimous ticker was GLD (gold). Each model's character emerges like a multi-PM hedge-fund committee (Claude a disciplined PM, Gemini a Cash-is-King risk officer, ChatGPT a Quant overlay, DeepSeek an aggressive alpha hunter).
 
+[ARDS-X — Regime Classifier (Correction / Oversold / Downtrend / Recession)](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/ARDS%20%E2%80%94%20Adaptive%20Recession-Defensive%20Strategy%20for%20AI_QQQ/README_EN.md) (2026-06-06, Korean + English readme, KR/EN/CN prompts, reproducible code + dashboard + backtest). Differentiated item. The real-data extension of ARDS. Where ARDS had an LLM *estimate* the 5-Factor recession probability, ARDS-X **computes the same 5-Factor from free real data (yfinance + FRED free CSV, no API key)** and adds a price-structure axis (drawdown / trend / oversold) to form a **two-axis regime map**. It answers *"is this decline in US Big-Tech + AI/Infra and the S&P 500 / Nasdaq-100 a correction, a short-term oversold dip, a structural downtrend, or a recession-driven rebalancing?"*, classifies it into one of five states, and hands off to the sibling strategy (correction/oversold → AMQS momentum, recession → ARDS defense) — a *regime switch* rather than a standalone trading tool. In the 2014–2026 backtest, correction/oversold windows returned ~+5% over 60 days (77% hit rate), validating the dip-buy thesis, while the proxy-only macro axis *over-fired on recession throughout the 2022–24 yield-curve inversion (a BEAR_TRAP)* — conversely proving that real FRED data (Sahm Rule / LEI) is essential to identify a true recession.
+
 ---
 
 ## By Theme
@@ -90,6 +92,7 @@ The items below are at the idea or research-design stage and contain no quantita
 
 If you want to verify directly with code and data, the following are a good fit.
 
+- [ARDS-X Regime Classifier](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/ARDS%20%E2%80%94%20Adaptive%20Recession-Defensive%20Strategy%20for%20AI_QQQ/README_EN.md): yfinance + FRED-free-CSV regime-classification engine + two-axis dashboard + look-ahead-free backtest (per-state forward-return CSV) + KR/EN/CN prompts. No API key required.
 - [AMQS](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Adaptive%20Momentum%20Quant%20Strategy%20(AMQS)/readme.md): yfinance-based backtest engine + live screener + daily NAV CSV
 - [AMQS-M7](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Adaptive%20Momentum%20Quant%20Strategy%20(AMQS)%20for%20M7/readme.md): CLI tracker + backtest + KIS broker API placeholder
 - [Token Unlock 72h](https://github.com/gameworkerkim/vibe-investing/blob/main/01.Trading%20Strategy/Token%20unlock%2072h%20shock%20analysis%20/readme.MD): 8 Python scripts reproducing every paper table + 10 CSVs
@@ -108,6 +111,7 @@ If you want to verify directly with code and data, the following are a good fit.
 | AMQS (original) | Yes | prompt only | - |
 | AMQS-M7 | Yes | prompt | prompt |
 | ARDS | Yes | update pending | - |
+| ARDS-X Regime Classifier | Yes | Yes | prompt |
 | AI Hedge Fund | Yes | update pending | - |
 | MRDS | Yes | update pending | - |
 | Token Unlock 72h | report KR | Yes (body) | - |

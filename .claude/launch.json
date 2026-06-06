@@ -6,6 +6,12 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["01.Trading Strategy/Kodex200 Arbitrage Bot/server.js", "3137"],
       "port": 3137
+    },
+    {
+      "name": "ardsx-dashboard",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["01.Trading Strategy/ARDS — Adaptive Recession-Defensive Strategy for AI_QQQ/dashboard/serve.py", "3142"],
+      "port": 3142
     }
   ]
 }

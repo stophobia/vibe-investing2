@@ -1,0 +1,5 @@
+# 데이터 캐시 (재생성 가능)
+quant/data/cache/
+__pycache__/
+*.pyc
+.DS_Store

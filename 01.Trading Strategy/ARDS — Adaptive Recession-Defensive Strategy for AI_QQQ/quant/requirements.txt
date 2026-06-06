@@ -1,0 +1,5 @@
+# ARDS-X Regime Classifier — Python 의존성
+# 데이터는 전부 무료 소스 (yfinance + FRED 무료 CSV, API 키 불필요)
+yfinance>=0.2.40
+pandas>=2.0
+numpy>=1.24
