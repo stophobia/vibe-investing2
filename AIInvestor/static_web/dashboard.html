@@ -385,6 +385,52 @@ canvas { max-height: 240px; }
     </div>
   </div>
 
+  <!-- Vibe Investing (CF→Azure 이전) 통계 -->
+  <h2 class="section-title mt-4">🛰️ Vibe 통계 (메모리 캐시 히트율 · cron 상태)</h2>
+  <div class="card">
+    <div class="card-body">
+      <div id="vibe-summary" class="muted">로딩 중…</div>
+      <div class="row mt-3">
+        <div class="col-md-7">
+          <h6 class="muted">캐시 히트율 (per blob path)</h6>
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>경로</th>
+                <th class="text-end">Hit</th>
+                <th class="text-end">Miss</th>
+                <th class="text-end">Ratio</th>
+                <th class="text-end">TTL</th>
+                <th class="text-end">Fresh?</th>
+              </tr>
+            </thead>
+            <tbody id="vibe-cache-rows"><tr><td colspan="6" class="muted">…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="col-md-5">
+          <h6 class="muted">Endpoint 호출수 (per instance)</h6>
+          <table class="table table-sm">
+            <thead><tr><th>Endpoint</th><th class="text-end">Calls</th></tr></thead>
+            <tbody id="vibe-endpoint-rows"><tr><td colspan="2" class="muted">…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <h6 class="muted mt-3">Cron 최근 실행</h6>
+      <table class="table table-sm">
+        <thead>
+          <tr><th>Cron</th><th>마지막 실행 (UTC)</th><th>결과</th></tr>
+        </thead>
+        <tbody id="vibe-cron-rows"><tr><td colspan="3" class="muted">…</td></tr></tbody>
+      </table>
+      <h6 class="muted mt-3">최신 산출물 timestamp</h6>
+      <div id="vibe-artifacts" class="small muted">…</div>
+      <p class="muted small mb-0 mt-2">
+        ⓘ 메모리 캐시는 Function instance 별 (재시작 시 리셋). 누적 hit/miss 는 cold-start 이후.
+        ratio 80%+ 가 정상. 30% 미만이면 cron 빈도 vs TTL 재조정 검토.
+      </p>
+    </div>
+  </div>
+
   <!-- Azure month-to-date spend -->
   <h2 class="section-title mt-4">☁️ Azure 과금 (이번 달 누적)</h2>
   <div class="card">
@@ -494,7 +540,81 @@ async function loadAll() {
   await loadBilling();
   await loadPMStats();
   await loadPMHolders();
+  await loadVibeStats();
   wireDownloadButtons();
+}
+
+function pct(x) {
+  if (typeof x !== "number") return "—";
+  return (x * 100).toFixed(1) + "%";
+}
+
+async function loadVibeStats() {
+  const summaryEl = document.getElementById("vibe-summary");
+  try {
+    const r = await fetch(`${FUNC_BASE}/vibe/admin/stats?key=${encodeURIComponent(KEY)}`,
+                          { mode: "cors" });
+    if (!r.ok) {
+      summaryEl.textContent = "통계 로드 실패 (HTTP " + r.status + ")";
+      return;
+    }
+    const s = await r.json();
+    summaryEl.innerHTML = `as_of <code>${s.as_of}</code> · 전체 hit ratio <b>${pct(s.cache.total_ratio)}</b> (${s.cache.total_hits} / ${s.cache.total_hits + s.cache.total_misses})`;
+
+    // 캐시 per-path
+    const cacheRows = (s.cache.paths || []).map((p) => {
+      const ratioClass = p.ratio >= 0.7 ? "text-success" : p.ratio >= 0.3 ? "text-warning" : "text-danger";
+      return `<tr>
+        <td><code>${p.path}</code></td>
+        <td class="text-end">${p.hits}</td>
+        <td class="text-end">${p.misses}</td>
+        <td class="text-end ${ratioClass}"><b>${pct(p.ratio)}</b></td>
+        <td class="text-end muted">${p.ttl_s}s</td>
+        <td class="text-end">${p.is_fresh ? "✅" : "—"}</td>
+      </tr>`;
+    }).join("");
+    document.getElementById("vibe-cache-rows").innerHTML =
+      cacheRows || `<tr><td colspan="6" class="muted">아직 호출 없음</td></tr>`;
+
+    // Endpoint counters
+    const epEntries = Object.entries(s.endpoints || {}).sort((a, b) => b[1] - a[1]);
+    document.getElementById("vibe-endpoint-rows").innerHTML =
+      epEntries.length
+        ? epEntries.map(([k, v]) => `<tr><td><code>${k}</code></td><td class="text-end"><b>${v}</b></td></tr>`).join("")
+        : `<tr><td colspan="2" class="muted">아직 호출 없음</td></tr>`;
+
+    // Cron status
+    const cronEntries = Object.entries(s.crons || {});
+    document.getElementById("vibe-cron-rows").innerHTML =
+      cronEntries.length
+        ? cronEntries.map(([name, info]) => {
+            const res = info.result || {};
+            const errBadge = res.error || (Array.isArray(res.errors) && res.errors.length)
+              ? '<span class="badge bg-danger">FAIL</span>'
+              : res.skipped
+              ? '<span class="badge bg-secondary">SKIP</span>'
+              : '<span class="badge bg-success">OK</span>';
+            const detail = res.error
+              ? res.error
+              : res.skipped
+              ? `reason=${res.reason}`
+              : res.risk !== undefined
+              ? `risk=${res.risk} gainers=${res.gainers} losers=${res.losers}`
+              : `ards=${res.ards_ok ? "✅" : "❌"} amqs=${res.amqs_ok ? "✅" : "❌"}`;
+            return `<tr><td><code>${name}</code></td><td>${info.ts}</td><td>${errBadge} ${detail}</td></tr>`;
+          }).join("")
+        : `<tr><td colspan="3" class="muted">아직 실행 기록 없음</td></tr>`;
+
+    // Artifacts
+    const a = s.artifacts || {};
+    document.getElementById("vibe-artifacts").innerHTML = `
+      signals: ${a.signals_ts ? `<code>${a.signals_ts}</code>` : "—"}
+       · market: ${a.market_ts ? `<code>${a.market_ts}</code>` : "—"}
+       · news: ${a.news_ts ? `<code>${a.news_ts}</code> (${a.news_items}건)` : "—"}
+       · ARDS complex rows: ${a.signals_size || 0}`;
+  } catch (e) {
+    summaryEl.textContent = "통계 로드 실패: " + e;
+  }
 }
 
 async function loadPMStats(force) {

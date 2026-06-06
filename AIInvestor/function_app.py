@@ -3049,12 +3049,20 @@ async def vibe_market_snapshot_timer(timer: func.TimerRequest) -> None:
     await _bootstrap()
     if not _config or not _config.storage_account_name:
         return
+    from services.vibe.admin_stats import record_cron_run
     from services.vibe.market_snapshot import refresh_market_snapshot
     try:
         result = await refresh_market_snapshot(_config.storage_account_name)
         logger.info("vibe_market_snapshot %s", result)
-    except Exception:
+        await record_cron_run(_config.storage_account_name,
+                              "market_snapshot", result)
+    except Exception as exc:
         logger.exception("vibe_market_snapshot_timer failed")
+        try:
+            await record_cron_run(_config.storage_account_name,
+                                  "market_snapshot", {"error": str(exc)[:200]})
+        except Exception:
+            pass
 
 
 # 일1회 시그널 산출 — UTC 21:30 (평일 미장 마감 직후 = KST 06:30 토)
@@ -3069,6 +3077,7 @@ async def vibe_daily_signals_timer(timer: func.TimerRequest) -> None:
     await _bootstrap()
     if not _config or not _config.storage_account_name:
         return
+    from services.vibe.admin_stats import record_cron_run
     from services.vibe.runner import build_combined_signals
     try:
         out = await build_combined_signals(_config.storage_account_name)
@@ -3076,8 +3085,18 @@ async def vibe_daily_signals_timer(timer: func.TimerRequest) -> None:
                     "ok" if out.get("ards") else "fail",
                     "ok" if out.get("amqs") else "fail",
                     len(out.get("errors") or []))
-    except Exception:
+        await record_cron_run(_config.storage_account_name, "daily_signals", {
+            "ards_ok": bool(out.get("ards")),
+            "amqs_ok": bool(out.get("amqs")),
+            "errors": out.get("errors") or [],
+        })
+    except Exception as exc:
         logger.exception("vibe_daily_signals_timer failed")
+        try:
+            await record_cron_run(_config.storage_account_name,
+                                  "daily_signals", {"error": str(exc)[:200]})
+        except Exception:
+            pass
 
 
 # ── Vibe 읽기 API (CF Pages Functions 대체) ─────────────────────────────────
@@ -3115,7 +3134,9 @@ async def vibe_dashboard(req: func.HttpRequest) -> func.HttpResponse:
     await _bootstrap()
     if not _config or not _config.storage_account_name:
         return _vibe_json_response({"data": None, "stale": True})
+    from services.vibe.admin_stats import record_endpoint_hit
     from services.vibe.api_cache import cached_blob_read
+    record_endpoint_hit("dashboard")
     data = await cached_blob_read(_config.storage_account_name,
                                   "signals/latest.json", ttl_s=60.0)
     return _vibe_json_response({"data": data, "stale": data is None}, max_age=60)
@@ -3130,7 +3151,9 @@ async def vibe_market(req: func.HttpRequest) -> func.HttpResponse:
     await _bootstrap()
     if not _config or not _config.storage_account_name:
         return _vibe_json_response({"data": None, "stale": True})
+    from services.vibe.admin_stats import record_endpoint_hit
     from services.vibe.market_snapshot import get_cached_market
+    record_endpoint_hit("market")
     data = await get_cached_market(_config.storage_account_name)
     return _vibe_json_response({"data": data, "stale": data is None}, max_age=120)
 
@@ -3144,7 +3167,9 @@ async def vibe_movers(req: func.HttpRequest) -> func.HttpResponse:
     await _bootstrap()
     if not _config or not _config.storage_account_name:
         return _vibe_json_response({"data": None, "stale": True})
+    from services.vibe.admin_stats import record_endpoint_hit
     from services.vibe.market_snapshot import get_cached_market
+    record_endpoint_hit("movers")
     snap = await get_cached_market(_config.storage_account_name)
     if not snap:
         return _vibe_json_response({"data": None, "stale": True}, max_age=120)
@@ -3167,7 +3192,9 @@ async def vibe_news(req: func.HttpRequest) -> func.HttpResponse:
         limit = max(1, min(50, int(req.params.get("limit") or 10)))
     except ValueError:
         limit = 10
+    from services.vibe.admin_stats import record_endpoint_hit
     from services.vibe.api_cache import cached_blob_read
+    record_endpoint_hit("news")
     payload = await cached_blob_read(_config.storage_account_name,
                                      "news/summary-latest.json", ttl_s=300.0)
     if not payload:
@@ -3192,7 +3219,9 @@ async def vibe_rankings(req: func.HttpRequest) -> func.HttpResponse:
     await _bootstrap()
     if not _config or not _config.storage_account_name:
         return _vibe_json_response({"data": None, "stale": True})
+    from services.vibe.admin_stats import record_endpoint_hit
     from services.vibe.api_cache import cached_blob_read
+    record_endpoint_hit("rankings")
     data = await cached_blob_read(_config.storage_account_name,
                                   "rankings/latest.json", ttl_s=300.0)
     return _vibe_json_response({"data": data, "stale": data is None}, max_age=300)
@@ -3236,7 +3265,9 @@ async def vibe_ingest_news(req: func.HttpRequest) -> func.HttpResponse:
     if not _config or not _config.storage_account_name:
         return _vibe_nostore_response(503, {"ok": False, "error": "storage_not_set"})
 
+    from services.vibe.admin_stats import record_endpoint_hit
     from services.vibe.ingest import handle_ingest_news
+    record_endpoint_hit("ingest_news")
     raw_body = req.get_body() or b""
     status, body = await handle_ingest_news(
         _config.storage_account_name,
@@ -3258,10 +3289,12 @@ async def vibe_search(req: func.HttpRequest) -> func.HttpResponse:
     if not _config or not _config.storage_account_name:
         return _vibe_nostore_response(503, {"error": "storage_not_set"})
 
+    from services.vibe.admin_stats import record_endpoint_hit
     from services.vibe.search_track import (
         append_search_log, extract_signals_for_ticker, normalize_ticker,
     )
     from services.vibe.api_cache import cached_blob_read
+    record_endpoint_hit("search")
 
     q = req.params.get("q") or ""
     ticker = normalize_ticker(q)
@@ -3283,6 +3316,26 @@ async def vibe_search(req: func.HttpRequest) -> func.HttpResponse:
     return _vibe_nostore_response(200, {"ticker": ticker, "signals": rows})
 
 
+@app.route(route="vibe/admin/stats", auth_level=func.AuthLevel.ANONYMOUS,
+           methods=["GET", "OPTIONS"])
+async def vibe_admin_stats(req: func.HttpRequest) -> func.HttpResponse:
+    """GET /api/vibe/admin/stats?key=… — 대시보드 통계 패널 (캐시 히트율 등)."""
+    if req.method == "OPTIONS":
+        return _vibe_options()
+    if not _check_dashboard_key(req):
+        return _vibe_nostore_response(401, {"error": "unauthorized"})
+    await _bootstrap()
+    if not _config or not _config.storage_account_name:
+        return _vibe_nostore_response(503, {"error": "storage_not_set"})
+    from services.vibe.admin_stats import build_admin_stats
+    try:
+        stats = await build_admin_stats(_config.storage_account_name)
+        return _vibe_nostore_response(200, stats)
+    except Exception:
+        logger.exception("vibe_admin_stats failed")
+        return _vibe_nostore_response(500, {"error": "stats_failed"})
+
+
 @app.route(route="vibe/track", auth_level=func.AuthLevel.ANONYMOUS,
            methods=["POST", "OPTIONS"])
 async def vibe_track(req: func.HttpRequest) -> func.HttpResponse:
@@ -3293,7 +3346,9 @@ async def vibe_track(req: func.HttpRequest) -> func.HttpResponse:
     if not _config or not _config.storage_account_name:
         return _vibe_nostore_response(503, {"error": "storage_not_set"})
 
+    from services.vibe.admin_stats import record_endpoint_hit
     from services.vibe.search_track import record_visit
+    record_endpoint_hit("track")
     ip = _vibe_client_ip(req)
     ua = req.headers.get("User-Agent", "")
     counts = await record_visit(

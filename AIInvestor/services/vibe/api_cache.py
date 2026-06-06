@@ -15,12 +15,14 @@ from typing import Any, Awaitable, Callable
 
 
 class _Memo:
-    __slots__ = ("ttl_s", "_t", "_payload")
+    __slots__ = ("ttl_s", "_t", "_payload", "hits", "misses")
 
     def __init__(self, ttl_s: float) -> None:
         self.ttl_s = float(ttl_s)
         self._t = 0.0
         self._payload: Any = None
+        self.hits = 0     # per-instance 누적 (재시작 시 리셋)
+        self.misses = 0
 
     def is_fresh(self) -> bool:
         return self._payload is not None and (time.monotonic() - self._t) < self.ttl_s
@@ -35,6 +37,12 @@ class _Memo:
     def invalidate(self) -> None:
         self._t = 0.0
         self._payload = None
+
+    def record_hit(self) -> None:
+        self.hits += 1
+
+    def record_miss(self) -> None:
+        self.misses += 1
 
 
 # Endpoint-별 memo 인스턴스. 키 = blob path.
@@ -62,8 +70,38 @@ async def cached_blob_read(
 
     memo = memo_for(path, ttl_s)
     if memo.is_fresh():
+        memo.record_hit()
         return memo.get()
+    memo.record_miss()
     payload = await blob_state.load_json(account_name, path, default=default)
     if payload is not None:
         memo.set(payload)
     return payload
+
+
+def get_cache_stats() -> dict[str, Any]:
+    """Per-path hit/miss counter + ratio. Dashboard 통계 섹션이 폴링."""
+    paths: list[dict[str, Any]] = []
+    total_hits = 0
+    total_misses = 0
+    for path, memo in _MEMOS.items():
+        h, m = memo.hits, memo.misses
+        total = h + m
+        ratio = (h / total) if total else 0.0
+        paths.append({
+            "path": path,
+            "hits": h,
+            "misses": m,
+            "ratio": round(ratio, 4),
+            "ttl_s": memo.ttl_s,
+            "is_fresh": memo.is_fresh(),
+        })
+        total_hits += h
+        total_misses += m
+    total = total_hits + total_misses
+    return {
+        "paths": paths,
+        "total_hits": total_hits,
+        "total_misses": total_misses,
+        "total_ratio": round((total_hits / total) if total else 0.0, 4),
+    }
