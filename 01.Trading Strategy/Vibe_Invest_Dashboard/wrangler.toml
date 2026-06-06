@@ -1,0 +1,20 @@
+# Cloudflare Pages 프로젝트 설정 (프론트 + Pages Functions API).
+# 크론은 별개: cron-worker/wrangler.toml.
+# 로컬: wrangler pages dev   ·   배포: wrangler pages deploy
+name = "vibe-investing"
+pages_build_output_dir = "frontend/dist"
+compatibility_date = "2026-06-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Pages Functions(functions/api/*) 가 사용하는 바인딩. 크론 Worker 와 동일 리소스 공유.
+[[d1_databases]]
+binding = "DB"
+database_name = "vibe-investing-db"
+database_id = "REPLACE_AFTER_CREATE"
+
+[[r2_buckets]]
+binding = "SNAPSHOTS"
+bucket_name = "vibe-snapshots"
+
+# 시크릿(커밋 금지): INGEST_SECRET, USER_HASH_SALT → wrangler pages secret put <NAME>
+# 로컬은 .dev.vars.

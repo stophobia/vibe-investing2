@@ -1,0 +1,25 @@
+# Cron Worker — 스케줄 전용(가이드 §2.1/§2.3). Pages 와 별개 배포물.
+# 배포: wrangler deploy -c cron-worker/wrangler.toml
+# D1/R2 는 Pages 프로젝트와 동일 리소스를 공유(같은 database_name / bucket_name).
+name = "vibe-investing-cron"
+main = "src/index.ts"
+compatibility_date = "2026-06-01"
+compatibility_flags = ["nodejs_compat"]
+
+[triggers]
+crons = ["*/10 * * * *", "30 21 * * 1-5"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vibe-investing-db"
+database_id = "REPLACE_AFTER_CREATE"
+
+[[r2_buckets]]
+binding = "SNAPSHOTS"
+bucket_name = "vibe-snapshots"
+
+# 시크릿(커밋 금지): FINNHUB_KEY, FMP_KEY → wrangler secret put -c cron-worker/wrangler.toml
+# 로컬은 cron-worker/.dev.vars.
+
+[observability]
+enabled = true

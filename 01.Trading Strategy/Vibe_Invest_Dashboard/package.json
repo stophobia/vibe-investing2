@@ -1,0 +1,26 @@
+{
+  "name": "vibe-investing",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vibe Investing — 3개 퀀트 전략(ARDS, AMQS, MU_Hynix) 통합 대시보드",
+  "type": "module",
+  "scripts": {
+    "build:frontend": "mkdir -p frontend/dist && cp -r frontend/public/. frontend/dist/ && esbuild frontend/src/main.ts --bundle --minify --outfile=frontend/dist/main.js",
+    "dev": "npm run build:frontend && wrangler pages dev",
+    "dev:cron": "wrangler dev -c cron-worker/wrangler.toml --test-scheduled",
+    "deploy:pages": "npm run build:frontend && wrangler pages deploy",
+    "deploy:cron": "wrangler deploy -c cron-worker/wrangler.toml",
+    "db:migrate:local": "wrangler d1 migrations apply vibe-investing-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply vibe-investing-db --remote",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260601.0",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0",
+    "wrangler": "^3.80.0"
+  }
+}
