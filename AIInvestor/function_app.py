@@ -521,41 +521,90 @@ async def keepalive(timer: func.TimerRequest) -> None:
 # §T2E-A — Gamification HTTP endpoints (consumed by Mini App)
 # ---------------------------------------------------------------------
 
-async def _verify_telegram_init_data_get_userkey(req: func.HttpRequest) -> str | None:
-    """Verify the Telegram WebApp `init_data` HMAC and return our internal user_key.
+import re as _re
+_GUEST_ID_RX = _re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+)
 
-    Returns None if missing/invalid. Init data is sent in the
-    X-Telegram-Init-Data header by Mini App calls.
+
+def _is_valid_guest_id(s: str) -> bool:
+    """클라이언트 생성 UUID v4 (lowercase hex). 형식만 검사."""
+    return bool(_GUEST_ID_RX.match((s or "").strip().lower()))
+
+
+async def _verify_google_id_token(id_token: str) -> str | None:
+    """Google ID Token 검증 후 sub 반환. None 이면 invalid.
+
+    Google tokeninfo endpoint 사용 — 별도 JWT 라이브러리 불필요.
+    GOOGLE_OAUTH_CLIENT_ID env 필요 (Google Cloud Console → OAuth 2.0 Client ID).
     """
-    init_data = req.headers.get("X-Telegram-Init-Data", "").strip()
-    if not init_data:
+    import aiohttp
+    client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "").strip()
+    if not client_id or not id_token:
         return None
-    bot_token = (_config.telegram_token if _config else os.getenv("TELEGRAM_BOT_TOKEN", "")).strip()
-    if not bot_token:
-        return None
-
-    import hashlib, hmac
-    from urllib.parse import parse_qsl
-
-    parsed = dict(parse_qsl(init_data))
-    received_hash = parsed.pop("hash", "")
-    if not received_hash:
-        return None
-
-    data_check = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
-    secret_key = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
-    computed = hmac.new(secret_key, data_check.encode(), hashlib.sha256).hexdigest()
-    if not hmac.compare_digest(received_hash, computed):
-        return None
-
+    url = "https://oauth2.googleapis.com/tokeninfo"
+    timeout = aiohttp.ClientTimeout(total=4.0)
     try:
-        user = json.loads(parsed.get("user", "{}"))
-        tg_user_id = user.get("id")
-        if not tg_user_id:
-            return None
-        return f"tg:{tg_user_id}"
-    except (json.JSONDecodeError, KeyError):
+        async with aiohttp.ClientSession(timeout=timeout) as s:
+            async with s.get(url, params={"id_token": id_token}) as r:
+                if r.status != 200:
+                    return None
+                data = await r.json(content_type=None)
+    except Exception:
         return None
+    # aud 가 우리 client_id 와 일치해야 함 (token reuse 방지)
+    if data.get("aud") != client_id:
+        return None
+    sub = data.get("sub")
+    if not sub:
+        return None
+    return str(sub)
+
+
+async def _verify_telegram_init_data_get_userkey(req: func.HttpRequest) -> str | None:
+    """다중 인증 user_key 해결. 우선순위:
+      1. X-Telegram-Init-Data  → tg:<id>          (HMAC 검증)
+      2. X-Google-Id-Token     → google:<sub>     (Google tokeninfo)
+      3. X-Guest-Id            → guest:<uuid>     (클라 생성 UUID, 검증 X)
+
+    함수명은 호환 유지 (기존 모든 endpoint 가 같은 호출).
+    """
+    # ─── Telegram (기존) ────────────────────────────────────────────────
+    init_data = req.headers.get("X-Telegram-Init-Data", "").strip()
+    if init_data:
+        bot_token = (_config.telegram_token if _config else os.getenv("TELEGRAM_BOT_TOKEN", "")).strip()
+        if bot_token:
+            import hashlib, hmac
+            from urllib.parse import parse_qsl
+
+            parsed = dict(parse_qsl(init_data))
+            received_hash = parsed.pop("hash", "")
+            if received_hash:
+                data_check = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
+                secret_key = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
+                computed = hmac.new(secret_key, data_check.encode(), hashlib.sha256).hexdigest()
+                if hmac.compare_digest(received_hash, computed):
+                    try:
+                        user = json.loads(parsed.get("user", "{}"))
+                        tg_user_id = user.get("id")
+                        if tg_user_id:
+                            return f"tg:{tg_user_id}"
+                    except (json.JSONDecodeError, KeyError):
+                        pass
+
+    # ─── Google SSO (X-Google-Id-Token) ────────────────────────────────
+    google_token = req.headers.get("X-Google-Id-Token", "").strip()
+    if google_token:
+        sub = await _verify_google_id_token(google_token)
+        if sub:
+            return f"google:{sub}"
+
+    # ─── Guest (X-Guest-Id, 클라이언트 생성 UUID) ────────────────────────
+    guest_id = req.headers.get("X-Guest-Id", "").strip().lower()
+    if guest_id and _is_valid_guest_id(guest_id):
+        return f"guest:{guest_id}"
+
+    return None
 
 
 def _detect_lang_from_init_data(req: func.HttpRequest) -> str:

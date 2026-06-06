@@ -151,6 +151,22 @@ jobs:
             echo "static_web/main.js missing — skipping Vibe substitution"
           fi
 
+      - name: Inject Google OAuth Client ID into Mini App
+        run: |
+          # Mini App (/app/index.html) 의 __GOOGLE_OAUTH_CLIENT_ID__ placeholder
+          # → secrets.GOOGLE_OAUTH_CLIENT_ID 로 치환 + Key Vault 동기화.
+          # secret 미설정 시 placeholder 그대로 (프론트가 "관리자 설정 필요" 표시).
+          if [ -n "${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}" ]; then
+            sed -i "s|__GOOGLE_OAUTH_CLIENT_ID__|${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}|g" static_web/app/index.html
+            az keyvault secret set --vault-name "$KEYVAULTNAME" --name google-oauth-client-id --value "${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}" --output none
+            az functionapp config appsettings set --name "$FUNCTIONAPPNAME" --resource-group "$RG" \
+              --settings "GOOGLE_OAUTH_CLIENT_ID=@Microsoft.KeyVault(SecretUri=https://$KEYVAULTNAME.vault.azure.net/secrets/google-oauth-client-id/)" \
+              --output none
+            echo "✓ Google OAuth Client ID 주입"
+          else
+            echo "GOOGLE_OAUTH_CLIENT_ID secret 미설정 — Google 로그인 비활성 (게스트 모드만 동작)"
+          fi
+
       - name: Get Static Web App deployment token
         id: swa_token
         run: |

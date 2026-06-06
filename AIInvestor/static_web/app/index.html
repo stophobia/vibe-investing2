@@ -66,21 +66,26 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 </head>
 <body>
 
-<!-- Non-Telegram 안내 배너 (브라우저 직접 접속 시) -->
-<div id="non-tg-banner" style="display:none;background:rgba(246,166,35,.12);border-left:4px solid #f6a623;padding:14px 16px;margin:8px;border-radius:8px;">
-  <div style="font-weight:700;margin-bottom:6px;">📱 Telegram 봇에서 열어주세요</div>
+<!-- 게스트 모드 / SSO 안내 (브라우저 직접 접속 시) -->
+<div id="non-tg-banner" style="display:none;background:rgba(50,150,255,.10);border-left:4px solid #3296ff;padding:14px 16px;margin:8px;border-radius:8px;">
+  <div style="font-weight:700;margin-bottom:6px;">🕶️ 체험 모드 (게스트)</div>
   <div style="font-size:.92em;line-height:1.55;color:#a4a9b8;margin-bottom:10px;">
-    출석·예측·페르소나 분석·사주는 Telegram 로그인이 필요해서 일반 브라우저에서는 동작하지 않아요.
-    아래 버튼으로 봇에서 미니앱을 여세요.
+    Telegram 없이 익명 게스트로 모든 기능 사용 가능 (출석·예측·사주·페르소나).
+    데이터는 이 브라우저에만 저장되며 다른 기기로 옮기려면 로그인이 필요합니다.
   </div>
-  <a href="https://t.me/AI_vibe_investor_bot" target="_blank"
-     style="display:inline-block;background:#229ED9;color:#fff;padding:8px 18px;border-radius:6px;text-decoration:none;font-weight:600;font-size:.92em;">
-    Telegram 으로 열기 →
-  </a>
-  <a href="/" style="display:inline-block;margin-left:8px;color:#a4a9b8;text-decoration:underline;font-size:.92em;">
-    홈으로 돌아가기
-  </a>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+    <a href="https://t.me/AI_vibe_investor_bot" target="_blank"
+       style="display:inline-block;background:#229ED9;color:#fff;padding:8px 14px;border-radius:6px;text-decoration:none;font-weight:600;font-size:.9em;">
+      Telegram 으로 열기
+    </a>
+    <div id="g-signin-btn" style="display:inline-block;"></div>
+    <span id="auth-status" style="font-size:.85em;color:#7fc580;"></span>
+    <a href="/" style="margin-left:auto;color:#a4a9b8;text-decoration:underline;font-size:.85em;">홈</a>
+  </div>
 </div>
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <div class="topbar">
   <div class="user-info">
@@ -861,13 +866,74 @@ if (tg) {
   tg.setHeaderColor("#151521");
   tg.setBackgroundColor("#151521");
 } else {
-  // 일반 브라우저 접속 — 모든 API 가 Telegram init_data 필요해서 401 만 옴.
-  // 안내 배너 노출하고 탭 콘텐츠 로딩은 진행 (cosmetic UI 는 봐도 무해).
+  // 일반 브라우저 — 게스트 모드 배너 표시 (체험 모드, 차단 X)
   const banner = document.getElementById("non-tg-banner");
   if (banner) banner.style.display = "block";
 }
 
 const initData = tg?.initData || "";
+
+// ─── 게스트 모드 — Telegram 없을 때 익명 UUID 발급 ─────────────────────
+// crypto.randomUUID() (RFC 4122 v4) 를 localStorage 에 저장. 같은 브라우저에서
+// 영구 유지 → "guest:<uuid>" 가 user_key 로 백엔드에 전달돼 Telegram 계정과
+// 동일하게 모든 기능 (출석·예측·사주) 사용 가능.
+const _GUEST_KEY = "vinv_guest_id";
+function _ensureGuestId() {
+  if (initData) return "";  // Telegram 우선
+  try {
+    let g = localStorage.getItem(_GUEST_KEY);
+    if (!g) {
+      g = (crypto.randomUUID && crypto.randomUUID()) || _fallbackUuid();
+      localStorage.setItem(_GUEST_KEY, g);
+    }
+    return g;
+  } catch { return _fallbackUuid(); }
+}
+function _fallbackUuid() {
+  // 구형 브라우저용 fallback (crypto.randomUUID 미지원)
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+const _guestId = _ensureGuestId();
+
+// ─── Google SSO — 클라이언트에 ID Token 보관 ────────────────────────────
+// gsi/client 가 콜백으로 credential 을 넘김 → localStorage 에 저장 →
+// api() 가 X-Google-Id-Token 헤더로 전달 → 백엔드 tokeninfo 검증.
+const _GOOGLE_TOKEN_KEY = "vinv_google_id_token";
+let _googleIdToken = "";
+try { _googleIdToken = localStorage.getItem(_GOOGLE_TOKEN_KEY) || ""; } catch {}
+
+window.onGoogleSignIn = function(response) {
+  if (!response?.credential) return;
+  _googleIdToken = response.credential;
+  try { localStorage.setItem(_GOOGLE_TOKEN_KEY, _googleIdToken); } catch {}
+  const status = document.getElementById("auth-status");
+  if (status) status.textContent = "✓ Google 로그인 완료 — 새로고침";
+  setTimeout(() => location.reload(), 800);
+};
+
+// Google Sign-In 버튼 렌더 — GOOGLE_OAUTH_CLIENT_ID 가 빌드 시 sed 치환.
+(function _renderGoogleSignIn() {
+  if (initData) return;  // Telegram 안이면 노출 X
+  const clientId = "__GOOGLE_OAUTH_CLIENT_ID__";
+  if (!clientId || clientId.startsWith("__")) {
+    // 미설정 — 안내만
+    const btn = document.getElementById("g-signin-btn");
+    if (btn) btn.innerHTML = '<span style="color:#888;font-size:.85em">Google 로그인 (관리자가 설정 필요)</span>';
+    return;
+  }
+  const tryRender = () => {
+    if (!window.google?.accounts?.id) { setTimeout(tryRender, 300); return; }
+    google.accounts.id.initialize({ client_id: clientId, callback: window.onGoogleSignIn });
+    google.accounts.id.renderButton(
+      document.getElementById("g-signin-btn"),
+      { theme: "filled_blue", size: "medium", text: "signin_with", shape: "pill" }
+    );
+  };
+  tryRender();
+})();
 
 // §2 P0 — Pre-warm probe. localStorage caches the anon hash from the first
 // /profile call; on every subsequent page load we fire a fast existence
@@ -1170,9 +1236,17 @@ function notify(msg) {
 }
 
 async function api(path, opts = {}) {
+  // 인증 헤더 자동 선택 우선순위: Telegram → Google → Guest
+  const authHeaders = {};
+  if (initData) {
+    authHeaders["X-Telegram-Init-Data"] = initData;
+  } else {
+    if (_googleIdToken) authHeaders["X-Google-Id-Token"] = _googleIdToken;
+    if (_guestId)       authHeaders["X-Guest-Id"]        = _guestId;
+  }
   const headers = {
     "Content-Type": "application/json",
-    "X-Telegram-Init-Data": initData,
+    ...authHeaders,
     ...(opts.headers || {}),
   };
   const r = await fetch(`${FUNC_BASE}${path}`, { mode: "cors", ...opts, headers });
@@ -1251,10 +1325,7 @@ async function loadProfile() {
 }
 
 document.getElementById("attend-btn").addEventListener("click", async () => {
-  if (!tg || !initData) {
-    notify("출석은 Telegram 봇에서만 가능합니다. 상단 배너의 'Telegram 으로 열기' 를 눌러주세요.");
-    return;
-  }
+  // 게스트 모드 / Google SSO 도 출석 가능 (백엔드가 user_key prefix 로 구분).
   try {
     const r = await api("/attend", { method: "POST", body: "{}" });
     if (r.success) {
