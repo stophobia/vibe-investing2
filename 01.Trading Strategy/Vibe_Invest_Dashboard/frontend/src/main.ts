@@ -259,6 +259,17 @@ function renderStats(dau: number, total: number) {
 // ---------------------------------------------------------------------------
 // 갱신 표시
 // ---------------------------------------------------------------------------
+/** 모든 시각은 KST(Asia/Seoul) 고정 노출 — 브라우저 타임존 무관. */
+function fmtKST(iso: string): string {
+  return new Date(iso).toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
 function setUpdated(iso: string | null) {
   const node = $("updated");
   if (!iso) {
@@ -266,7 +277,7 @@ function setUpdated(iso: string | null) {
     return;
   }
   const age = (Date.now() - new Date(iso).getTime()) / 60000;
-  const t = new Date(iso).toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+  const t = `${fmtKST(iso)} KST`;
   if (age > 20) {
     node.textContent = `⚠ 데이터 지연 중 — 마지막 갱신 ${t}`;
     node.classList.add("stale");
