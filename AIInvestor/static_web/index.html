@@ -30,6 +30,7 @@
       </div>
       <div id="updated" class="updated" aria-live="polite">데이터 불러오는 중…</div>
       <nav class="quick-nav" aria-label="증권당 메뉴">
+        <a href="/"             class="qn-btn" data-tab="home">🏠 <span>홈</span></a>
         <a href="/app#persona"  class="qn-btn" data-tab="persona">🎭 <span>페르소나</span></a>
         <a href="/app#predict"  class="qn-btn" data-tab="predict">🎯 <span>예측·출첵</span></a>
         <a href="/app#saju"     class="qn-btn" data-tab="saju">🔮 <span>사주</span></a>
@@ -52,6 +53,24 @@
       </section>
 
       <!-- [C] 전략 시그널 카드 -->
+      <section class="panel span-12 strat-intro" aria-labelledby="t-strat">
+        <h2 id="t-strat" class="panel-t">전략 시그널</h2>
+        <p class="strat-desc">
+          <b>ARDS</b> (Adaptive Recession-Defensive Strategy) — 미국 빅테크·AI 인프라
+          + S&amp;P500·나스닥100 의 거시 사이클과 가격 구조를 결합한 룰 기반 레짐 분류.
+          5-Factor Recession Composite (수익률 곡선·Sahm·ISM·LEI·신용) 으로 거시
+          위치를 측정하고, 드로다운·과매도·추세 무결성으로 가격 축을 측정해 5개
+          국면(상승추세·조정·과매도반등·하락/분배·침체) 으로 판정합니다.
+        </p>
+        <p class="strat-desc">
+          <b>AMQS</b> (Adaptive Momentum Quant Strategy) — AI 인프라 가치사슬 19종목을
+          대상으로 4-Factor 모멘텀 + 5차원 100점 채점 + Top-N 선별 + 사이즈 배분.
+          GPU·메모리·서버·네트워킹·전력 서브테마 분산 캡, -12% 손절, 주간 리밸런스.
+        </p>
+        <p class="strat-desc disclaimer">
+          ⚠ 룰 기반 백테스트 산출물. 투자 자문이나 매수·매도 권유가 아닙니다.
+        </p>
+      </section>
       <section id="strategies" class="span-12 strat-row" aria-label="전략 시그널"></section>
 
       <!-- [C-2] 주요 종목 매수/매도 한눈에 -->

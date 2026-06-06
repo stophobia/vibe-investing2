@@ -66,6 +66,22 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 </head>
 <body>
 
+<!-- Non-Telegram 안내 배너 (브라우저 직접 접속 시) -->
+<div id="non-tg-banner" style="display:none;background:rgba(246,166,35,.12);border-left:4px solid #f6a623;padding:14px 16px;margin:8px;border-radius:8px;">
+  <div style="font-weight:700;margin-bottom:6px;">📱 Telegram 봇에서 열어주세요</div>
+  <div style="font-size:.92em;line-height:1.55;color:#a4a9b8;margin-bottom:10px;">
+    출석·예측·페르소나 분석·사주는 Telegram 로그인이 필요해서 일반 브라우저에서는 동작하지 않아요.
+    아래 버튼으로 봇에서 미니앱을 여세요.
+  </div>
+  <a href="https://t.me/AI_vibe_investor_bot" target="_blank"
+     style="display:inline-block;background:#229ED9;color:#fff;padding:8px 18px;border-radius:6px;text-decoration:none;font-weight:600;font-size:.92em;">
+    Telegram 으로 열기 →
+  </a>
+  <a href="/" style="display:inline-block;margin-left:8px;color:#a4a9b8;text-decoration:underline;font-size:.92em;">
+    홈으로 돌아가기
+  </a>
+</div>
+
 <div class="topbar">
   <div class="user-info">
     <span class="tier-badge" id="tier-badge">—</span>
@@ -844,6 +860,11 @@ if (tg) {
   tg.expand();
   tg.setHeaderColor("#151521");
   tg.setBackgroundColor("#151521");
+} else {
+  // 일반 브라우저 접속 — 모든 API 가 Telegram init_data 필요해서 401 만 옴.
+  // 안내 배너 노출하고 탭 콘텐츠 로딩은 진행 (cosmetic UI 는 봐도 무해).
+  const banner = document.getElementById("non-tg-banner");
+  if (banner) banner.style.display = "block";
 }
 
 const initData = tg?.initData || "";
@@ -1230,6 +1251,10 @@ async function loadProfile() {
 }
 
 document.getElementById("attend-btn").addEventListener("click", async () => {
+  if (!tg || !initData) {
+    notify("출석은 Telegram 봇에서만 가능합니다. 상단 배너의 'Telegram 으로 열기' 를 눌러주세요.");
+    return;
+  }
   try {
     const r = await api("/attend", { method: "POST", body: "{}" });
     if (r.success) {
@@ -3398,6 +3423,18 @@ document.querySelectorAll(".tab").forEach(t => {
     e.preventDefault();
     _switchToTab(t.dataset.tab);
   });
+});
+
+// Vibe 메인 페이지에서 /app#persona, /app#predict 등으로 딥링크 시 해당 탭 자동 선택.
+(function _activateHashTab() {
+  const validTabs = ["home", "predict", "signal", "saju", "invite", "rank", "persona"];
+  const target = (location.hash || "").replace(/^#/, "").toLowerCase();
+  if (validTabs.includes(target)) _switchToTab(target);
+})();
+window.addEventListener("hashchange", () => {
+  const validTabs = ["home", "predict", "signal", "saju", "invite", "rank", "persona"];
+  const target = (location.hash || "").replace(/^#/, "").toLowerCase();
+  if (validTabs.includes(target)) _switchToTab(target);
 });
 
 // Wire upsell card buttons → switch to invite tab
