@@ -33,6 +33,7 @@
       <div class="verdict-badge" id="verdictBadge">…</div>
       <div class="verdict-body">
         <h2 id="verdictKr">…</h2>
+        <div class="chips" id="verdictChips"></div>
         <p class="headline" id="verdictHeadline"></p>
         <p class="handoff" id="verdictHandoff"></p>
         <div class="conf-row">
@@ -87,6 +88,22 @@
         <div class="group-cards" id="groupCards"></div>
       </section>
     </div>
+
+    <!-- 금리 스트레스 + 하락유형 (v1.1) -->
+    <section class="panel" id="ratePanel">
+      <h2>금리 스트레스 축 (Rate Stress)
+        <span class="hint">침체형 vs 금리형 하락 구분 · TLT 헤지 작동 여부</span></h2>
+      <div class="rate-wrap">
+        <div class="rate-left">
+          <div class="big-num"><span id="rateScore">–</span><small>/100</small></div>
+          <div class="factor-list" id="rateFactorList"></div>
+        </div>
+        <div class="rate-right">
+          <div class="dtype-badge" id="dtypeBadge">…</div>
+          <p class="dtype-guidance" id="dtypeGuidance"></p>
+        </div>
+      </div>
+    </section>
 
     <!-- 복합체 종목 -->
     <section class="panel">

@@ -58,6 +58,20 @@ E. Credit/Financial (15%): HY OAS ≥400bp warning / ≥500bp imminent, Chicago 
 → Oversold score (0–100) = RSI + lower Bollinger band + ATR deviation + consecutive down candles
 → Price stress (Y) = 0.6·decline score + 0.4·(normalized tape drawdown)
 
+[RATE STRESS AXIS — Rate Stress, 0–100 (v1.1)]
+The axis that captures "the recession Composite is low, so why is it falling (a rate shock)."
+Rate Stress = 0.35·R1 + 0.25·R2 + 0.20·R3 + 0.20·R4
+  R1 10Y yield 20-day change (bp, +60bp→100)  R2 2Y/5Y 20-day change (+50bp→100)
+  R3 5Y breakeven inflation 20-day change (+30bp→100)  R4 MOVE index (or 10Y realized volatility) percentile
+→ Decline-type label (only when price stress ≥ 28):
+  · RECESSION_DRIVEN : macro ≥ 55 → TLT/IEF = hedge (benefits from rate cuts). OK to activate ARDS Tier2 long-term Treasuries.
+  · RATE_DRIVEN     : Rate Stress ≥ 55, macro < 55 → ⚠️ TLT/IEF = added exposure (falls alongside equities). Cut long-term Treasuries → short bills (BIL/SHV) · gold (GLD).
+  · VALUATION_DRIVEN : both below → multiple compression / crowding unwind. TLT hedge limited; cash · inverse (SH/PSQ).
+
+[HYSTERESIS — whipsaw prevention (v1.1)]
+- Split entry/exit thresholds (bands): oversold RSI 30 enter / 38 exit, correction DD -5% enter / -3.5% exit, recession macro 55 enter / 50 exit.
+- A new regime must persist for 2 consecutive trading days before the official switch. Until then, mark it as 'pending' and lower the confidence.
+
 [CLASSIFICATION LOGIC — apply in priority order]
 1. Asset Rebalancing (Recession) RECESSION_REBALANCE
    Macro ≥ 55 AND (index drawdown ≤ -5% OR trend breakdown)
@@ -81,9 +95,9 @@ E. Credit/Financial (15%): HY OAS ≥400bp warning / ≥500bp imminent, Chicago 
 - Prices on a close basis, no look-ahead (use only data prior to the judgment point).
 
 [OUTPUT FORMAT]
-1) Final verdict: state (English code) · action · handoff · confidence (%)
-2) 2-axis coordinates: Macro X (0–100, Phase) / Price stress Y (0–100) / decline score / oversold score
-3) 5-Factor decomposition table: | Component | Weight | Score | live/proxy/missing | Rationale |
+1) Final verdict: state (English code) · action · handoff · confidence (%) · decline-type label · (mark pending on transition)
+2) 2-axis coordinates: Macro X (0–100, Phase) / Price stress Y (0–100) / Rate Stress / decline score / oversold score
+3) 5-Factor + Rate Stress decomposition table: | Component | Weight | Score | live/proxy/missing | Rationale |
 4) Index table (^GSPC, ^NDX): | Index | Current | vs High % | 50-day MA % | 200-day MA % | RSI | Trend (up/mixed/breakdown) |
 5) Composite table (18 names): | Ticker | Group | vs High % | 200-day MA % | RSI | 6M momentum | Decline score | Oversold score |
 6) Group aggregates (Big Tech/AI Semis/AI Infra): average drawdown · % above 200-day MA · average RSI

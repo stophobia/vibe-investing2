@@ -4,7 +4,9 @@
 
 **Series**: vibe-investing — real-data eXtension of [ARDS](../ARDS%3A%20Adaptive%20Recession-Defensive%20Strategy/)
 **Author**: HoKwang (Dennis) Kim · Betalabs Inc. · ORCID [0009-0002-0962-2175](https://orcid.org/0009-0002-0962-2175)
-**Date**: 2026-06-06 · **License**: MIT
+**Date**: 2026-06-06 · **Version**: v1.1 · **License**: MIT
+
+> **v1.1 changes**: ① **Rate Stress axis** + decline-type label (recession / rate / valuation-driven) — distinguishes "macro composite is low, so why is it falling? (a rate shock)" and conditionally gates ARDS Tier-2 TLT/IEF hedging. ② **Hysteresis** (entry/exit bands + N-day confirmation) to stop regime ping-pong/whipsaw. ③ **Confidence calibration (Brier)** added to the backtest. See §5.5.
 
 ---
 
@@ -48,6 +50,28 @@ The most common investor error is misreading the *character* of a decline. The s
 
 > **Design philosophy**: ARDS-X does not trade on its own. It is the **switch** that decides *which playbook* to open — momentum (AMQS) for corrections/oversold, defense (ARDS) for recession.
 
+### 4.1 Rate Stress axis + decline-type label (v1.1)
+
+Two axes (macro recession × price stress) can't explain *"the macro composite is low, so why is it falling?"* — a **rate shock** is that blind spot. A **Rate Stress sub-composite** labels the *cause* of a decline.
+
+**Rate Stress (0–100)** = `0.35·R1 + 0.25·R2 + 0.20·R3 + 0.20·R4`
+(R1 10Y yield 20-day change in bp · R2 2Y/5Y change · R3 5Y breakeven change · R4 MOVE / realized 10Y vol)
+
+| Label | Condition | TLT/IEF prescription |
+|---|---|---|
+| **RECESSION_DRIVEN** | Macro ≥ 55 | TLT/IEF duration = **hedge** (rate-cut beneficiary). Activate ARDS Tier-2 long bonds |
+| **RATE_DRIVEN** | Rate Stress ≥ 55, macro < 55 | ⚠️ TLT/IEF = **added exposure** (falls with equities). Cut long bonds → short bills (BIL/SHV) / gold (GLD) |
+| **VALUATION_DRIVEN** | both below | multiple compression / crowding unwind. TLT hedge limited; cash / inverse (SH/PSQ) fits |
+
+> Same dichotomy as ARDS's *"disinflation vs sticky-inflation recession"* debate. In the backtest, **rate-driven declines returned −7.3% over the next 60 days** — isolating the real danger the recession axis misses (§5.5d).
+
+### 4.2 Hysteresis (whipsaw guard, v1.1)
+
+- **Split entry/exit bands**: e.g. oversold *enters* at RSI 30, *exits* at 38 — kills 30–38 ping-pong. Same for drawdown and macro recession.
+- **N-day confirmation**: a new raw regime must persist **2 trading days** before the official (committed) regime switches; until then it shows `pending` and confidence is lowered.
+
+Backtest: regime switches fell from **249 → 88 (−65%)** (§5.5c).
+
 ---
 
 ## 5. 5-Factor Recession Composite — real-data edition
@@ -74,24 +98,56 @@ Missing factors are dropped and the remaining weights renormalized. The dashboar
 
 | State | % of time | Fwd 20d | Fwd 60d | 60d hit | Verdict |
 |---|---|---|---|---|---|
-| Uptrend healthy | 66.7% | +1.05% | +3.02% | 71.0% | ✅ |
-| **Correction** | 12.4% | +2.19% | **+5.24%** | 77.5% | ✅ dip was buyable |
-| **Oversold bounce** | 1.5% | +1.60% | **+5.64%** | 76.7% | ✅ bounce worked |
-| **Downtrend / distribution** | 5.3% | +0.01% | **−0.37%** | 44.5% | ✅ caution justified |
-| Recession rebalance | 14.2% | +3.54% | **+11.22%** | 87.4% | ⚠️ **inverted** |
+| Uptrend healthy | 65.4% | +1.06% | +2.96% | 70.8% | ✅ |
+| **Correction** | 13.0% | +2.48% | **+5.32%** | 74.9% | ✅ dip was buyable |
+| **Oversold bounce** | 1.1% | +0.67% | **+6.45%** | 87.9% | ✅ bounce worked |
+| **Downtrend / distribution** | 5.0% | +0.12% | **−1.52%** | 49.0% | ✅ caution justified |
+| Recession rebalance | 15.5% | +3.01% | **+10.92%** | 85.8% | ⚠️ **inverted (proxy BEAR_TRAP)** |
 
-> **Honest key finding**: correction / oversold / downtrend classifications worked as designed. But **`RECESSION_REBALANCE` had the *best* forward returns (+11%)** — because the proxy-only macro axis **over-fired on recession throughout the 2022–24 yield-curve inversion (a BEAR_TRAP)**. This is precisely why the live engine relies on FRED's Sahm Rule / LEI (real data) and lowers confidence when they are missing: distinguishing a true recession from an inversion-only "no-landing" requires labor and leading indicators.
+> **Honest key finding**: correction/oversold/downtrend worked as designed, but `RECESSION_REBALANCE` had the *best* forward returns (+11%) — the proxy-only macro axis **over-fired on recession through the 2022–24 inversion (BEAR_TRAP)**. This is why the live engine relies on FRED Sahm/LEI — and the new **(d) rate-driven label directly compensates** for it.
 
-### (b) Regime-switch overlay vs Buy & Hold (^NDX)
+### (b) Regime-switch overlay vs Buy & Hold (^NDX, hysteresis applied)
 
 risk-on{uptrend, correction, oversold} = long NDX, defensive{downtrend, recession} = cash:
 
 | | Total | CAGR | Vol | Sharpe | MDD | Time in market |
 |---|---|---|---|---|---|---|
 | Buy & Hold | +594.5% | 18.3% | 22.0% | 0.87 | −35.6% | 100% |
-| **ARDS-X switch** | +190.5% | 9.7% | 15.6% | 0.67 | **−25.6%** | 80% |
+| **ARDS-X switch** | +200.0% | 10.0% | 15.5% | 0.69 | **−30.5%** | 79% |
 
-2014–2026 was a historic bull market, so the defensive overlay traded return for a shallower drawdown (−35.6% → −25.6%) — exactly the "defense is a tax in a bull market" philosophy. ARDS-X is a *regime switch*, not a standalone alpha engine; treat this as the *cost of defense*, not a strategy return.
+In a historic bull market the defensive overlay trades return for lower drawdown/vol ("defense is a tax"). ARDS-X is a *regime switch*, not a standalone alpha engine — read this as the *cost of defense*.
+
+### (c) Hysteresis — whipsaw (regime switches) cut
+
+| | Regime switches |
+|---|---|
+| No bands / confirmation | 249 |
+| **Hysteresis applied** | **88 (−65%)** |
+
+### (d) Decline-type label — the rate-driven label isolates the real danger ★
+
+| Decline type | days | Fwd 20d | Fwd 60d |
+|---|---|---|---|
+| RECESSION_DRIVEN | 301 | +3.70% | +11.46% (proxy BEAR_TRAP) |
+| **RATE_DRIVEN** | 81 | **−1.84%** | **−7.27%** |
+| VALUATION_DRIVEN | 312 | +1.98% | +5.11% |
+
+> **The headline win of this update**: the danger the recession axis misses through over-firing is **precisely isolated by the rate-driven label at −7.3% over 60 days**. In that subset TLT is an added loss source, not a hedge — the basis for conditional Tier-2 gating.
+
+### (e) Confidence calibration (Brier = 0.281)
+
+Is "confidence X%" actually right X% of the time? (Correct = risk-on → fwd20 up, defensive → down.)
+
+| Confidence bin | n | Predicted | Actual |
+|---|---|---|---|
+| 50–60% | 315 | 57.6% | 44.8% |
+| 60–70% | 538 | 62.7% | **59.9%** ✅ |
+| 70–80% | 237 | 77.6% | 68.8% |
+| 80–95% | 1804 | 86.9% | **61.0%** ⚠️ overconfident |
+
+> **Honest result**: the 60–70% bin is well calibrated, but the **top bin (80%+) is overconfident** (86.9% predicted vs 61.0% actual) — a recalibration to-do, and itself an SSRN-paper-sized research track.
+
+Run: `python backtest.py` → `backtest_state_stats.csv` · `backtest_equity.csv` · `backtest_calibration.csv` · `backtest_decline_types.csv`.
 
 Run: `python backtest.py` → `backtest_state_stats.csv`, `backtest_equity.csv`.
 

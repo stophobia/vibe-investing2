@@ -74,6 +74,27 @@ main { padding: 16px 22px 60px; max-width: 1180px; margin: 0 auto; }
 .conf-bar { flex: 1; max-width: 320px; height: 9px; background: var(--panel2); border-radius: 6px; overflow: hidden; }
 .conf-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--green)); }
 
+/* 칩 (하락유형 · 히스테리시스) */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
+.chip { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; border: 1px solid var(--line); color: var(--muted); }
+.chip-RECESSION_DRIVEN { background: #331217; color: var(--red); border-color: #5a1d28; }
+.chip-RATE_DRIVEN { background: #2a1d33; color: #c08af5; border-color: #432d5a; }
+.chip-VALUATION_DRIVEN { background: #2e2912; color: var(--accent); border-color: #5a4f1d; }
+.chip-pending { background: #33260f; color: var(--orange); border-color: #5a431d; }
+.chip-stable { background: #123524; color: var(--green); border-color: #1d5a3c; }
+
+/* 금리 스트레스 패널 */
+.rate-wrap { display: flex; gap: 20px; flex-wrap: wrap; }
+.rate-left { flex: 1; min-width: 280px; }
+.rate-right { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+.dtype-badge { font-size: 16px; font-weight: 800; padding: 12px 14px; border-radius: 12px; text-align: center; border: 1px solid var(--line); }
+.dtype-RECESSION_DRIVEN { background: #331217; color: var(--red); border-color: #5a1d28; }
+.dtype-RATE_DRIVEN { background: #2a1d33; color: #c08af5; border-color: #432d5a; }
+.dtype-VALUATION_DRIVEN { background: #2e2912; color: var(--accent); border-color: #5a4f1d; }
+.dtype-NONE { background: var(--panel2); color: var(--muted); }
+.dtype-guidance { margin: 0; font-size: 12.5px; line-height: 1.65; color: var(--text);
+  background: var(--panel2); border-left: 3px solid var(--accent); padding: 9px 12px; border-radius: 0 8px 8px 0; }
+
 /* 상태별 배지 색 */
 .state-UPTREND_HEALTHY      { background: #123524; color: var(--green); border: 1px solid #1d5a3c; }
 .state-CORRECTION           { background: #2e2912; color: var(--accent); border: 1px solid #5a4f1d; }

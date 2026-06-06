@@ -35,6 +35,21 @@ function render(d) {
   badge.className = "verdict-badge state-" + v.state;
   badge.innerHTML = `<div>${v.state_kr}</div><div style="font-size:11px;font-weight:600;opacity:.8;margin-top:8px">${v.action}</div>`;
   el("verdictKr").innerHTML = `${v.state_kr} <span style="font-size:13px;color:var(--muted);font-weight:600">${v.state}</span>`;
+
+  // 칩: 하락유형 + 히스테리시스 상태
+  const chips = [];
+  const dt = v.decline_type;
+  if (dt && dt.code && dt.code !== "NONE") {
+    chips.push(`<span class="chip chip-${dt.code}">하락유형: ${dt.kr}</span>`);
+  }
+  const hy = v.hysteresis;
+  if (hy && hy.pending) {
+    chips.push(`<span class="chip chip-pending">전환대기 → ${STATE_LABEL[hy.raw] || hy.raw} (${hy.count}/${hy.confirm_days}일)</span>`);
+  } else if (hy && hy.since) {
+    chips.push(`<span class="chip chip-stable">레짐 확정 (since ${hy.since})</span>`);
+  }
+  el("verdictChips").innerHTML = chips.join("");
+
   el("verdictHeadline").innerHTML = mdBold(v.headline);
   el("verdictHandoff").innerHTML = mdBold(v.handoff);
   el("confFill").style.width = v.confidence + "%";
@@ -50,6 +65,7 @@ function render(d) {
   el("mapAxes").innerHTML = `
     <div><b>거시 침체축(X):</b> ${fmt(v.axes.macro, 0)}/100 · Phase ${v.axes.macro_phase_kr}</div>
     <div><b>가격 스트레스(Y):</b> ${fmt(v.axes.price_stress, 0)}/100</div>
+    <div><b>금리 스트레스:</b> ${v.axes.rate_stress == null ? "–" : fmt(v.axes.rate_stress, 0)}/100 · <b>하락유형:</b> ${dt ? dt.kr : "–"}</div>
     <div><b>하락 점수:</b> ${fmt(v.axes.decline_score, 0)} · <b>과매도 점수:</b> ${fmt(v.axes.oversold_score, 0)}</div>
     <div style="margin-top:8px"><b>테이프 고점대비:</b> <span class="${sign(v.evidence.tape_drawdown)}">${fmt(v.evidence.tape_drawdown)}%</span></div>
     <div><b>복합체 200일선 위:</b> ${fmt(v.evidence.breadth_above_200dma, 0)}%</div>
@@ -79,6 +95,9 @@ function render(d) {
     `데이터: 거시 실데이터 ${dq.macro_live} · 프록시 ${dq.macro_proxy} · 결측 ${dq.macro_missing} | 가격 ${dq.n_prices}/${dq.n_expected}종목` +
     (dq.macro_missing >= 2 ? "  ⚠️ 거시 결측多 — Composite 신뢰도 하향" : "");
 
+  // ---- 금리 스트레스 + 하락유형 (v1.1) ----
+  renderRate(d.rate, v.decline_type, d.data_quality);
+
   // ---- 지수 표 ----
   el("indexTable").querySelector("tbody").innerHTML = d.indices.map(rowIndex).join("");
 
@@ -97,6 +116,33 @@ function render(d) {
   el("complexTable").querySelector("tbody").innerHTML = d.complex.map(rowComplex).join("");
 
   el("footer").textContent = "⚠️ " + d.disclaimer;
+}
+
+function renderRate(rate, dt, dq) {
+  el("rateScore").textContent = rate && rate.score != null ? fmt(rate.score, 0) : "–";
+  const order = ["R1_long_yield_vel", "R2_rate_path", "R3_breakeven", "R4_bond_vol"];
+  const comps = (rate && rate.components) || {};
+  el("rateFactorList").innerHTML = order.map((k) => {
+    const f = comps[k];
+    if (!f) return "";
+    const sc = f.score;
+    const tag = f.status === "live" ? "tag-live" : f.status === "proxy" ? "tag-proxy" : "tag-missing";
+    const tagTxt = f.status === "live" ? "실데이터" : f.status === "proxy" ? "프록시" : "결측";
+    const col = sc == null ? "var(--muted)" : sc >= 60 ? "var(--red)" : sc >= 40 ? "var(--orange)" : "var(--green)";
+    return `<div class="factor">
+      <span class="fname">${f.label} <span style="color:var(--muted)">${Math.round(f.weight * 100)}%</span></span>
+      <span class="fbar"><span class="ffill" style="width:${sc == null ? 0 : sc}%;background:${col}"></span></span>
+      <span class="fscore">${sc == null ? "–" : fmt(sc, 0)}</span>
+      <span class="ftag ${tag}">${tagTxt}</span>
+    </div>`;
+  }).join("") +
+    `<p class="dq">금리 데이터: 실데이터 ${dq.rate_live ?? 0} · 프록시 ${dq.rate_proxy ?? 0} · 결측 ${dq.rate_missing ?? 0}</p>`;
+
+  const badge = el("dtypeBadge");
+  const code = dt && dt.code ? dt.code : "NONE";
+  badge.className = "dtype-badge dtype-" + code;
+  badge.textContent = dt ? `하락유형: ${dt.kr}` : "하락유형: –";
+  el("dtypeGuidance").innerHTML = dt ? mdBold(dt.tlt_guidance) : "";
 }
 
 function rowIndex(r) {

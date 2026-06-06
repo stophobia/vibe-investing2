@@ -1,0 +1,4 @@
+decline_type,kr,days,avg_fwd20_%,avg_fwd60_%
+RECESSION_DRIVEN,침체형,301,3.7,11.46
+RATE_DRIVEN,금리형,81,-1.84,-7.27
+VALUATION_DRIVEN,밸류에이션형,312,1.98,5.11

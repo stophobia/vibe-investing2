@@ -1,5 +1,5 @@
 {
-  "asof": "2026-06-06T10:35:07+09:00",
+  "asof": "2026-06-06T11:52:59+09:00",
   "title": "ARDS-X Regime Classifier",
   "subtitle": "미국 빅테크·AI 인프라 + S&P500·Nasdaq100 — 조정 / 과매도 / 하락 / 침체 판별",
   "verdict": {
@@ -7,13 +7,28 @@
     "state_kr": "조정",
     "action": "HOLD_ACCUMULATE",
     "confidence": 66,
-    "headline": "상승추세 내 건강한 눌림(고점 대비 -5.6%, 200일선 위 78%). 거시(Composite 32) 양호 → **조정**.",
-    "handoff": "➡️ 보유 유지 + 우량 빅테크/AI 인프라 분할매수. RSI 과매도 진입 시 OVERSOLD_BOUNCE 로 전환되어 매수 강도↑.",
+    "headline": "상승추세 내 건강한 눌림(고점 대비 -5.6%, 200일선 위 78%, 거시 Composite 32 · Rate Stress 38) → **조정**.  하락유형: **밸류에이션형**.",
+    "handoff": "➡️ 보유 유지 + 우량 빅테크/AI 인프라 분할매수.  〔밸류에이션형〕 금리·침체 무관한 멀티플 압축/크라우딩 청산. TLT 헤지 효과 제한적, 현금·인버스(SH/PSQ)가 더 적합.",
+    "decline_type": {
+      "code": "VALUATION_DRIVEN",
+      "kr": "밸류에이션형",
+      "tlt_guidance": "금리·침체 무관한 멀티플 압축/크라우딩 청산. TLT 헤지 효과 제한적, 현금·인버스(SH/PSQ)가 더 적합."
+    },
+    "hysteresis": {
+      "raw": "CORRECTION",
+      "committed": "CORRECTION",
+      "pending": false,
+      "candidate": null,
+      "count": 0,
+      "confirm_days": 2,
+      "since": "2026-06-06"
+    },
     "axes": {
       "macro": 32.1,
       "macro_phase": "LATE_CYCLE",
       "macro_phase_kr": "후기 사이클",
       "price_stress": 38.9,
+      "rate_stress": 37.6,
       "decline_score": 46.2,
       "oversold_score": 25.9
     },
@@ -25,8 +40,7 @@
       "trend_broken": false,
       "idx_below_200dma": false,
       "idx_deadcross": false,
-      "breadth_weak": false,
-      "is_oversold": false
+      "breadth_weak": false
     }
   },
   "macro": {
@@ -83,6 +97,44 @@
         }
       }
     }
+  },
+  "rate": {
+    "score": 37.6,
+    "components": {
+      "R1_long_yield_vel": {
+        "label": "10Y 금리속도",
+        "weight": 0.35,
+        "score": 24.0,
+        "status": "live"
+      },
+      "R2_rate_path": {
+        "label": "정책경로(2Y/5Y)",
+        "weight": 0.25,
+        "score": 47.2,
+        "status": "proxy"
+      },
+      "R3_breakeven": {
+        "label": "기대인플레",
+        "weight": 0.2,
+        "score": null,
+        "status": "no data"
+      },
+      "R4_bond_vol": {
+        "label": "채권변동성",
+        "weight": 0.2,
+        "score": 49.2,
+        "status": "live"
+      }
+    },
+    "detail": {
+      "us10y_20d_bp": 14.4,
+      "us5y_20d_bp(mkt)": 23.6,
+      "move_level": 75.2,
+      "move_pctile_1y": 49.0
+    },
+    "n_live": 2,
+    "n_proxy": 1,
+    "n_missing": 1
   },
   "indices": [
     {
@@ -525,8 +577,11 @@
     "macro_live": 0,
     "macro_proxy": 3,
     "macro_missing": 2,
-    "n_prices": 30,
-    "n_expected": 30
+    "rate_live": 2,
+    "rate_proxy": 1,
+    "rate_missing": 1,
+    "n_prices": 31,
+    "n_expected": 31
   },
   "disclaimer": "교육·연구용. 투자 권유 아님. 신호(레짐/Phase)만 참고하고 실제 매매는 본인 판단·전문가 상담 필수. 방어 전략은 강세장에서 기회비용을, 헤지는 잘못된 신호에서 휩쏘 손실을 낼 수 있다."
 }

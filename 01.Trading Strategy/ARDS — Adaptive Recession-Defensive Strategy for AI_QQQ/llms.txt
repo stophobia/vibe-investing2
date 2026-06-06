@@ -5,10 +5,13 @@
 > (Recession) 중 어느 국면인지 2-축 레짐 맵으로 분류한다. 모든 데이터는 무료
 > (yfinance + FRED 무료 CSV, API 키 불필요).
 
-## 핵심 개념
+## 핵심 개념 (v1.1)
 - X축 = 거시 침체축: ARDS 5-Factor Recession Composite 를 실데이터로 계산 (LLM 추정 아님)
 - Y축 = 가격 스트레스축: 52주 고점 드로다운 + 추세 붕괴(200일선/데드크로스/폭) + 모멘텀
-- 오버레이 = 단기 과매도: RSI(14) / Bollinger %B / 20일선 ATR 이탈
+- 오버레이1 = 단기 과매도: RSI(14) / Bollinger %B / 20일선 ATR 이탈
+- 오버레이2 = Rate Stress(금리축): 10Y/2Y 금리속도 + 5Y 기대인플레 + MOVE
+  → 하락유형 라벨: 침체형(TLT 헤지) / 금리형(TLT 추가익스포저, 단기채·금 대체) / 밸류형(현금·인버스)
+- 히스테리시스: 진입/이탈 밴드 + 2일 확인 → 레짐 핑퐁 방지
 - 5개 상태 + 각 상태별 자매전략 핸드오프 (AMQS 모멘텀 / ARDS 방어)
 
 ## 5-Factor (ARDS 동일 가중치, 실데이터)
@@ -24,10 +27,11 @@
 - quant/config.py     : 유니버스·가중치·임계값
 - quant/datafeed.py   : yfinance + FRED 무료 CSV (병렬·캐시·폴백)
 - quant/macro.py      : 5-Factor Recession Composite
+- quant/rates.py      : Rate Stress 서브컴포지트 + 하락유형 라벨 (v1.1)
 - quant/technical.py  : 드로다운·추세·과매도·폭 지표
-- quant/classifier.py : 2-축 레짐 분류 엔진 (핵심)
+- quant/classifier.py : 레짐 분류 엔진 + 히스테리시스 (핵심)
 - quant/run.py        : 파이프라인 → dashboard/data/latest.json
-- quant/backtest.py   : 과거 레짐 분류 검증 (룩어헤드 없음) → backtest_*.csv
+- quant/backtest.py   : 과거 검증(히스테리시스·하락유형·캘리브레이션) → backtest_*.csv
 - dashboard/          : 정적 대시보드 (index.html, app.js, styles.css, serve.py)
 
 ## 실행
@@ -35,12 +39,14 @@
 - python quant/backtest.py       # 백테스트 CSV 생성
 - python dashboard/serve.py 3142 # 대시보드 서빙
 
-## 백테스트 핵심 (2014–2026, ^NDX 2,914일)
-- 조정/단기과매도 구간 60일 수익률 +5%대(승률 77%) → 저점매수 가설 유효
-- 하락/분배 구간 60일 -0.4%(승률 44%) → 경계 정당
+## 백테스트 핵심 (2014–2026, ^NDX 2,914일, v1.1)
+- 조정/단기과매도 구간 60일 수익률 +5~6%대(승률 75~88%) → 저점매수 가설 유효
+- 하락/분배 구간 60일 -1.5% → 경계 정당
 - 침체 분류는 역신호(+11%): 시장 프록시만으론 2022-24 곡선역전을 BEAR_TRAP 으로 과다발화
-  → 실데이터 FRED Sahm/LEI 가 진짜 침체 판별에 필수임을 입증
-- 레짐 스위치 vs Buy&Hold: 수익은 낮지만(190% vs 594%) MDD -25.6% vs -35.6%
+- (d) 하락유형 라벨: 금리형 하락 60일 -7.3% → 침체축이 놓치는 진짜 위험을 분리해 냄 (핵심 성과)
+- (c) 히스테리시스: 레짐 전환 249→88회(-65%) 휩쏘 감소
+- (e) 캘리브레이션: Brier 0.281, 60-70% 구간은 잘 보정, 80%+ 상단은 과신(예측86.9/실제61.0)
+- 레짐 스위치 vs Buy&Hold: 수익 200% vs 594%, MDD -30.5% vs -35.6%
 
 ## 주의
 교육·연구용. 투자 권유 아님. 레짐 분류는 후행/동행 지표 기반이라 전환점을 예측하지

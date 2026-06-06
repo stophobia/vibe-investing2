@@ -31,6 +31,7 @@ import pandas as pd
 
 import config
 import datafeed
+import rates as rates_mod
 
 T = config.TECH
 D = config.DECISION
@@ -140,8 +141,32 @@ def macro_axis(px):
     return comp.rename("macro")
 
 
+def rate_axis(px):
+    """Rate Stress 프록시 (역사적, yfinance만): 10Y/5Y 20일 변화 + 10Y 실현변동성 백분위."""
+    parts, weights = {}, {}
+    if "^TNX" in px:
+        s = px["^TNX"].dropna()
+        bp = (s - s.shift(20)) * 100
+        parts["R1"] = _lin(bp, 0.0, config.RATE["yield_vel_bp_hi"]); weights["R1"] = 0.35
+        rv = s.pct_change().rolling(20).std() * np.sqrt(252) * 100
+        rv_pct = rv.rolling(252, min_periods=120).apply(lambda x: (x <= x.iloc[-1]).mean() * 100, raw=False)
+        parts["R4"] = rv_pct; weights["R4"] = 0.20
+    if "^FVX" in px:
+        s = px["^FVX"].dropna()
+        bp = (s - s.shift(20)) * 100
+        parts["R2"] = _lin(bp, 0.0, config.RATE["path_vel_bp_hi"]); weights["R2"] = 0.25
+    if not parts:
+        return None
+    idx = None
+    for p in parts.values():
+        idx = p.index if idx is None else idx.union(p.index)
+    dfp = pd.DataFrame({k: v.reindex(idx).ffill() for k, v in parts.items()})
+    wsum = sum(weights.values())
+    return (sum(dfp[k] * weights[k] for k in parts) / wsum).rename("rate")
+
+
 # --------------------------------------------------------------------------- #
-# 분류 (라이브 classifier 와 동일 우선순위)
+# 분류 (라이브 classifier 와 동일 우선순위 + 히스테리시스 밴드)
 # --------------------------------------------------------------------------- #
 def classify_row(macro, dd, above200, golden, decline, oversold, rsi_v):
     trend_broken = (not above200) or (not golden)
@@ -155,6 +180,59 @@ def classify_row(macro, dd, above200, golden, decline, oversold, rsi_v):
     if is_os:
         return "OVERSOLD_BOUNCE"
     return "UPTREND_HEALTHY"
+
+
+def banded_classify_row(macro, dd, above200, golden, oversold, rsi_v, prev):
+    """히스테리시스 진입/이탈 밴드를 적용한 raw 분류 (live classifier.raw_classify 와 동일)."""
+    H = config.HYSTERESIS
+    rec_thr = H["macro_rec_exit"] if prev == "RECESSION_REBALANCE" else H["macro_rec_enter"]
+    dd_corr = H["dd_corr_exit"] if prev in ("CORRECTION", "OVERSOLD_BOUNCE") else H["dd_corr_enter"]
+    dd_deep = H["dd_deep_exit"] if prev == "DOWNTREND_DISTRIBUTION" else H["dd_deep_enter"]
+    rsi_thr = H["rsi_exit"] if prev == "OVERSOLD_BOUNCE" else H["rsi_enter"]
+    trend_broken = (not above200) or (not golden)
+    is_os = (oversold >= 55) or (rsi_v < rsi_thr)
+    if macro >= rec_thr and (dd <= -dd_corr or trend_broken):
+        return "RECESSION_REBALANCE"
+    if trend_broken and dd <= -dd_deep:
+        return "DOWNTREND_DISTRIBUTION"
+    if dd <= -dd_corr:
+        return "OVERSOLD_BOUNCE" if is_os else "CORRECTION"
+    if is_os:
+        return "OVERSOLD_BOUNCE"
+    return "UPTREND_HEALTHY"
+
+
+def hysteresis_pass(df):
+    """밴드 + N일 확인 상태머신으로 committed 레짐 시퀀스를 산출."""
+    confirm_days = config.HYSTERESIS["confirm_days"]
+    committed = None
+    candidate, count = None, 0
+    raw_list, com_list = [], []
+    for macro, dd, a2, g, osc, r in zip(
+            df["macro"], df["dd"], df["above200"], df["golden"], df["oversold"], df["rsi"]):
+        raw = banded_classify_row(macro, dd, a2, g, osc, r, committed)
+        if committed is None:
+            committed = raw
+        elif raw == committed:
+            candidate, count = None, 0
+        else:
+            if raw == candidate:
+                count += 1
+            else:
+                candidate, count = raw, 1
+            if count >= confirm_days:
+                committed, candidate, count = raw, None, 0
+        raw_list.append(raw)
+        com_list.append(committed)
+    return raw_list, com_list
+
+
+def _confidence(macro, stress):
+    c = 55
+    c += 18 if ((macro >= D["macro_recession"]) == (stress >= 50)) else -5
+    c += min(15, abs(macro - 50) / 50 * 15)
+    c += min(12, abs(stress - 40) / 60 * 12)
+    return max(20, min(95, c))
 
 
 STATE_KR = {
@@ -191,8 +269,14 @@ def run(start=None):
 
     pa = price_axis(px["^NDX"])
     ma = macro_axis(px)
+    ra = rate_axis(px)
 
     df = pa.join(ma, how="inner").dropna(subset=["dd", "macro", "rsi"])
+    if ra is not None:
+        df = df.join(ra, how="left")
+        df["rate"] = df["rate"].ffill()
+    else:
+        df["rate"] = float("nan")
     df = df[df.index >= "2007-01-01"]
     if start:
         df = df[df.index >= start]
@@ -200,12 +284,25 @@ def run(start=None):
     # 200일선/52주 고점이 성숙한 구간만
     df = df.dropna(subset=["decline", "oversold"])
 
-    df["state"] = [
+    # raw(밴드 없음, 비교용) + committed(히스테리시스 적용)
+    df["state_raw_nohyst"] = [
         classify_row(m, dd, a2, g, dec, osc, r)
         for m, dd, a2, g, dec, osc, r in zip(
             df["macro"], df["dd"], df["above200"], df["golden"],
             df["decline"], df["oversold"], df["rsi"])
     ]
+    raw_banded, committed = hysteresis_pass(df)
+    df["state_raw"] = raw_banded
+    df["state"] = committed                       # 공식 레짐 = 히스테리시스 확정
+
+    # 가격 스트레스 + 하락유형 라벨 + 신뢰도
+    df["price_stress"] = (0.6 * df["decline"] +
+                          0.4 * (-df["dd"] / T["dd_bear"] * 100).clip(0, 100)).clip(0, 100)
+    df["decline_type"] = [
+        rates_mod.decline_type(m, (None if pd.isna(rt) else rt), ps)["code"]
+        for m, rt, ps in zip(df["macro"], df["rate"], df["price_stress"])
+    ]
+    df["conf"] = [_confidence(m, ps) for m, ps in zip(df["macro"], df["price_stress"])]
 
     # 향후 수익률
     fwd20 = df["px"].shift(-20) / df["px"] - 1
@@ -230,7 +327,7 @@ def run(start=None):
         })
     stats = pd.DataFrame(rows)
 
-    # ---- (b) 레짐 스위치 전략 ----
+    # ---- (b) 레짐 스위치 전략 (히스테리시스 적용된 committed 기준) ----
     ndx_ret = df["px"].pct_change()
     pos = df["state"].isin(RISK_ON).shift(1).fillna(False).astype(float)  # 익일 적용
     strat_ret = pos * ndx_ret
@@ -238,12 +335,51 @@ def run(start=None):
     strat = perf_stats(strat_ret)
     time_in = pos.mean() * 100
 
+    # ---- (c) 히스테리시스: 휩쏘(레짐 전환 횟수) 감소 ----
+    sw_nohyst = int((df["state_raw_nohyst"] != df["state_raw_nohyst"].shift(1)).sum())
+    sw_hyst = int((df["state"] != df["state"].shift(1)).sum())
+
+    # ---- (d) 하락유형 라벨 분포 (가격 스트레스 구간만) ----
+    dt_rows = []
+    stressed = df[df["price_stress"] >= config.RATE["label_min_stress"]]
+    for code in ["RECESSION_DRIVEN", "RATE_DRIVEN", "VALUATION_DRIVEN"]:
+        gg = stressed[stressed["decline_type"] == code]
+        if len(gg):
+            dt_rows.append({"decline_type": code,
+                            "kr": rates_mod.DECLINE_TYPES[code][0], "days": len(gg),
+                            "avg_fwd20_%": round(gg["fwd20"].mean(), 2),
+                            "avg_fwd60_%": round(gg["fwd60"].mean(), 2)})
+    dtypes = pd.DataFrame(dt_rows)
+
+    # ---- (e) 신뢰도 캘리브레이션 (Brier) ----
+    #   "행동이 옳았나"를 fwd20 으로 정의: risk-on→상승, 방어→하락이면 정답.
+    correct = df.apply(
+        lambda x: (x["fwd20"] > 0) if x["state"] in RISK_ON else (x["fwd20"] < 0), axis=1
+    ).astype(float)
+    p = df["conf"] / 100.0
+    valid = df["fwd20"].notna()
+    brier = float(((p[valid] - correct[valid]) ** 2).mean())
+    cal_rows = []
+    for lo, hi in [(20, 50), (50, 60), (60, 70), (70, 80), (80, 95)]:
+        mask = valid & (df["conf"] >= lo) & (df["conf"] < (hi if hi < 95 else 96))
+        if mask.sum() >= 20:
+            cal_rows.append({"conf_bin": f"{lo}-{hi}%", "n": int(mask.sum()),
+                             "predicted_%": round(p[mask].mean() * 100, 1),
+                             "actual_%": round(correct[mask].mean() * 100, 1)})
+    calib = pd.DataFrame(cal_rows)
+
     # ---- 저장 ----
     here = os.path.dirname(__file__)
     stats.to_csv(os.path.join(here, "backtest_state_stats.csv"), index=False)
+    if len(calib):
+        calib.to_csv(os.path.join(here, "backtest_calibration.csv"), index=False)
+    if len(dtypes):
+        dtypes.to_csv(os.path.join(here, "backtest_decline_types.csv"), index=False)
     eq = pd.DataFrame({
         "state": df["state"], "state_kr": df["state"].map(STATE_KR),
-        "macro": df["macro"].round(1), "ndx_dd": df["dd"].round(1),
+        "decline_type": df["decline_type"], "macro": df["macro"].round(1),
+        "rate": df["rate"].round(1), "ndx_dd": df["dd"].round(1),
+        "conf": df["conf"].round(0),
         "nav_buyhold": bh["nav"].reindex(df.index).round(4),
         "nav_strategy": strat["nav"].reindex(df.index).round(4),
     })
@@ -259,7 +395,17 @@ def run(start=None):
                 f"vol {s['vol']*100:5.1f}%  Sharpe {s['sharpe']:.2f}  MDD {s['mdd']*100:6.1f}%")
     print("  Buy&Hold :" + fmt(bh))
     print("  ARDS-X   :" + fmt(strat) + f"  (시장노출 {time_in:.0f}%)")
-    print(f"\n저장: backtest_state_stats.csv · backtest_equity.csv")
+    print(f"\n(c) 히스테리시스 — 레짐 전환 횟수(휩쏘): "
+          f"밴드없음 {sw_nohyst}회 → 히스테리시스 {sw_hyst}회 "
+          f"({(1 - sw_hyst / sw_nohyst) * 100:.0f}% 감소)")
+    if len(dtypes):
+        print("\n(d) 하락유형 라벨 분포 (가격 스트레스 구간) — 금리형은 향후수익이 더 약해야 정상")
+        print(dtypes.to_string(index=False))
+    if len(calib):
+        print(f"\n(e) 신뢰도 캘리브레이션 (Brier={brier:.3f}; 0=완벽) — predicted ≈ actual 이면 잘 보정됨")
+        print(calib.to_string(index=False))
+    print(f"\n저장: backtest_state_stats.csv · backtest_equity.csv · "
+          f"backtest_calibration.csv · backtest_decline_types.csv")
     return stats, bh, strat, time_in
 
 

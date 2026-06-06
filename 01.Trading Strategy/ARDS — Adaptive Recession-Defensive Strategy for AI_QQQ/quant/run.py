@@ -22,17 +22,68 @@ import datafeed
 import macro as macro_mod
 import technical
 import classifier
+import rates
+
+
+def _load_state():
+    path = os.path.join(os.path.dirname(__file__), config.STATE_JSON)
+    if os.path.exists(path):
+        try:
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {"committed": None, "since": None, "candidate": None, "count": 0}
+
+
+def _save_state(state):
+    path = os.path.join(os.path.dirname(__file__), config.STATE_JSON)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(state, f, ensure_ascii=False, indent=2)
+
+
+def _apply_hysteresis(raw, state, today):
+    """N일 확인 상태머신 → 공식 committed 레짐 결정."""
+    H = config.HYSTERESIS
+    committed = state.get("committed")
+    if committed is None:                       # 최초 실행
+        committed = raw
+        state.update(committed=committed, since=today, candidate=None, count=0)
+        return committed, {"raw": raw, "committed": committed, "pending": False,
+                           "candidate": None, "count": 0, "confirm_days": H["confirm_days"],
+                           "since": today}
+    if raw == committed:                        # 안정
+        state.update(candidate=None, count=0)
+        pending = False
+    else:
+        if raw == state.get("candidate"):
+            state["count"] = state.get("count", 0) + 1
+        else:
+            state["candidate"] = raw
+            state["count"] = 1
+        if state["count"] >= H["confirm_days"]:  # 확인 완료 → 전환
+            committed = raw
+            state.update(committed=committed, since=today, candidate=None, count=0)
+            pending = False
+        else:
+            pending = True
+    return committed, {"raw": raw, "committed": committed, "pending": pending,
+                       "candidate": state.get("candidate"), "count": state.get("count", 0),
+                       "confirm_days": H["confirm_days"], "since": state.get("since")}
 
 
 def build():
-    # 1) 가격: 지수 + 복합체 + 거시 시장 프록시(국채금리/신용/구리·금/산업재)
+    # 1) 가격: 지수 + 복합체 + 거시/금리 시장 프록시
     all_tickers = list(dict.fromkeys(
-        list(config.INDICES) + list(config.COMPLEX) + config.MACRO_MARKET))
+        list(config.INDICES) + list(config.COMPLEX)
+        + config.MACRO_MARKET + config.RATE_MARKET))
     px = datafeed.prices(all_tickers, config.LOOKBACK_DAYS)
 
-    # 2) 거시 (FRED)
-    fred = datafeed.fred_many(list(config.FRED_SERIES))
+    # 2) 거시 (FRED) + 금리 (FRED 2Y/브레이크이븐)
+    fred = datafeed.fred_many(list(config.FRED_SERIES) + list(config.RATE_FRED))
     macro = macro_mod.recession_composite(fred, px)
+    rate = rates.rate_stress(px, fred)
 
     # 3) 가격구조
     name_group = {**{t: (n, None) for t, n in config.INDICES.items()},
@@ -51,17 +102,25 @@ def build():
         if gr:
             groups[g] = {"label": config.GROUP_KR[g], **technical.aggregate(gr)}
 
-    # 4) 분류
-    verdict = classifier.classify(macro, index_rows, complex_rows, complex_agg)
+    # 4) 분류 + 히스테리시스
+    asof_dt = dt.datetime.now().astimezone()
+    today = asof_dt.date().isoformat()
+    m = classifier._measure(macro, index_rows, complex_agg)
+    state = _load_state()
+    raw = classifier.raw_classify(macro["composite"], m, state.get("committed"))
+    committed, confirm = _apply_hysteresis(raw, state, today)
+    _save_state(state)
+    verdict = classifier.build_verdict(committed, raw, confirm, macro, m, rate, today)
 
     # 5) 직렬화
-    asof = dt.datetime.now().astimezone().isoformat(timespec="seconds")
+    asof = asof_dt.isoformat(timespec="seconds")
     out = {
         "asof": asof,
         "title": "ARDS-X Regime Classifier",
         "subtitle": "미국 빅테크·AI 인프라 + S&P500·Nasdaq100 — 조정 / 과매도 / 하락 / 침체 판별",
         "verdict": verdict,
         "macro": macro,
+        "rate": rate,
         "indices": sorted(index_rows, key=lambda r: r["ticker"]),
         "complex": sorted(complex_rows, key=lambda r: r["decline_score"], reverse=True),
         "complex_aggregate": complex_agg,
@@ -70,6 +129,9 @@ def build():
             "macro_live": macro["n_live"],
             "macro_proxy": macro["n_proxy"],
             "macro_missing": macro["n_missing"],
+            "rate_live": rate["n_live"],
+            "rate_proxy": rate["n_proxy"],
+            "rate_missing": rate["n_missing"],
             "n_prices": len(px),
             "n_expected": len(all_tickers),
         },
@@ -94,11 +156,16 @@ def main():
         json.dump(out, f, ensure_ascii=False, indent=2)
 
     v = out["verdict"]
+    cf = v["hysteresis"]
+    pend = f"  [전환대기 {cf['raw']} {cf['count']}/{cf['confirm_days']}]" if cf.get("pending") else ""
     print(f"[ARDS-X] {out['asof']}")
-    print(f"  레짐: {v['state']}  ({v['state_kr']})   신뢰도 {v['confidence']}%")
-    print(f"  거시 Composite: {out['macro']['composite']}  / Phase {out['macro']['phase']} "
-          f"({out['macro']['phase_kr']})   [live {out['macro']['n_live']} · proxy {out['macro']['n_proxy']} · 결측 {out['macro']['n_missing']}]")
-    print(f"  가격 스트레스: {v['axes']['price_stress']}  | 테이프 DD {v['evidence']['tape_drawdown']}% "
+    print(f"  레짐: {v['state']}  ({v['state_kr']})   신뢰도 {v['confidence']}%{pend}")
+    print(f"  하락유형: {v['decline_type']['kr']} ({v['decline_type']['code']})")
+    print(f"  거시 Composite: {out['macro']['composite']} / Phase {out['macro']['phase']} "
+          f"[live {out['macro']['n_live']} · proxy {out['macro']['n_proxy']} · 결측 {out['macro']['n_missing']}]"
+          f"   | Rate Stress: {out['rate']['score']} "
+          f"[live {out['rate']['n_live']} · proxy {out['rate']['n_proxy']} · 결측 {out['rate']['n_missing']}]")
+    print(f"  가격 스트레스: {v['axes']['price_stress']} | 테이프 DD {v['evidence']['tape_drawdown']}% "
           f"| 200일선 위 {v['evidence']['breadth_above_200dma']}%")
     print(f"  → {v['headline']}")
     print(f"  → {v['handoff']}")
