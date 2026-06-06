@@ -99,9 +99,9 @@ def _amqs_build_sync(market_caps: dict[str, float] | None = None) -> dict[str, A
         "title": "AMQS-AI-Infra",
         "regime": {
             "label": regime.label,
-            "tradeable": regime.tradeable,
+            "qqq_above_200ma": bool(regime.qqq_above_200ma),
             "vix_level": round(float(regime.vix_level), 2),
-            "qqq_drawdown": round(float(regime.qqq_drawdown), 4),
+            "qqq_5d_return": round(float(regime.qqq_5d_return), 4),
             "reason": regime.reason,
         },
         "metrics": df.to_dict(orient="records"),
