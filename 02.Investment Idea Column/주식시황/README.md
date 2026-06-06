@@ -22,7 +22,12 @@
 | [Won\_USD\_1530\_shock.md](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/Won_USD_1530_shock.md) | 원달러 1,530원, 그때는 틀리고 지금은 맞다 (17년 만의 고환율 구조 분석) | 환율/거시 |
 | [krw\_1530\_three\_wars\_column.md](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/krw_1530_three_wars_column.md) | 1,530원의 경고 — 세 개의 전쟁이 원화에 보낸 청구서 | 환율/거시 |
 | [market\_analysis\_2026.md](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/market_analysis_2026.md) | 노무라증권 SK하이닉스 가치 재평가 | 반도체 |
+| [market\_column\_2026-06-06\_broadcom\_shock\_correction\_regime.md](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/market_column_2026-06-06_broadcom_shock_correction_regime.md) | 브로드컴 48% 성장 속 15% 폭락 — ARDS-X 레짐 분석 ('기대의 청산') | 반도체 |
 | [msft\_chart.png](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/msft_chart.png) | 마이크로소프트 주가 차트 (칼럼 첨부 이미지) | 차트 |
+| [ards\_x\_v11\_regime\_classifier.png](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/ards_x_v11_regime_classifier.png) | ARDS-X v1.1 레짐 분류 차트 (브로드컴 칼럼 첨부) | 차트 |
+| [bigtech\_ai\_complex\_table.png](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/bigtech_ai_complex_table.png) | 빅테크 AI 컴플렉스 지표 테이블 (브로드컴 칼럼 첨부) | 차트 |
+| [macro\_composite\_indices.png](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/macro_composite_indices.png) | 거시 종합 지수 차트 (브로드컴 칼럼 첨부) | 차트 |
+| [rate\_stress\_axis\_complex.png](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/rate_stress_axis_complex.png) | 금리 스트레스 축 차트 (브로드컴 칼럼 첨부) | 차트 |
 | [칼럼 마이크로소프트 게이츠재단 매도의 의미.pdf](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/%EC%B9%BC%EB%9F%BC%20%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C%EC%86%8C%ED%94%84%ED%8A%B8%20%EA%B2%8C%EC%9D%B4%EC%B8%A0%EC%9E%AC%EB%8B%A8%20%EB%A7%A4%EB%8F%84%EC%9D%98%20%EC%9D%98%EB%AF%B8.pdf) | 게이츠 재단 MSFT 매도의 의미 (PDF) | 개별 기업 |
 | [칼럼\_마이크로소프트\_게이츠재단\_매도의\_의미.md](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/%EC%B9%BC%EB%9F%BC_%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C%EC%86%8C%ED%94%84%ED%8A%B8_%EA%B2%8C%EC%9D%B4%EC%B8%A0%EC%9E%AC%EB%8B%A8_%EB%A7%A4%EB%8F%84%EC%9D%98_%EC%9D%98%EB%AF%B8.md) | 게이츠 재단 MSFT 매도의 의미 | 개별 기업 |
 | [서학개미 리포트 0516.md](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EC%A3%BC%EC%8B%9D%EC%8B%9C%ED%99%A9/%EC%84%9C%ED%95%99%EA%B0%9C%EB%AF%B8%20%EB%A6%AC%ED%8F%AC%ED%8A%B8%200516.md) | 서학개미 시장 리포트 (5/16) | 시장 종합 |
@@ -34,6 +39,7 @@
 
 - 2026년 5월 미국 반도체 주식 조정 분석
 - 노무라증권 SK하이닉스 가치 재평가
+- 브로드컴 48% 성장 속 15% 폭락 — ARDS-X 레짐 분석 ('기대의 청산')
 
 ### 환율 / 거시 (FX / Macro)
 
