@@ -52,6 +52,65 @@ export async function fetchDaily(symbol: string, range = "2y"): Promise<DSeries>
   return parseYahooChart((await res.json()) as YahooChartJson);
 }
 
+// --- 다중 심볼 배치 수집 (spark) — 일1회 크론용 -----------------------------
+// 1요청에 여러 종목 일봉(close). Workers 무료 subrequest 한도(50/호출) 회피.
+// 주의: spark 의 close 는 raw(비조정). 분할/배당 조정은 안 됨 → 알고리즘은 동일,
+// yfinance adjclose 대비 경미한 차이(단순화). 지수/금리/종목 모두 지원.
+
+type SparkJson = Record<string, { timestamp?: number[]; close?: Array<number | null> }>;
+
+export function parseSpark(json: SparkJson): Record<string, DSeries> {
+  const out: Record<string, DSeries> = {};
+  for (const sym of Object.keys(json)) {
+    const s = json[sym];
+    if (!s || !s.timestamp || !s.close) continue;
+    const dates: string[] = [];
+    const values: number[] = [];
+    for (let i = 0; i < s.timestamp.length; i++) {
+      const v = s.close[i];
+      if (v === null || v === undefined || Number.isNaN(v)) continue;
+      dates.push(new Date(s.timestamp[i] * 1000).toISOString().slice(0, 10));
+      values.push(v);
+    }
+    if (values.length) out[sym] = { dates, values };
+  }
+  return out;
+}
+
+const SPARK_BASE = "https://query1.finance.yahoo.com/v8/finance/spark";
+
+async function fetchSpark(symbols: string[], range: string): Promise<Record<string, DSeries>> {
+  const url = `${SPARK_BASE}?symbols=${symbols.map(encodeURIComponent).join(",")}&range=${range}&interval=1d`;
+  const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } });
+  if (!res.ok) throw new Error(`yahoo spark: HTTP ${res.status}`);
+  const json = (await res.json()) as SparkJson | { spark?: { result?: unknown } };
+  // 키리스 응답은 심볼-키 형태. (혹시 spark.result 래퍼면 그대로 두고 무시)
+  return parseSpark(json as SparkJson);
+}
+
+/** 다중 심볼 일봉 배치 수집(청크 단위). 부분 성공 허용. */
+export async function fetchSparkMany(
+  symbols: string[],
+  range = "2y",
+  chunkSize = 50,
+): Promise<{ data: Record<string, DSeries>; failures: Record<string, string> }> {
+  const data: Record<string, DSeries> = {};
+  const failures: Record<string, string> = {};
+  for (let i = 0; i < symbols.length; i += chunkSize) {
+    const chunk = symbols.slice(i, i + chunkSize);
+    try {
+      const r = await fetchSpark(chunk, range);
+      for (const sym of chunk) {
+        if (r[sym] && r[sym].values.length > 0) data[sym] = r[sym];
+        else failures[sym] = "missing";
+      }
+    } catch (e) {
+      for (const sym of chunk) failures[sym] = String(e);
+    }
+  }
+  return { data, failures };
+}
+
 // --- 시세 스냅샷용 (10분 크론): quote(현재가·등락%) + screener(급등/급락) ----------
 
 export interface Quote {

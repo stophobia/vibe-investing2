@@ -1,7 +1,7 @@
 /**
  * 일1회 크론 IO 오케스트레이션: 수집 → computeSignals → D1/R2 영속화 + 히스테리시스 상태.
  */
-import { fetchDailyMany } from "./providers/yahoo";
+import { fetchSparkMany } from "./providers/yahoo";
 import { fetchFredMany } from "./providers/fred";
 import { reconcileWithCache } from "./cache";
 import { computeSignals, ALL_YAHOO_SYMBOLS, FRED_IDS, type SignalRow } from "./signals";
@@ -59,8 +59,8 @@ export async function runDailySignals(
   const today = opts.today ?? new Date().toISOString().slice(0, 10);
   const prevState = (await loadHystState(env.SNAPSHOTS)) ?? freshState();
 
-  // 수집 → R2 캐시와 reconcile (실패분은 직전 저장본으로 폴백 = 가용성)
-  const yahooFetch = await fetchDailyMany(ALL_YAHOO_SYMBOLS);
+  // 수집(spark 배치) → R2 캐시와 reconcile (실패분은 직전 저장본으로 폴백 = 가용성)
+  const yahooFetch = await fetchSparkMany(ALL_YAHOO_SYMBOLS, "2y");
   const px = await reconcileWithCache(env.SNAPSHOTS, "prices", ALL_YAHOO_SYMBOLS, yahooFetch.data);
   const fredFetch = await fetchFredMany(FRED_IDS); // best-effort (막히면 엔진이 프록시 폴백)
   const fred = await reconcileWithCache(env.SNAPSHOTS, "fred", FRED_IDS, fredFetch.data);

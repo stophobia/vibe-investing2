@@ -16,6 +16,7 @@ import {
   RATE_FRED,
 } from "../../shared/strategy/ards/config";
 import { pyRound } from "../../shared/strategy/series";
+import { WATCHLIST_TICKERS, SYM_BY_TICKER, type SymGroup } from "../../shared/symbols";
 import type { DSeries } from "../../shared/strategy/ards/dseries";
 import type { DashboardSignal } from "../../shared/strategy/types";
 
@@ -27,16 +28,24 @@ export const ARDS_YAHOO_SYMBOLS = [
   ...RATE_MARKET,
 ];
 export const AMQS_YAHOO_SYMBOLS = [...AI_INFRA_TICKERS, "QQQ", "^VIX"];
-export const ALL_YAHOO_SYMBOLS = [...new Set([...ARDS_YAHOO_SYMBOLS, ...AMQS_YAHOO_SYMBOLS])];
+export const ALL_YAHOO_SYMBOLS = [...new Set([...ARDS_YAHOO_SYMBOLS, ...AMQS_YAHOO_SYMBOLS, ...WATCHLIST_TICKERS])];
 export const FRED_IDS = [...FRED_SERIES, ...RATE_FRED];
 
 export interface SignalRow {
   date: string;
-  strategy: "ARDS" | "AMQS";
+  strategy: "ARDS" | "AMQS" | "WATCHLIST";
   ticker: string;
   signal: DashboardSignal;
   score: number;
   detail_json: string;
+}
+
+export interface WatchItem {
+  ticker: string;
+  ko: string;
+  group: SymGroup;
+  signal: DashboardSignal;
+  score: number;
 }
 
 export interface DailyPayload {
@@ -44,6 +53,7 @@ export interface DailyPayload {
   updated_at: string | null;
   ards: ReturnType<typeof runArds>;
   amqs: { regime: ReturnType<typeof runAmqs>["regime"]; metrics: ReturnType<typeof runAmqs>["metrics"] };
+  watchlist: WatchItem[];
   data_quality?: {
     yahoo_ok: number;
     yahoo_fail: number;
@@ -111,8 +121,28 @@ export function computeSignals(
     });
   }
 
+  // 워치리스트: 빅테크+AI반도체+AI인프라에 AMQS 스코어 적용 → 종목별 BUY/SELL/HOLD (한눈에 리스트, #4)
+  const wlInputs = WATCHLIST_TICKERS.filter((t) => px[t]).map((t) => ({ ticker: t, closes: px[t].values }));
+  const wl = runAmqs(wlInputs, { qqqCloses: px["QQQ"]?.values, vixCloses: px["^VIX"]?.values });
+  const watchlist: WatchItem[] = [];
+  for (const m of wl.metrics) {
+    const s = amqsToSignal(m.signal);
+    if (s === null) continue;
+    const sym = SYM_BY_TICKER[m.ticker];
+    const score = pyRound(m.totalScore100, 1);
+    watchlist.push({ ticker: m.ticker, ko: sym?.ko ?? m.ticker, group: sym?.g ?? "nasdaq", signal: s, score });
+    rows.push({
+      date: today,
+      strategy: "WATCHLIST",
+      ticker: m.ticker,
+      signal: s,
+      score,
+      detail_json: JSON.stringify({ amqs_signal: m.signal, group: sym?.g, ko: sym?.ko }),
+    });
+  }
+
   return {
-    payload: { date: today, updated_at: null, ards, amqs: { regime: amqs.regime, metrics: amqs.metrics } },
+    payload: { date: today, updated_at: null, ards, amqs: { regime: amqs.regime, metrics: amqs.metrics }, watchlist },
     rows,
     newState: ards.state,
   };

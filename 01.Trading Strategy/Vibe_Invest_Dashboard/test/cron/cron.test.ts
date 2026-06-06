@@ -149,6 +149,20 @@ describe("computeSignals — 엔진 배선 (골든 데이터 기반)", () => {
       expect(JSON.parse(r.detail_json).regime).toBe(res.payload.amqs.regime.label);
     }
   });
+
+  it("워치리스트(#4): 빅테크+AI 종목 매수/매도 + 그룹 + 한글명", () => {
+    const wl = res.payload.watchlist;
+    expect(wl.length).toBeGreaterThan(0);
+    for (const w of wl) {
+      expect(["BUY", "SELL", "HOLD"]).toContain(w.signal);
+      expect(["bigtech", "ai_semi", "ai_infra", "nasdaq"]).toContain(w.group);
+      expect(typeof w.ko).toBe("string");
+    }
+    // D1 WATCHLIST 행도 생성
+    expect(res.rows.some((r) => r.strategy === "WATCHLIST")).toBe(true);
+    // 빅테크(예: AAPL) 포함
+    expect(wl.some((w) => w.group === "bigtech")).toBe(true);
+  });
 });
 
 function fakeR2(): R2Like & { _map: Map<string, string> } {

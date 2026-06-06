@@ -32,8 +32,8 @@ async function getJSON<T>(path: string, init?: RequestInit): Promise<Envelope<T>
 // i18n (섹션 제목 위주, 뉴스는 KO 고정)
 // ---------------------------------------------------------------------------
 const I18N: Record<string, Record<string, string>> = {
-  ko: { market: "시장 상황", gainers: "나스닥 급등 TOP 10", losers: "나스닥 급락 TOP 10", news: "주요 경제 뉴스 요약", rankings: "인기 검색 TOP 5", stats: "사이트 통계" },
-  en: { market: "Market", gainers: "Top Gainers", losers: "Top Losers", news: "Market News", rankings: "Top Searches", stats: "Site Stats" },
+  ko: { market: "시장 상황", watch: "주요 종목 — 빅테크 · AI · AI 인프라", gainers: "나스닥 급등 TOP 10", losers: "나스닥 급락 TOP 10", news: "주요 경제 뉴스 요약", rankings: "인기 검색 TOP 5", stats: "사이트 통계" },
+  en: { market: "Market", watch: "Watchlist — Big Tech · AI · AI Infra", gainers: "Top Gainers", losers: "Top Losers", news: "Market News", rankings: "Top Searches", stats: "Site Stats" },
 };
 let lang: "ko" | "en" = "ko";
 function applyLang() {
@@ -144,9 +144,41 @@ interface Verdict {
   evidence: { trend_broken: boolean; breadth_above_200dma: number; tape_drawdown: number };
 }
 interface AmqsMetric { ticker: string; signal: string; totalScore100: number; subtheme?: string; selected?: boolean; }
+interface WatchItem { ticker: string; ko: string; group: string; signal: string; score: number; }
 interface DashData {
   ards?: { verdict: Verdict };
   amqs?: { regime: { label: string }; metrics: AmqsMetric[] };
+  watchlist?: WatchItem[];
+}
+
+const WL_GROUP_KR: Record<string, string> = { bigtech: "빅테크", ai_semi: "AI 반도체", ai_infra: "AI 인프라" };
+function renderWatchlist(items: WatchItem[] | undefined) {
+  const root = $("watchlist");
+  if (!items || items.length === 0) {
+    root.innerHTML = '<div class="sub" style="color:var(--text-dim);padding:8px 0">데이터 준비 중 — 일1회 갱신.</div>';
+    return;
+  }
+  const order = ["bigtech", "ai_semi", "ai_infra"];
+  const byG: Record<string, WatchItem[]> = {};
+  for (const w of items) (byG[w.group] = byG[w.group] ?? []).push(w);
+  root.innerHTML = order
+    .filter((g) => byG[g]?.length)
+    .map(
+      (g) => `<div class="wl-group">
+        <div class="wl-gh">${WL_GROUP_KR[g] ?? g}</div>
+        <div class="wl-items">${byG[g]
+          .sort((a, b) => b.score - a.score)
+          .map(
+            (w) => `<div class="wl-item" data-tk="${esc(w.ticker)}">
+              <span class="tk">${esc(w.ticker)}</span>
+              <span class="ko">${esc(w.ko)}</span>
+              ${badge(w.signal)}
+            </div>`,
+          )
+          .join("")}</div>
+      </div>`,
+    )
+    .join("");
 }
 
 function renderStrategies(d: DashData | null) {
@@ -349,7 +381,9 @@ async function doSearch(q: string) {
 async function loadAll() {
   let updated: string | null = null;
   const tasks: Array<Promise<void>> = [
-    getJSON<DashData>("/api/dashboard").then((r) => { renderStrategies(r.data); updated = r.updated_at ?? updated; }).catch(() => renderStrategies(null)),
+    getJSON<DashData>("/api/dashboard")
+      .then((r) => { renderStrategies(r.data); renderWatchlist(r.data?.watchlist); updated = r.updated_at ?? updated; })
+      .catch(() => { renderStrategies(null); renderWatchlist(undefined); }),
     getJSON<MarketData>("/api/market").then((r) => { renderMarket(r.data); updated = r.updated_at ?? updated; }).catch(() => renderMarket(null)),
     getJSON<{ market_summary: { summary_ko: string } | null; items: NewsItem[] }>("/api/news?limit=12")
       .then((r) => renderNews(r.data.market_summary, r.data.items ?? [])).catch(() => renderNews(null, [])),

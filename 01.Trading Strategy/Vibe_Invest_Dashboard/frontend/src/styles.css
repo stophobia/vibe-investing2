@@ -394,6 +394,53 @@ body {
   color: #fff;
 }
 
+/* [C-2] 주요 종목 워치리스트 */
+.watchlist {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.wl-gh {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+.wl-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+.wl-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.wl-item:hover {
+  border-color: var(--accent);
+}
+.wl-item .tk {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 13px;
+  min-width: 46px;
+}
+.wl-item .ko {
+  color: var(--text-dim);
+  font-size: 12px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* [D]/[E] 급등락 */
 .movers {
   display: flex;
