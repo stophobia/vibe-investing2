@@ -12,7 +12,7 @@ crons = ["*/10 * * * *", "30 21 * * 1-5"]
 [[d1_databases]]
 binding = "DB"
 database_name = "vibe-investing-db"
-database_id = "REPLACE_AFTER_CREATE"
+database_id = "338999be-7e2c-4b0b-813b-0c3344fa103e"
 
 [[r2_buckets]]
 binding = "SNAPSHOTS"
