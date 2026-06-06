@@ -225,6 +225,6 @@ movers/검색 결과 패널용으로 한정 권장.) — ⚠️ 확정 필요.
 ---
 
 ## 6. 요약 — 전략별 한 줄 (1차 = ARDS·AMQS)
-- **ARDS** ✅: 시장 국면 1개 판정 → QQQ 대표행 + 방어모드 플래그. 거시(FRED)+가격+금리 2축.
-- **AMQS** ✅: AI인프라 ~19종 100점 스코어 → Top-N 종목 시그널 + 국면필터.
+- **ARDS** ✅ 포팅완료(`shared/strategy/ards/`, Python 골든 일치): 시장 국면 1개 판정 → QQQ 대표행 + 방어모드 플래그. 거시(FRED)+가격+금리 2축.
+- **AMQS** ✅ 포팅완료(`shared/strategy/amqs.ts`, Python 골든 일치): AI인프라 ~19종 100점 스코어 → Top-N 종목 시그널 + 국면필터.
 - **MU_Hynix** ⏸: MU↔하이닉스 페어(리드래그+코인티그레이션). **1차 제외** — KRX 소스/statsmodels 난점으로 Phase 2.

@@ -130,3 +130,25 @@ export function lin(x: number, lo: number, hi: number): number {
   if (hi === lo) return 50.0;
   return clip(((x - lo) / (hi - lo)) * 100.0, 0, 100);
 }
+
+/**
+ * Python 내장 round(x, nd) 재현 — 동률은 짝수로(banker's rounding).
+ * ARDS 는 지표를 반올림한 뒤 그 값으로 점수를 계산하므로 반올림 방식을 일치시켜야 한다.
+ * 이진 부동소수 표현은 양쪽 언어가 동일하므로 *10^nd 후 정수화로 Python 과 같은 결과를 낸다.
+ */
+export function pyRound(x: number, nd = 0): number {
+  if (!Number.isFinite(x)) return x;
+  const m = 10 ** nd;
+  const y = x * m;
+  const floor = Math.floor(y);
+  const frac = y - floor;
+  let r: number;
+  if (frac === 0.5) {
+    // 정확히 절반일 때만 동률 → 짝수(banker's). 근사 epsilon 을 쓰면
+    // 1.3499999998 같은 비동률 값을 거짓 동률로 처리해 0.1 오차가 난다.
+    r = floor % 2 === 0 ? floor : floor + 1;
+  } else {
+    r = Math.round(y); // 비동률 → 최근접
+  }
+  return r / m;
+}
