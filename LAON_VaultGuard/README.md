@@ -4,6 +4,18 @@
 >
 > 개발자 PC와 팀 환경에서 Git 레포지토리를 정기적으로 감시해 AWS, Azure, GCP, KT Cloud, Naver Cloud 등 클라우드 프라이빗 키가 노출되지 않도록 사전 차단하는 크로스플랫폼 보안 감사 도구.
 
+## 왜 LAON VaultGuard인가
+
+**2026년 6월, Tving의 GitHub 레포에 AWS 액세스 토큰이 하드코딩된 채 공개된 사건**은 단일 실수가 전체 인프라를 위험에 빠뜨릴 수 있음을 다시 한번 보여줬습니다. `gitleaks`, `trufflehog` 같은 정규식 기반 스캐너는 빠르지만 문맥을 이해하지 못합니다. 반면 LLM은 변수명이 평범하거나 조립된 형태의 시크릿도 "의미"로 탐지할 수 있습니다.
+
+하지만 **단일 LLM에만 의존하는 것은 또 다른 단일 장애점**입니다. 모델마다 판단 편향이 있고, API 장애나 할당량 초과 시 탐지 공백이 발생합니다. LAON VaultGuard는 **여러 LLM을 동시에 교차 검증**하는 구조로 설계되었습니다:
+
+- **각 LLM은 서로 다른 보안 페르소나를 형성** — Claude(규율 기반), DeepSeek(고성능·저비용), GPT(체계적), MiniMax(경량·빠름)
+- **다수결 모드**로 오탐을 줄이고, **순차 fallback**으로 단일 LLM 장애에도 스캔이 중단되지 않음
+- [Gitleaks](https://github.com/gitleaks/gitleaks) (pre-commit) → **LAON VaultGuard** (정기 감사) → [TruffleHog](https://github.com/trufflesecurity/trufflehog) (CI) → GitHub Secret Scanning (push 후) 4단계 방어선의 핵심 축
+
+정규식은 속도를, LLM은 문맥을 담당합니다. **둘을 함께 쓸 때 진짜 안정성이 확보됩니다.**
+
 ## 핵심 기능
 
 - **정기 레포 감시** — GitHub, GitLab, 로컬 레포를 cron 기반 스케줄러로 주기적 스캔
