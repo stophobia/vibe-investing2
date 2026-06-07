@@ -204,6 +204,41 @@ loadStatus();
 loadFindings();
 loadRepos();
 loadOAuthStatus();
+loadAlertConfig();
+
+// ── Alert Config ──
+async function loadAlertConfig() {
+  try {
+    const res = await fetch(`${API}/api/alerts/config`);
+    const data = await res.json();
+    document.getElementById('ch-slack').checked = data.slack;
+    document.getElementById('ch-telegram').checked = data.telegram;
+    document.getElementById('ch-email').checked = data.email;
+    document.getElementById('report-freq').value = data.frequency;
+  } catch (err) { console.error(err); }
+}
+
+async function saveAlertConfig() {
+  const config = {
+    slack: document.getElementById('ch-slack').checked,
+    telegram: document.getElementById('ch-telegram').checked,
+    email: document.getElementById('ch-email').checked,
+    frequency: document.getElementById('report-freq').value,
+  };
+  try {
+    await fetch(`${API}/api/alerts/config`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    });
+  } catch (err) { console.error(err); }
+}
+
+function toggleAlerts() {
+  const panel = document.getElementById('alert-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if (panel.style.display === 'block') loadAlertConfig();
+}
 
 // ── GitHub OAuth ──
 async function loadOAuthStatus() {

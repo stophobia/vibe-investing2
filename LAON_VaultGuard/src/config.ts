@@ -1,6 +1,7 @@
 // config.ts — environment variable loader with defaults
 
 import 'dotenv/config';
+import { hostname } from 'node:os';
 
 export const config = {
   port: parseInt(process.env.PORT || '3101', 10),
@@ -68,6 +69,8 @@ export const config = {
   },
 
   isMacOS: process.platform === 'darwin',
+  deviceName: process.env.DEVICE_NAME || hostname(),
+  reportSchedule: (process.env.REPORT_SCHEDULE || 'daily') as 'daily' | 'weekly' | 'off',
 };
 
 // validate: at least one LLM key

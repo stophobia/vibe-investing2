@@ -186,3 +186,33 @@ export function logAudit(
   });
   fs.appendFileSync(file, entry + '\n', 'utf-8');
 }
+
+// ── Alert Config ──
+
+interface AlertConfig {
+  slack: boolean;
+  telegram: boolean;
+  email: boolean;
+  frequency: 'daily' | 'weekly' | 'off';
+}
+
+const ALERT_CFG_FILE = path.join(DATA_DIR, 'alert_config.json');
+
+const DEFAULT_ALERT_CONFIG: AlertConfig = {
+  slack: true,
+  telegram: true,
+  email: true,
+  frequency: config.reportSchedule,
+};
+
+export function getAlertConfig(): AlertConfig {
+  return readJson<AlertConfig>(ALERT_CFG_FILE, DEFAULT_ALERT_CONFIG);
+}
+
+export function updateAlertConfig(partial: Partial<AlertConfig>): AlertConfig {
+  const current = getAlertConfig();
+  const updated = { ...current, ...partial };
+  writeJson(ALERT_CFG_FILE, updated);
+  logAudit('alert_config_updated', 'info', 'Alert configuration updated', { config: updated });
+  return updated;
+}

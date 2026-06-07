@@ -149,9 +149,33 @@ header h1 { font-size: 20px; color: var(--green); }
   <div style="display:flex;gap:8px">
     <span id="github-status" style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px"></span>
     <button class="btn" id="github-btn" onclick="toggleGithub()" style="display:none">🔗 GitHub</button>
+    <button class="btn" onclick="toggleAlerts()">🔔 알람 설정</button>
     <button class="btn primary" id="scan-btn" onclick="triggerScan()">🔄 지금 스캔</button>
   </div>
 </header>
+
+<div id="alert-panel" style="display:none;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:20px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h3 style="font-size:14px">🔔 알람 채널 설정</h3>
+    <button class="btn" onclick="document.getElementById('alert-panel').style.display='none'">닫기</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+    <label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg);border-radius:6px;cursor:pointer">
+      <input type="checkbox" id="ch-slack" onchange="saveAlertConfig()"> <span>💬 Slack</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg);border-radius:6px;cursor:pointer">
+      <input type="checkbox" id="ch-telegram" onchange="saveAlertConfig()"> <span>📱 Telegram</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg);border-radius:6px;cursor:pointer">
+      <input type="checkbox" id="ch-email" onchange="saveAlertConfig()"> <span>📧 Email</span>
+      <select id="report-freq" onchange="saveAlertConfig()" style="margin-left:auto;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);font-size:12px">
+        <option value="daily">일간</option>
+        <option value="weekly">주간</option>
+        <option value="off">끄기</option>
+      </select>
+    </label>
+  </div>
+</div>
 
 <div id="github-panel" style="display:none;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:20px">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">

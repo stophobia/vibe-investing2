@@ -158,7 +158,7 @@ Cloud targets: AWS, Azure, GCP, **KT Cloud**, **Naver Cloud Platform (NCP)**
 1. **Web Dashboard** ✅ — local server REST API + real-time SSE
 2. **Telegram Bot** ✅ — instant alerts to personal/team chats
 3. **Slack** ✅ — webhook-based channel notifications (Block Kit)
-4. **Email** — daily/weekly summary reports
+4. **Email** ✅ — nodemailer HTML reports (realtime/daily/weekly + device name)
 
 ## Roadmap
 
@@ -169,7 +169,6 @@ Cloud targets: AWS, Azure, GCP, **KT Cloud**, **Naver Cloud Platform (NCP)**
 - [x] Web dashboard (REST API + UI + SSE)
 - [x] CLI mode (`npx laon-vaultguard scan`)
 - [x] Telegram alerts
-- [ ] SQLite migration
 - [x] Telegram alerts
 - [x] Slack alerts (Block Kit)
 - [ ] Email reports

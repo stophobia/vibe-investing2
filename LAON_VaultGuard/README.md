@@ -56,7 +56,7 @@ LLM Harness (멀티 LLM — 병렬 or 순차 분석)
   ↓
 Result Aggregation (다수결/합의 기반 판정)
   ↓
-SQLite Audit DB + Alert Engine (Slack · Telegram · Email · Web)
+File Storage (JSON) + Alert Engine (Slack · Telegram · Email · Web)
   ↓
 Dashboard (REST API + 정적 프론트)
 ```
@@ -139,13 +139,13 @@ LAON_VaultGuard/
 1. **웹 대시보드** ✅ — 로컬 서버 REST API + 실시간 SSE
 2. **Telegram Bot** ✅ — 개인/팀 채널로 탐지 알림
 3. **Slack** ✅ — 웹훅 기반 채널 알림 (Block Kit)
-4. **이메일** — 일일/주간 요약 리포트
+4. **이메일** ✅ — nodemailer HTML 리포트 (실시간/일간/주간 선택 + 디바이스명)
 
-## 데이터베이스
+## 저장소
 
-SQLite (`data/vaultguard.db`) — 제로 설정, 파일 기반.
+파일 기반 JSON (`data/`) — 제로 설정, 제로 의존성.
 
-주요 테이블: `repositories`, `scan_runs`, `findings`, `alert_config`, `audit_log`
+`repos.json` · `findings.json` · `scans/` · `logs/` · `alert_config.json`
 → 상세: [docs/Database.md](docs/Database.md)
 
 ## 로드맵
@@ -161,9 +161,9 @@ SQLite (`data/vaultguard.db`) — 제로 설정, 파일 기반.
 - [ ] 웹 대시보드 (REST API + UI)
 - [x] Telegram 봇 알람
 - [x] Slack 알람 (Block Kit)
-- [ ] 이메일 리포트
-- [ ] 크로스플랫폼 패키징 (pkg or electron)
-- [ ] GitHub App / GitLab App 연동 (OAuth)
+- [x] 이메일 리포트 (nodemailer)
+- [x] GitHub 원격 레포 + OAuth
+- [ ] 크로스플랫폼 패키징 (Linux, Windows)
 - [ ] VSCode 확장
 
 ## 라이선스

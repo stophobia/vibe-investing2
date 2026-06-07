@@ -7,6 +7,8 @@ import {
   listFindings, getFinding, acknowledgeFinding,
   countOpenFindings, getLatestScan, getScanCount,
 } from '../db.js';
+import { getAlertConfig, updateAlertConfig } from '../db.js';
+import { rescheduleReport } from '../scheduler.js';
 import { scanAllRepos } from '../scheduler.js';
 import { sseClientCount, emitSse } from '../sse.js';
 import { config } from '../config.js';
@@ -204,6 +206,18 @@ apiRouter.get('/api/github/repos', async (_req, res) => {
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
+});
+
+// ── Alert Config ──
+
+apiRouter.get('/api/alerts/config', (_req, res) => {
+  res.json(getAlertConfig());
+});
+
+apiRouter.put('/api/alerts/config', (req, res) => {
+  const cfg = updateAlertConfig(req.body);
+  if (req.body.frequency) rescheduleReport(req.body.frequency);
+  res.json(cfg);
 });
 
 // ── Dashboard ──
