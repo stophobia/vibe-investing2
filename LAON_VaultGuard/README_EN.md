@@ -1,5 +1,9 @@
 # LAON VaultGuard
 
+[![npm version](https://img.shields.io/npm/v/laon-vaultguard)](https://www.npmjs.com/package/laon-vaultguard)
+[![npm downloads](https://img.shields.io/npm/dt/laon-vaultguard)](https://www.npmjs.com/package/laon-vaultguard)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > **LLM-based Automated Observer for Non-public Keys**
 >
 > A cross-platform security auditing platform that periodically monitors Git repositories on developer machines and team environments to prevent cloud private keys (AWS, Azure, GCP, KT Cloud, Naver Cloud) from being exposed.
@@ -70,6 +74,17 @@ npm run dev                           # http://localhost:3101/dashboard
 ![Dashboard screenshot](public/dashboard.png)
 
 ## Quick Start
+
+### npm (recommended)
+
+```bash
+npx create-laon-vaultguard    # Interactive setup wizard (KO/EN/ZH/JA)
+npx laon-vaultguard scan .    # Scan current directory
+```
+
+[npm package](https://www.npmjs.com/package/laon-vaultguard) • `npm install -g laon-vaultguard`
+
+### From Source
 
 ```bash
 cd LAON_VaultGuard
@@ -161,14 +176,19 @@ Dashboard (REST API + static frontend)
 ## Technology Stack
 
 | Layer | Technology |
-|---|---|
+|-------|------------|
 | Runtime | Node.js ≥18, TypeScript |
 | Web framework | Express.js |
-| Storage | JSON file (`data/`) — sufficient for local use, no DB needed |
+| Storage | **SQLite** (WAL, ACID) / JSON (legacy) — configurable |
 | Git integration | `simple-git`, `@octokit/rest` (GitHub) |
 | Scheduler | `node-cron` |
-| LLM | OpenAI SDK (ChatGPT, DeepSeek, MiniMax, Mimo — OpenAI-compatible API) |
-| Alerts | Slack Webhook, Telegram Bot API, Nodemailer |
+| LLM | OpenAI SDK (ChatGPT, DeepSeek, Claude, Ollama — OpenAI-compatible API) |
+| Security | Differential Privacy (14 secret masking rules) |
+| Alerts | Slack Webhook, Telegram Bot API, Nodemailer, Discord, Teams |
+| Metrics | Prometheus `/metrics` (counters, gauges, histograms) |
+| Export | SARIF v2.1.0 (GitHub Code Scanning compatible) |
+| Deploy | Docker, docker-compose, npm (`npx create-laon-vaultguard`) |
+| Frontend | Vanilla HTML/JS + Server-Sent Events (real-time) |
 | Frontend | Vanilla HTML/JS + Server-Sent Events (real-time) |
 
 ## Directory Structure

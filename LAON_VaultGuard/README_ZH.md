@@ -1,5 +1,8 @@
 # LAON VaultGuard ／ 澜安 VaultGuard
 
+[![npm version](https://img.shields.io/npm/v/laon-vaultguard)](https://www.npmjs.com/package/laon-vaultguard)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > **LLM-based Automated Observer for Non-public Keys**
 >
 > 跨平台安全审计工具，定期监控开发者和团队环境中的 Git 仓库，防止云端私钥（AWS、Azure、GCP、KT Cloud、Naver Cloud）泄露。
@@ -89,12 +92,11 @@ npm install && npm run compile
 ## 快速开始
 
 ```bash
-git clone https://github.com/gameworkerkim/vibe-investing.git
-cd vibe-investing/LAON_VaultGuard
-npm install
-npm run setup
-npm run dev
+npx create-laon-vaultguard    # 交互式安装向导 (한/EN/中/日)
+npx laon-vaultguard scan .    # 扫描当前目录
 ```
+
+[npm 包](https://www.npmjs.com/package/laon-vaultguard)
 
 ## CLI 扫描
 

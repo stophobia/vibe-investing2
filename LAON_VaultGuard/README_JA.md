@@ -1,5 +1,8 @@
 # LAON VaultGuard
 
+[![npm version](https://img.shields.io/npm/v/laon-vaultguard)](https://www.npmjs.com/package/laon-vaultguard)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > **LLM-based Automated Observer for Non-public Keys**
 >
 > 開発者PCやチーム環境でGitリポジトリを定期的に監視し、AWS、Azure、GCP、KT Cloud、Naver Cloud のクラウドプライベートキーが露出するのを未然に防ぐクロスプラットフォームセキュリティ監査ツール。
@@ -86,12 +89,11 @@ npm install && npm run compile
 ## クイックスタート
 
 ```bash
-git clone https://github.com/gameworkerkim/vibe-investing.git
-cd vibe-investing/LAON_VaultGuard
-npm install
-npm run setup
-npm run dev
+npx create-laon-vaultguard    # 対話型セットアップ (한/EN/中/日)
+npx laon-vaultguard scan .    # カレントディレクトリをスキャン
 ```
+
+[npm パッケージ](https://www.npmjs.com/package/laon-vaultguard)
 
 ## CLI スキャン
 
