@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { platform } from 'node:os';
+import { t, setLocale, type Locale } from './i18n.js';
 
 const ENV_PATH = resolve(import.meta.dirname || '.', '../.env');
 const ENV_EXAMPLE = resolve(import.meta.dirname || '.', '../.env.example');
@@ -209,38 +210,44 @@ const OLLAMA_MODELS: OllamaModel[] = [
 async function main() {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
 
-  console.log('\n  LAON VaultGuard — Setup\n');
-  console.log('  This wizard configures your .env with storage engine, LLM providers, and API keys.\n');
+  // ── Language selection ──
+  console.log('\n  🌐 Language / 언어 / 语言 / 言語');
+  console.log('  [1] 한국어  [2] English  [3] 中文  [4] 日本語');
+  const langChoice = await question(rl, 'Language [1]: ');
+  const langMap: Record<string, Locale> = { '1': 'ko', '2': 'en', '3': 'zh', '4': 'ja' };
+  setLocale(langMap[langChoice] || 'ko');
+
+  console.log(`\n  ${t('title')}\n`);
+  console.log(`  ${t('welcome')}\n`);
 
   let lines = readEnvLines(ENV_PATH);
 
   // ── Storage engine ──
-  console.log('─── Storage Engine ───');
-  console.log('  [1] SQLite (recommended) — ACID transactions, concurrent-safe, WAL mode');
-  console.log('  [2] JSON (legacy)       — simple file-based, no dependencies\n');
-  const engineChoice = await question(rl, 'Storage engine [1]: ');
+  console.log(`─── ${t('storage_title')} ───`);
+  console.log(`  [1] ${t('storage_sqlite')}`);
+  console.log(`  [2] ${t('storage_json')}\n`);
+  const engineChoice = await question(rl, `${t('storage_prompt')}`);
   const engineMap: Record<string, string> = { '1': 'sqlite', '2': 'json', 'sqlite': 'sqlite', 'json': 'json' };
   const engine = engineMap[engineChoice] || 'sqlite';
   lines = setKey(lines, 'STORAGE_ENGINE', engine);
-  console.log(`  -> ${engine === 'sqlite' ? 'SQLite (ACID, WAL mode)' : 'JSON (legacy)'}\n`);
+  console.log(`  -> ${engine === 'sqlite' ? t('storage_chosen_sqlite') : t('storage_chosen_json')}\n`);
 
   // ── LLM provider selection (multi-select) ──
-  console.log('─── LLM Providers ───');
-  console.log('  Select providers (comma-separated, e.g. 1,2,4).');
-  console.log('  DeepSeek is recommended for best price-performance.\n');
-  console.log('  [1] DeepSeek    (recommended) — $0.14/M tokens, fastest');
-  console.log('  [2] Claude                    — highest accuracy, $3/$15 per M');
-  console.log('  [3] ChatGPT                   — well-rounded, $2.50/$10 per M');
-  console.log('  [4] Ollama                    — free, local, offline (no API key)\n');
-  const providerChoice = await question(rl, 'Providers [1,4]: ');
+  console.log(`─── ${t('llm_title')} ───`);
+  console.log(`  ${t('llm_multi_intro')}\n`);
+  console.log(`  [1] DeepSeek    (recommended) — ${t('llm_deepseek_desc')}`);
+  console.log(`  [2] Claude                    — ${t('llm_claude_desc')}`);
+  console.log(`  [3] ChatGPT                   — ${t('llm_chatgpt_desc')}`);
+  console.log(`  [4] Ollama                    — ${t('llm_ollama_desc')}\n`);
+  const providerChoice = await question(rl, `${t('llm_prompt')}`);
   const chosen = (providerChoice || '1,4').split(',').map(s => s.trim()).filter(Boolean);
   const wantOllama = chosen.includes('4');
   const onlineChoices = LLM_OPTIONS.filter(o => chosen.includes(String(LLM_OPTIONS.indexOf(o) + 1)));
 
   // ── API key input (only for selected online providers) ──
   if (onlineChoices.length > 0) {
-    console.log('\nEnter API keys. Input is masked (***). Press Enter to skip.\n');
-    console.log('Key registration URLs:');
+    console.log(`\n${t('api_keys_title')}\n`);
+    console.log(`${t('api_keys_reg_url')}`);
     for (const opt of onlineChoices) {
       console.log(`  ${opt.label}: ${opt.getKeyUrl}`);
     }
@@ -253,9 +260,9 @@ async function main() {
     if (key) {
       lines = setKey(lines, opt.envKey, key);
       enteredKeys[opt.id] = key;
-      console.log('  -> key saved');
+      console.log(`  ${t('api_key_saved')}`);
     } else {
-      console.log('  -> skipped');
+      console.log(`  ${t('api_key_skipped')}`);
     }
   }
 
@@ -420,18 +427,19 @@ async function main() {
   // ── Write config ──
   writeEnv(lines);
 
+  const modeLabel = providers.length >= 2 ? t('summary_mode_parallel') : t('summary_mode_sequential');
   console.log('\n──────────────────────────────────────────');
-  console.log(`  Config saved to .env`);
-  console.log(`  Storage:  ${engine === 'sqlite' ? 'SQLite' : 'JSON'}`);
-  console.log(`  LLM:     ${providers.join(', ') || 'none'}`);
-  console.log(`  Mode:     ${providers.length >= 2 ? 'parallel (cross-validation)' : 'sequential'}`);
+  console.log(`  ${t('summary_title')}: .env`);
+  console.log(`  ${t('summary_storage')}:  ${engine === 'sqlite' ? 'SQLite' : 'JSON'}`);
+  console.log(`  ${t('summary_llm')}:     ${providers.join(', ') || 'none'}`);
+  console.log(`  ${t('summary_mode')}:     ${modeLabel}`);
   if (wantOllama && !ollamaReady) {
-    console.log('  ⚠ Ollama not ready. Install and re-run setup, or edit .env manually.');
+    console.log(`  ${t('summary_ollama_warn')}`);
   }
   console.log('──────────────────────────────────────────');
-  console.log('  Start:  npm run dev');
-  console.log('  Scan:   npm run scan -- <repo-path>');
-  console.log('  Re-run: npm run setup\n');
+  console.log(`  ${t('summary_start')}`);
+  console.log(`  ${t('summary_scan')}`);
+  console.log(`  ${t('summary_rerun')}\n`);
 
   rl.close();
 }
