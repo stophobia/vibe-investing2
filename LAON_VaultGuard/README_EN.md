@@ -103,6 +103,39 @@ npm run dev
 
 → Details: [docs/Ollama.md](docs/Ollama.md)
 
+## VS Code Extension
+
+### Manual Install (Developer Mode)
+
+```bash
+cd LAON_VaultGuard/vscode-extension
+npm install && npm run compile
+```
+
+In VS Code:
+1. `Cmd+Shift+P` → `Developer: Install Extension from Location...`
+2. Choose `LAON_VaultGuard/vscode-extension` folder
+3. Reload VS Code
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Real-time Highlighting** | 13 secret patterns auto-detected, dashed underline |
+| **Problems Panel** | Detected secrets shown with masked fingerprints (`AKIA****7Q`) |
+| **Status Bar** | `LAON: clean` / `LAON: 3` real-time indicator |
+| **Deep LLM Scan** | `Cmd+Shift+P` → `LAON VaultGuard: Scan Workspace` |
+| **Right-click Menu** | Context menu → `Scan Current File for Secrets` |
+
+### Settings
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `laon-vaultguard.enabled` | `true` | Enable/disable extension |
+| `laon-vaultguard.scanOnSave` | `true` | Auto-scan on file save |
+| `laon-vaultguard.scanOnOpen` | `false` | Scan when file opens |
+| `laon-vaultguard.severity` | `medium` | Minimum severity (critical/high/medium/all) |
+
 ## Architecture Overview
 
 ```
@@ -270,10 +303,10 @@ Cloud targets: AWS, Azure, GCP, **KT Cloud**, **Naver Cloud Platform (NCP)**
 - [x] **Differential Privacy** — 14 secret masking rules before LLM transmission (`DP_ENABLED=true`)
 - [x] **Prometheus metrics** — `/metrics` endpoint (scans, findings, tokens, latency histograms)
 - [x] **Docker image** — multi-stage Alpine, docker-compose (app + Ollama profile)
+- [x] **VS Code extension** — real-time highlighting, Problems panel, save-scan
 
 ### v0.6 (Planned)
 
-- [ ] VS Code extension plugin
 - [ ] False positive feedback loop (few-shot prompt improvement)
 - [ ] Fine-tuned model evaluation pipeline
 - [ ] Pre-commit hook integration (`npx laon-vaultguard hook install`)

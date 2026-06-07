@@ -27,6 +27,120 @@
 - **웹 대시보드** — 같은 네트워크의 팀이 함께 모니터링 가능한 로컬 웹 UI
 - **멀티 알람** — Slack, Telegram, 이메일, 대시보드로 탐지 결과 실시간 통보
 - **크로스플랫폼** — macOS, Linux, Windows (WSL)
+- **v0.5 신규**: SQLite WAL 스토리지, Differential Privacy 전처리, SARIF export, Prometheus `/metrics`, Docker 지원
+
+## 사용 시나리오
+
+### 🧑‍💻 개인 개발자 — "내 레포에 실수로 키 올리기 전에"
+
+```bash
+npm run setup        # DeepSeek API 키만 입력 (월 $1 미만)
+npm run dev          # http://localhost:3101/dashboard
+```
+
+- **DeepSeek 단독**으로 빠르고 저렴하게 (토큰당 $0.14/M)
+- 파일 저장 시 VS Code 확장이 실시간 경고
+- Ollama 설치하면 API 비용 0원, 완전 로컬
+
+### 🏢 중소기업 / 팀 — "팀 레포 전체 감시 + 알람"
+
+```bash
+# .env 설정
+LLM_PROVIDERS=claude,deepseek,ollama
+LLM_MODE=majority   # 3중 교차검증, 오탐 최소화
+SCAN_CRON=0 */4 * * *   # 4시간마다 자동 스캔
+TELEGRAM_BOT_TOKEN=...
+```
+
+- **다수결 모드** — Claude + DeepSeek + Ollama 3중 검증, 2개 이상 동의 시에만 알람
+- **팀 대시보드** — `HOST=0.0.0.0` 설정 시 같은 네트워크에서 `http://<IP>:3101` 접속
+- **알람 연동** — Slack, Telegram, Email, Discord, Teams 중 선택
+- **Docker 배포** — `docker-compose up -d` 한 줄로 실행 (아래 가이드 참고)
+
+### 🔒 에어갭 / 오프라인 — "인터넷 없는 망분리 환경"
+
+```bash
+brew install ollama              # macOS
+ollama pull deepseek-r1:8b       # 로컬 추론 모델
+ollama pull securereview-7b      # 보안 특화 파인튜닝 (Apple Silicon)
+
+# .env
+LLM_PROVIDERS=ollama
+LLM_MODE=sequential
+STORAGE_ENGINE=sqlite
+```
+
+- **인터넷 완전 차단** — Ollama가 모든 LLM 추론을 로컬에서 처리
+- **소스코드 외부 유출 Zero** — Git grep → Ollama → SQLite, 모든 데이터 머신 내 보존
+- **교차검증** — deepseek-r1(추론) + securereview-7b(보안 도메인) 2중 검증으로 오탐 제어
+- **망분리 규정 준수** — 국방·금융·공공기관 규제 환경에 적합
+
+## Docker 설치
+
+### 기본 실행 (앱만)
+
+```bash
+cd LAON_VaultGuard
+cp .env.example .env        # LLM API 키 설정 필수
+docker-compose up -d        # http://localhost:3101/dashboard
+```
+
+### Ollama 포함 실행 (GPU 가속)
+
+```bash
+docker-compose --profile ollama up -d
+docker-compose exec ollama ollama pull deepseek-r1:8b
+```
+
+### 수동 Docker 빌드
+
+```bash
+docker build -t laon-vaultguard .
+docker run -d -p 3101:3101 \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/.env:/app/.env:ro \
+  --name laon laon-vaultguard
+```
+
+**사전 구성된 값** (Docker 이미지 내):
+- `STORAGE_ENGINE=sqlite` — ACID 트랜잭션, 동시성 안전
+- `DP_ENABLED=true` — LLM 전송 전 시크릿 자동 마스킹
+- `HOST=0.0.0.0` — 컨테이너 외부 접근 허용
+- `HEALTHCHECK` — 30초마다 `/api/status` 체크
+
+## VS Code 확장 설치
+
+### 수동 설치 (개발자 모드)
+
+```bash
+cd LAON_VaultGuard/vscode-extension
+npm install
+npm run compile
+```
+
+VS Code에서:
+1. `Cmd+Shift+P` → `Developer: Install Extension from Location...`
+2. `LAON_VaultGuard/vscode-extension` 폴더 선택
+3. VS Code 재시작
+
+### 기능
+
+| 기능 | 설명 |
+|------|------|
+| **실시간 하이라이트** | 13개 시크릿 패턴 자동 감지, 저장 시 스캔 |
+| **Problems 패널** | 탐지된 시크릿을 마스킹 지문만 노출 (`AKIA****7Q`) |
+| **Status Bar** | `LAON: clean` / `LAON: 3` 실시간 표시 |
+| **Deep LLM Scan** | `Cmd+Shift+P` → `LAON VaultGuard: Scan Workspace` |
+| **우클릭 메뉴** | 파일 컨텍스트 메뉴에서 `Scan Current File for Secrets` |
+
+### 설정
+
+| 설정 키 | 기본값 | 설명 |
+|---------|--------|------|
+| `laon-vaultguard.enabled` | `true` | 확장 활성화/비활성화 |
+| `laon-vaultguard.scanOnSave` | `true` | 파일 저장 시 자동 스캔 |
+| `laon-vaultguard.scanOnOpen` | `false` | 파일 열 때 스캔 |
+| `laon-vaultguard.severity` | `medium` | 최소 심각도 (critical/high/medium/all) |
 
 ### 보안 스캔 확장 (v0.3+)
 
@@ -273,10 +387,10 @@ LAON_VaultGuard/
 - [x] **Differential Privacy** — 14개 룰로 LLM 전송 전 시크릿 마스킹 (`DP_ENABLED=true`)
 - [x] **Prometheus 메트릭** — `/metrics` 엔드포인트 (scans, findings, tokens, latency)
 - [x] **Docker 이미지** — multi-stage Alpine, docker-compose (app + Ollama 프로필)
+- [x] **VS Code 확장** — 실시간 하이라이트, Problems 패널, 저장 시 스캔
 
 ### v0.6 (계획)
 
-- [ ] VS Code 확장 플러그인
 - [ ] 오탐 피드백 루프 (few-shot 프롬프트 개선)
 - [ ] fine-tuned 모델 평가 파이프라인
 - [ ] pre-commit hook 통합 코드 (`npx laon-vaultguard hook install`)
