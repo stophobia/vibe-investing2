@@ -3,7 +3,7 @@
 import { simpleGit, type SimpleGit } from 'simple-git';
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Octokit } from '@octokit/rest';
@@ -154,7 +154,6 @@ export function parseGithubUrl(url: string): [string, string] {
 
 function parseDiff(diffText: string): GitChange[] {
   const changes: GitChange[] = [];
-  const filePattern = /^diff --git a\/(.+) b\/(.+)$/gm;
   const hunkPattern = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
 
   let currentFile: string | null = null;
@@ -178,15 +177,6 @@ function parseDiff(diffText: string): GitChange[] {
   };
 
   for (const line of diffText.split('\n')) {
-    const fileMatch = filePattern.exec(line);
-    if (fileMatch) {
-      // regex is global, need to reset or use different approach
-      flush();
-      // parse file header from previous line
-      continue;
-    }
-
-    // check for file header
     if (line.startsWith('diff --git a/')) {
       flush();
       const m = line.match(/^diff --git a\/(.+) b\/(.+)$/);
@@ -223,10 +213,13 @@ export async function cloneGithubRepo(repo: Repository): Promise<string> {
   if (!token) throw new Error('GitHub token not configured (set GITHUB_TOKEN or connect via OAuth)');
 
   const tmpDir = mkdtempSync(join(tmpdir(), 'laon-'));
-  const cloneUrl = `https://x-access-token:${token}@github.com/${owner}/${name}.git`;
+  const netrcPath = join(tmpDir, '.netrc');
+  writeFileSync(netrcPath, `machine github.com\nlogin x-access-token\npassword ${token}\n`, { mode: 0o600 });
+  const cloneUrl = `https://github.com/${owner}/${name}.git`;
 
   try {
     const git = simpleGit();
+    await git.env('GIT_CONFIG_GLOBAL', netrcPath);
     await git.clone(cloneUrl, tmpDir, ['--depth', '50', '--single-branch', '--branch', repo.branch]);
     return tmpDir;
   } catch (err) {

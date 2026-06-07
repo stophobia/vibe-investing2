@@ -147,7 +147,8 @@ export async function extractCandidates(repoPath: string): Promise<Candidate[]> 
     }
   } catch (err) {
     // git grep returns exit code 1 when no matches — not an error
-    if (err instanceof Error && !(err as Error & { code: number }).code) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (!/exited with code 1/i.test(msg)) {
       throw err;
     }
   }

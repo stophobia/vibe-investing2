@@ -80,7 +80,7 @@ export async function scanRepository(repo: Repository, trigger: 'scheduled' | 'm
     if (config.scan.cacheEnabled) {
       const filtered: Candidate[] = [];
       for (const c of candidates) {
-        const hash = createHash('md5').update(c.snippet + c.filePath).digest('hex');
+        const hash = createHash('sha256').update(c.snippet + c.filePath).digest('hex');
         const cache = loadCache(repo.id, c.filePath);
         if (cache && cache.hash === hash) continue; // unchanged, skip
         filtered.push(c);

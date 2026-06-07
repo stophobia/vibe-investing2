@@ -40,7 +40,7 @@ async function main() {
   }
 
   if (command === 'version' || command === '--version' || command === '-v') {
-    console.log(`LAON VaultGuard v${config.deviceName ? '' : ''}0.2.0`);
+    console.log('LAON VaultGuard v0.4.0');
     process.exit(0);
   }
 

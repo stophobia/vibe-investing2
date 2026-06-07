@@ -100,6 +100,33 @@ function maskSecretInLog(text: string): string {
     .replace(/xox[baprs]-[A-Za-z0-9-]{10,}/g, '[MASKED_SLACK]');
 }
 
+function validateLlmScanResult(v: unknown): v is LlmScanResult {
+  if (!v || typeof v !== 'object') return false;
+  const r = v as Partial<LlmScanResult>;
+  if (!r.scanSummary || typeof r.scanSummary !== 'object') return false;
+  const s = r.scanSummary;
+  if (!Array.isArray(r.findings)) return false;
+  if (typeof s.filesScanned !== 'number') return false;
+  if (typeof s.findingsCount !== 'number') return false;
+  if (!['BLOCK', 'REVIEW', 'PASS'].includes(s.publishRecommendation as string)) return false;
+  for (const f of r.findings) {
+    if (!f || typeof f !== 'object') return false;
+    if (typeof f.file !== 'string') return false;
+    if (typeof f.maskedFingerprint !== 'string') return false;
+    if (typeof f.provider !== 'string') return false;
+  }
+  return true;
+}
+
+function containsCleartextSecret(llmOutput: string, candidates: Candidate[]): boolean {
+  for (const c of candidates) {
+    const snippet = c.snippet.trim();
+    if (snippet.length < 16) continue;
+    if (llmOutput.includes(snippet)) return true;
+  }
+  return false;
+}
+
 async function callSingleLLM(
   provider: ProviderConfig,
   candidates: Candidate[],
@@ -113,11 +140,10 @@ async function callSingleLLM(
 
   const userPrompt = buildUserPrompt(candidates);
   const startTime = Date.now();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), config.scan.timeoutMs);
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), config.scan.timeoutMs);
-
     const response = await client.chat.completions.create({
       model: provider.model,
       temperature: 0,
@@ -147,11 +173,21 @@ async function callSingleLLM(
       logAudit('llm_parse_error', 'error', `Failed to parse LLM response: ${sanitized.slice(0, 200)}`);
       throw new Error('LLM returned invalid JSON');
     }
+
+    if (!validateLlmScanResult(result)) {
+      logAudit('llm_schema_error', 'error', 'LLM response failed schema validation');
+      throw new Error('LLM response failed schema validation');
+    }
+    if (containsCleartextSecret(JSON.stringify(result), candidates)) {
+      logAudit('llm_secret_leak', 'error', 'LLM response contains cleartext secret', { provider: provider.name });
+      throw new Error('LLM response leaked a cleartext secret');
+    }
+
     result.scanSummary.filesScanned = candidates.length;
 
     return { provider: provider.name, result, tokensUsed };
   } catch (err) {
-    clearTimeout(0); // clear any pending timeout
+    clearTimeout(timeoutId);
     const msg = err instanceof Error ? err.message : String(err);
 
     if (msg.includes('aborted') || msg.includes('timeout') || msg.includes('ETIMEDOUT')) {
