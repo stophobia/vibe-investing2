@@ -310,6 +310,61 @@ apiRouter.get('/api/report', (_req, res) => {
   res.send(html);
 });
 
+// ── File viewer ──
+
+import { readFileSync, existsSync, statSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+apiRouter.get('/api/file', (req, res) => {
+  const { repo_id, path: filePath, line } = req.query;
+  if (!repo_id || !filePath) return res.status(400).json({ error: 'repo_id and path required' });
+
+  const repo = getRepo(repo_id as string);
+  if (!repo) return res.status(404).json({ error: 'Repo not found' });
+
+  const fullPath = resolve(repo.pathOrUrl, filePath as string);
+  if (!existsSync(fullPath)) return res.status(404).json({ error: 'File not found' });
+  if (statSync(fullPath).size > 1024 * 100) return res.status(413).json({ error: 'File too large (>100KB)' });
+
+  const content = readFileSync(fullPath, 'utf-8');
+  const targetLine = line ? parseInt(line as string, 10) || 0 : 0;
+  const lines = content.split('\n');
+
+  const from = Math.max(0, targetLine - 8);
+  const to = Math.min(lines.length, targetLine + 7);
+  const snippet = lines.slice(from, to);
+
+  const ext = (filePath as string).split('.').pop() || '';
+  const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>${filePath}</title>
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#c9d1d9;--muted:#8b949e;--accent:#f85149;--green:#3fb950}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Menlo,monospace;background:var(--bg);color:var(--text);padding:16px}
+pre{counter-reset:line ${from};font-size:13px;line-height:1.6;overflow-x:auto}
+pre span{display:block;padding:0 12px;white-space:pre;border-left:3px solid transparent}
+pre span:hover{background:rgba(255,255,255,0.03)}
+pre span::before{counter-increment:line;content:counter(line);display:inline-block;width:40px;text-align:right;margin-right:16px;color:var(--muted);font-size:11px;user-select:none}
+pre span.highlight{background:rgba(248,81,73,0.15);border-left-color:var(--accent)}
+pre span.highlight::before{color:var(--accent)}
+header{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:12px}
+header code{color:var(--accent)}
+</style></head>
+<body>
+<header><span><code>${filePath}</code> · ${repo.name} · ${repo.type}</span><span style="color:var(--muted);font-size:12px">${lines.length} lines</span></header>
+<pre>${snippet.map((l, i) => {
+    const ln = from + i + 1;
+    const cls = targetLine > 0 && ln === targetLine ? 'highlight' : '';
+    const text = l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return `<span class="${cls}" id="L${ln}">${text}</span>`;
+  }).join('\n')}</pre>
+${targetLine > 0 ? `<script>setTimeout(()=>{const el=document.getElementById('L${targetLine}');if(el)el.scrollIntoView({block:'center'})},100)</script>` : ''}
+</body></html>`;
+
+  res.set('Content-Type', 'text/html; charset=utf-8');
+  res.send(html);
+});
+
 // ── Dashboard ──
 
 import path from 'node:path';

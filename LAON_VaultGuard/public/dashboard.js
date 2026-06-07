@@ -392,7 +392,8 @@ function showFindingDetail(id) {
   fetch(API + '/api/findings/' + id).then(r => r.json()).then(f => {
     document.getElementById('modal-title').textContent = '[' + f.severity.toUpperCase() + '] ' + f.provider + ' — ' + (f.secret_type || f.secretType);
     document.getElementById('modal-body').innerHTML =
-      '<p><strong>File:</strong> <code>' + (f.file_path || f.filePath) + (f.line ? ':' + f.line : '') + '</code></p>' +
+      '<p><strong>File:</strong> <code>' + (f.file_path || f.filePath) + (f.line ? ':' + f.line : '') + '</code>' +
+        ' <a href="#" onclick="openFileView(\'' + f.repoId + '\',\'' + (f.file_path || f.filePath) + '\',' + (f.line || 0) + ');return false" style="color:var(--accent);font-size:12px">(view source)</a></p>' +
       '<p><strong>Repo:</strong> ' + (f.repo_name || '-') + '</p>' +
       '<p><strong>Confidence:</strong> ' + f.confidence + '</p>' +
       '<p><strong>Fingerprint:</strong> <code>' + (f.masked_fingerprint || f.maskedFingerprint) + '</code></p>' +
@@ -413,3 +414,9 @@ function closeModal() {
 document.addEventListener('click', function(e) {
   if (e.target.id === 'finding-modal') closeModal();
 });
+
+// File viewer
+function openFileView(repoId, filePath, line) {
+  var url = API + '/api/file?repo_id=' + repoId + '&path=' + encodeURIComponent(filePath) + '&line=' + line;
+  window.open(url, 'file-view', 'width=900,height=600');
+}
