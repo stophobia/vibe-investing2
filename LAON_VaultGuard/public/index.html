@@ -150,6 +150,10 @@ header h1 { font-size: 20px; color: var(--green); }
     <span id="github-status" style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px"></span>
     <button class="btn" id="github-btn" onclick="toggleGithub()" style="display:none">🔗 GitHub</button>
     <button class="btn" onclick="toggleAlerts()">🔔 알람 설정</button>
+    <select id="repo-scan-select" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;max-width:160px" onchange=""><option value="">All repos</option></select>
+    <button class="btn primary" id="scan-btn" onclick="triggerRepoScan()">Scan Now</button>
+    <button class="btn" onclick="exportReport()">Report</button>
+    <button class="btn" onclick="setupAlerts()">Setup Alerts</button>
     <button class="btn" onclick="toggleHistory()">Scan Logs</button>
     <button class="btn primary" id="scan-btn" onclick="triggerScan()">🔄 지금 스캔</button>
   </div>

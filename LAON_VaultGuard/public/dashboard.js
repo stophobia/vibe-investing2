@@ -66,7 +66,7 @@ async function loadFindings() {
         <td style="font-size:12px;color:var(--muted)">${f.repo_name || '-'}</td>
         <td>${f.provider}</td>
         <td>${f.secret_type || f.secretType}</td>
-        <td title="${f.file_path || f.filePath}">${shortenPath(f.file_path || f.filePath)}</td>
+        <td title="${f.file_path || f.filePath} — click to open" style="cursor:pointer;color:var(--medium);text-decoration:underline" onclick="openInEditor('${f.file_path || f.filePath}')">${shortenPath(f.file_path || f.filePath)}</td>
         <td><code>${f.masked_fingerprint || f.maskedFingerprint}</code></td>
         <td style="font-size:12px">${new Date(f.detected_at || f.detectedAt).toLocaleString('ko-KR')}</td>
         <td>
@@ -203,6 +203,7 @@ function shortenPath(filePath) {
 loadStatus();
 loadFindings();
 loadRepos();
+loadRepoScanList();
 loadOAuthStatus();
 loadAlertConfig();
 
@@ -236,6 +237,24 @@ async function saveAlertConfig() {
       body: JSON.stringify(config),
     });
   } catch (err) { console.error(err); }
+}
+
+function exportReport() {
+  window.open(API + '/api/report', '_blank');
+}
+
+function setupAlerts() {
+  alert(
+    'Alert Setup Guide\n\n' +
+    'Slack:   Create Incoming Webhook at api.slack.com/apps\n' +
+    '         Add SLACK_WEBHOOK_URL to .env\n\n' +
+    'Email:   Set EMAIL_HOST/PORT/USER/PASS/TO in .env\n' +
+    '         For Gmail, use App Password (not login)\n\n' +
+    'Teams:   Channel -> Connectors -> Incoming Webhook\n' +
+    'Discord: Server Settings -> Integrations -> Webhooks\n\n' +
+    'Then enable in Alert Settings panel.\n' +
+    'See docs/ for detailed setup guides.'
+  );
 }
 
 function toggleAlerts() {
@@ -274,21 +293,24 @@ function toggleGithub() {
 }
 
 function connectGithub() {
-  window.open(`${API}/api/oauth/github`, 'github-oauth', 'width=600,height=700');
-  // poll for connection
-  let attempts = 0;
-  const poll = setInterval(async () => {
-    try {
-      const res = await fetch(`${API}/api/oauth/status`);
-      const data = await res.json();
-      if (data.connected) {
-        clearInterval(poll);
-        loadOAuthStatus();
-        loadGithubRepos();
+  fetch(`${API}/api/oauth/github`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        alert('GitHub OAuth not configured.\n\n' + data.message + '\n\nSee: ' + data.docs);
+        return;
       }
-      if (++attempts > 60) clearInterval(poll);
-    } catch {}
-  }, 2000);
+      window.open(`${API}/api/oauth/github`, 'github-oauth', 'width=600,height=700');
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        try {
+          const res = await fetch(`${API}/api/oauth/status`);
+          const d = await res.json();
+          if (d.connected) { clearInterval(poll); loadOAuthStatus(); loadGithubRepos(); }
+          if (++attempts > 60) clearInterval(poll);
+        } catch {}
+      }, 2000);
+    });
 }
 
 async function disconnectGithub() {
@@ -330,6 +352,7 @@ async function addGithubRepo(fullName, htmlUrl) {
       }),
     });
     loadRepos();
+loadRepoScanList();
     loadGithubRepos();
   } catch (err) { console.error(err); }
 }

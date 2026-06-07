@@ -3,13 +3,15 @@
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import {
-  listRepos, addRepo, removeRepo,
-  listFindings, getFinding, acknowledgeFinding,
+  listRepos, addRepo, removeRepo, getRepo,
+  listFindings, getFinding, acknowledgeFinding, unacknowledgeFinding, addFindingComment,
   countOpenFindings, getLatestScan, getScanCount, getScanHistory,
 } from '../db.js';
 import { getAlertConfig, updateAlertConfig } from '../db.js';
 import { rescheduleReport } from '../scheduler.js';
 import { scanAllRepos } from '../scheduler.js';
+import { scanRepository } from '../scan-runner.js';
+import { checkGitInstalled } from '../git-monitor.js';
 import { sseClientCount, emitSse } from '../sse.js';
 import { config } from '../config.js';
 import {
@@ -37,7 +39,7 @@ apiRouter.get('/api/health', (_req, res) => {
   res.json({
     status: 'ok',
     uptime: Math.floor(process.uptime()),
-    version: '0.1.0',
+    version: '0.3.0',
     platform: process.platform,
   });
 });
@@ -155,7 +157,13 @@ apiRouter.put('/api/findings/acknowledge/bulk', (req, res) => {
 
 apiRouter.get('/api/oauth/github', (_req, res) => {
   const { clientId, redirectUri } = config.github;
-  if (!clientId) return res.status(500).json({ error: 'GITHUB_CLIENT_ID not configured' });
+  if (!clientId) {
+    return res.status(200).json({
+      error: 'GITHUB_CLIENT_ID not configured',
+      message: 'Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in .env to enable GitHub OAuth.',
+      docs: 'docs/GitHub_OAuth.md',
+    });
+  }
   const scope = 'repo,read:user';
   const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}`;
   res.redirect(url);
@@ -233,6 +241,73 @@ apiRouter.get('/api/scans', (_req, res) => {
     repoUrl: repoMap.get(s.repoId)?.pathOrUrl || '',
   }));
   res.json({ scans: enriched });
+});
+
+// ── Scan specific repo ──
+
+apiRouter.post('/api/scan/repo/:id', async (req, res) => {
+  const repo = getRepo(req.params.id);
+  if (!repo) return res.status(404).json({ error: 'Repo not found' });
+  res.json({ scan_id: randomUUID(), status: 'started', repo: repo.name });
+  scanRepository(repo, 'manual').catch(err => {
+    console.error('[api] Repo scan failed:', err);
+  });
+});
+
+// ── Un-acknowledge ──
+
+apiRouter.put('/api/findings/:id/unacknowledge', (req, res) => {
+  const result = unacknowledgeFinding(req.params.id);
+  if (!result) return res.status(404).json({ error: 'Finding not found' });
+  emitSse('finding:acknowledged', { id: result.id, acknowledged: false });
+  res.json(result);
+});
+
+// ── Add comment ──
+
+apiRouter.put('/api/findings/:id/comment', (req, res) => {
+  const { comment } = req.body;
+  if (!comment) return res.status(400).json({ error: 'comment required' });
+  const result = addFindingComment(req.params.id, comment);
+  if (!result) return res.status(404).json({ error: 'Finding not found' });
+  res.json(result);
+});
+
+// ── HTML Report ──
+
+apiRouter.get('/api/report', (_req, res) => {
+  const repos = listRepos();
+  const repoMap = new Map(repos.map(r => [r.id, r.name]));
+  const { findings } = listFindings({ acknowledged: false, limit: 500 });
+  const bySeverity = (s: string) => findings.filter(f => f.severity === s).length;
+  const rows = findings.map(f => `
+    <tr>
+      <td style="padding:6px 10px;border-bottom:1px solid #30363d"><span style="color:${f.severity === 'critical' ? '#f85149' : f.severity === 'high' ? '#d29922' : '#58a6ff'}">${f.severity.toUpperCase()}</span></td>
+      <td style="padding:6px 10px;border-bottom:1px solid #30363d">${repoMap.get(f.repoId) || '-'}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #30363d">${f.provider} — ${f.secretType}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #30363d"><code>${f.filePath}${f.line ? `:${f.line}` : ''}</code></td>
+      <td style="padding:6px 10px;border-bottom:1px solid #30363d"><code>${f.maskedFingerprint}</code></td>
+      <td style="padding:6px 10px;border-bottom:1px solid #30363d;font-size:12px">${f.detectedAt.slice(0, 10)}</td>
+    </tr>`).join('');
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>LAON VaultGuard Report</title></head>
+<body style="background:#0d1117;color:#c9d1d9;font-family:monospace;padding:20px">
+<h1 style="color:#3fb950">LAON VaultGuard — Security Report</h1>
+<p>Device: ${config.deviceName} · Generated: ${new Date().toISOString()} · Repos: ${repos.length}</p>
+<hr style="border-color:#30363d">
+<div style="display:flex;gap:16px;margin:16px 0">
+  <div style="background:#161b22;padding:12px;border-radius:8px;flex:1"><span style="color:#8b949e">OPEN</span><br><span style="font-size:24px;color:#f85149">${findings.length}</span></div>
+  <div style="background:#161b22;padding:12px;border-radius:8px;flex:1"><span style="color:#8b949e">CRITICAL</span><br><span style="font-size:24px;color:#f85149">${bySeverity('critical')}</span></div>
+  <div style="background:#161b22;padding:12px;border-radius:8px;flex:1"><span style="color:#8b949e">HIGH</span><br><span style="font-size:24px;color:#d29922">${bySeverity('high')}</span></div>
+</div>
+<table style="width:100%;border-collapse:collapse;background:#161b22;border:1px solid #30363d">
+<thead><tr style="text-align:left;color:#8b949e"><th style="padding:10px">Severity</th><th>Repo</th><th>Type</th><th>File</th><th>Fingerprint</th><th>Date</th></tr></thead>
+<tbody>${rows || '<tr><td colspan="6" style="padding:20px;text-align:center;color:#3fb950">No open findings</td></tr>'}</tbody></table>
+<p style="color:#8b949e;margin-top:16px;font-size:12px">LAON VaultGuard v0.3.0 · ${config.deviceName}</p>
+</body></html>`;
+  res.set('Content-Type', 'text/html; charset=utf-8');
+  res.send(html);
 });
 
 // ── Dashboard ──

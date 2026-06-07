@@ -58,7 +58,7 @@ const HOST = config.host;
 app.listen(PORT, HOST, () => {
   const banner = `
 ╔══════════════════════════════════════════╗
-║       🛡 LAON VaultGuard v0.1.0         ║
+║       🛡 LAON VaultGuard v0.3.0         ║
 ║  LLM-based Observer for Non-public Keys  ║
 ╠══════════════════════════════════════════╣
 ║  Server:  http://${HOST}:${PORT}

@@ -128,6 +128,28 @@ export function acknowledgeFinding(id: string, note?: string): Finding | undefin
   return f;
 }
 
+export function unacknowledgeFinding(id: string): Finding | undefined {
+  const all = readJson<Finding[]>(FINDINGS_FILE, []);
+  const f = all.find(f => f.id === id);
+  if (!f) return undefined;
+  f.acknowledged = false;
+  f.acknowledgedAt = null;
+  f.acknowledgedNote = null;
+  writeJson(FINDINGS_FILE, all);
+  logAudit('finding_unacknowledged', 'info', `Finding un-acknowledged: ${f.id}`, { findingId: id });
+  return f;
+}
+
+export function addFindingComment(id: string, comment: string): Finding | undefined {
+  const all = readJson<Finding[]>(FINDINGS_FILE, []);
+  const f = all.find(f => f.id === id);
+  if (!f) return undefined;
+  f.acknowledgedNote = (f.acknowledgedNote ? f.acknowledgedNote + ' | ' : '') + comment;
+  writeJson(FINDINGS_FILE, all);
+  logAudit('finding_comment', 'info', `Comment added to finding: ${f.id}`, { findingId: id });
+  return f;
+}
+
 export function countOpenFindings(): number {
   return readJson<Finding[]>(FINDINGS_FILE, []).filter(f => !f.acknowledged).length;
 }
