@@ -4,7 +4,7 @@
 >
 > 개발자 PC와 팀 환경에서 Git 레포지토리를 정기적으로 감시해 AWS, Azure, GCP, KT Cloud, Naver Cloud 등 클라우드 프라이빗 키가 노출되지 않도록 사전 차단하는 크로스플랫폼 보안 감사 도구.
 
-한국어 | [English](./README_EN.md)
+한국어 | [English](./README_EN.md) | [中文](./README_ZH.md) | [日本語](./README_JA.md)
 
 ## 왜 LAON VaultGuard인가
 

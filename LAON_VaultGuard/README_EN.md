@@ -4,7 +4,7 @@
 >
 > A cross-platform security auditing platform that periodically monitors Git repositories on developer machines and team environments to prevent cloud private keys (AWS, Azure, GCP, KT Cloud, Naver Cloud) from being exposed.
 
-[한국어](./README.md) | English
+[한국어](./README.md) | English | [中文](./README_ZH.md) | [日本語](./README_JA.md)
 
 ## Why LAON VaultGuard
 
