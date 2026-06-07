@@ -92,7 +92,7 @@ Dashboard (REST API + 정적 프론트)
 |---|---|
 | 런타임 | Node.js ≥18, TypeScript |
 | 웹 프레임워크 | Express.js |
-| DB | SQLite (`better-sqlite3`) |
+| 저장소 | JSON 파일 (`data/`) — 로컬 용도로 충분, DB 불필요 |
 | Git 연동 | `simple-git`, `@octokit/rest` (GitHub), `@gitbeaker/rest` (GitLab) |
 | 스케줄러 | `node-cron` |
 | LLM | OpenAI SDK (ChatGPT, DeepSeek, MiniMax, Mimo — OpenAI 호환 API) |
