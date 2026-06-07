@@ -186,6 +186,82 @@ npx laon-vaultguard scan /tmp/test-repo
 | 10. Docker | 0/4 | 4 ⏭️ | Docker 환경 필요 |
 | **합계** | **51/55** | **51 ✅ 4 ⏭️** | |
 
+## 11. Pre-commit Hook (v0.6 #1)
+
+| # | 항목 | 방식 | 상태 | 비고 |
+|---|------|------|------|------|
+| 11.1 | `hook-install.ts` 컴파일 통과 | 🔵 | ✅ | |
+| 11.2 | `installHook()` — `.git/hooks/pre-commit` 생성 | 🟢 | ✅ | 755 권한, bash 스크립트 |
+| 11.3 | `uninstallHook()` — LAON 설치 훅만 제거 | 🟢 | ✅ | 외부 훅 보호 |
+| 11.4 | `npx laon-vaultguard hook install` CLI 통합 | 🟢 | ✅ | cli.ts 서브커맨드 |
+| 11.5 | help에 hook 명령어 표시 | 🟢 | ✅ | |
+
+## 12. Feedback Loop (v0.6 #2)
+
+| # | 항목 | 방식 | 상태 | 비고 |
+|---|------|------|------|------|
+| 12.1 | `types.ts` feedback 필드 (optional) | 🔵 | ✅ | |
+| 12.2 | `db-sqlite.ts` feedback 컬럼 + ALTER TABLE | 🔵 | ✅ | |
+| 12.3 | `db-json.ts` setFeedback/getFeedbackStats | 🔵 | ✅ | |
+| 12.4 | `PUT /api/findings/:id/feedback` | 🟡 | ✅ | 라우트 확인 |
+| 12.5 | `GET /api/findings/feedback/stats` | 🟡 | ✅ | |
+
+## 13. JSON File Lock (v0.6 #4)
+
+| # | 항목 | 방식 | 상태 | 비고 |
+|---|------|------|------|------|
+| 13.1 | `acquireLock()` — exclusive create | 🔵 | ✅ | `flag: 'wx'` |
+| 13.2 | `releaseLock()` — lock 해제 | 🔵 | ✅ | |
+| 13.3 | Lock timeout 3s + fallback `.tmp` 파일 | 🟢 | ✅ | |
+| 13.4 | Atomic write (`tmp → rename`) | 🔵 | ✅ | 쓰기 중 크래시 보호 |
+
+## 14. Dashboard Auth (v0.6 #5)
+
+| # | 항목 | 방식 | 상태 | 비고 |
+|---|------|------|------|------|
+| 14.1 | `DASHBOARD_TOKEN` env 읽기 | 🔵 | ✅ | |
+| 14.2 | Bearer token 미들웨어 | 🟡 | ✅ | mutating API만 보호 |
+| 14.3 | Public GET (status, dashboard, events) bypass | 🟡 | ✅ | |
+| 14.4 | `.env.example` + `docker-compose.yml` 반영 | 🟢 | ✅ | |
+
+## 15. LLM Retry Logic (v0.6 #6)
+
+| # | 항목 | 방식 | 상태 | 비고 |
+|---|------|------|------|------|
+| 15.1 | `maxRetries: 1` → `3` | 🔵 | ✅ | OpenAI SDK 내장 |
+| 15.2 | 429/5xx 자동 exponential backoff | 🟢 | ✅ | SDK 처리 |
+
+## 16. PDF Export (v0.6 #7)
+
+| # | 항목 | 방식 | 상태 | 비고 |
+|---|------|------|------|------|
+| 16.1 | `GET /api/report/pdf` HTML 응답 | 🟡 | ✅ | print-optimized |
+| 16.2 | Severity color coding | 🟡 | ✅ | critical=red, high=orange |
+| 16.3 | Masked fingerprints only | 🟡 | ✅ | 보안 유지 |
+| 16.4 | 외부 의존성 없음 | 🔵 | ✅ | |
+
+## 최종 결과 (2026-06-07 v0.6)
+
+| 섹션 | 진행 | 통과 | 비고 |
+|------|------|------|------|
+| 1. 스토리지 | 7/7 | 7 | SQLite WAL + JSON fallback |
+| 2. Candidate Filter | 4/4 | 4 | 60+ 패턴 |
+| 3. DP | 10/10 | 10 | 14개 시크릿 규칙 |
+| 4. SARIF | 4/4 | 4 | v2.1.0 호환 |
+| 5. Metrics | 5/5 | 5 | Prometheus 형식 |
+| 6. CLI | 5/5 | 5 | v0.5.0 |
+| 7. API | 5/5 | 5 | 라우트 등록됨 |
+| 8. Setup | 6/6 | 6 | 4개국어 |
+| 9. VS Code | 5/5 | 5 | 컴파일 ✅ |
+| 10. Docker | 0/4 | 4 ⏭️ | Docker 환경 필요 |
+| 11. Pre-commit Hook | 5/5 | 5 | |
+| 12. Feedback Loop | 5/5 | 5 | |
+| 13. JSON File Lock | 4/4 | 4 | |
+| 14. Dashboard Auth | 4/4 | 4 | |
+| 15. LLM Retry | 2/2 | 2 | |
+| 16. PDF Export | 4/4 | 4 | |
+| **합계** | **75/79** | **75 ✅ 4 ⏭️** | |
+
 **전체 통과율: 100%** (스킵 제외)
 **자동화 테스트: 54/54 통과** (`npm run backtest`)
 
