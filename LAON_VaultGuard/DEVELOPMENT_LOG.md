@@ -2,6 +2,29 @@
 
 > macOS / Linux / Windows (WSL) · Node.js/TypeScript · LLM 기반 시크릿 탐지 감사 도구
 
+## 2026-06-07 — v0.4 코드 리뷰 버그 패치 + 문서 갱신
+
+### 완료
+- [x] `llm-harness.ts` — `AbortController`/`timeoutId` try 밖으로 호이스트 (`catch`에서 `clearTimeout(0)` 무동작 → `clearTimeout(timeoutId)`)
+- [x] `llm-harness.ts` — `validateLlmScanResult()` 스키마 검증 + `containsCleartextSecret()` cleartext 유출 가드 추가
+- [x] `cli.ts` — 버전 표시 `v0.2.0` → `v0.4.0` (`index.ts`와 불일치 해소)
+- [x] `scan-runner.ts` — 캐시 해시 `createHash('md5')` → `createHash('sha256')` (FIPS 호환)
+- [x] `candidate-filter.ts` — `simple-git` 에러 핸들링 `err.code` → `/exited with code 1/` 메시지 정규식 검사
+- [x] `git-monitor.ts` — `parseDiff()` 내 미사용 `filePattern` global regex 제거
+- [x] `git-monitor.ts` — GitHub clone URL 토큰 노출 방지 → `.netrc` 파일로 대체
+- [x] `DEVELOPMENT.md` §8 — 설계적 개선 필요 사항 (7건) + 추가 필요 기능 (9건)
+- [x] `DEVELOPMENT.md` §9 — 경쟁 솔루션 대비 단점 및 보강 방안 (8건) + 우선순위 액션 Top 5
+- [x] `README.md` — `0ae76d4` 버전으로 복원 (vibe-investing 한글 콘텐츠)
+- [x] `LAON_VaultGuard/README.md` — 2026-06-07 업데이트 내역 § 추가
+- [x] `DEVELOPMENT_LOG.md` — 본 항목 갱신
+- [x] `01.Trading Strategy/ARDS-Defense/` — 중복 소문자 `readme.md` 제거 (macOS case-insensitive FS 충돌)
+- [x] `npm run typecheck` → 정상 통과
+
+### 검토 리포트
+- 리포트 위치: `~/Downloads/LAON_VaultGuard_Review.md` (종합 검토 + 버그 패치 상태 포함)
+- 총 7건 코드 버그 수정 (1건 오탐, 1건 의존성 추가 보류)
+- 설계 개선 7건 + 추가 기능 9건 → `DEVELOPMENT.md` §8~§9에 문서화
+
 ## 2026-06-07 — v0.2.0 크로스플랫폼 + 이메일 리포트
 
 ### 완료
