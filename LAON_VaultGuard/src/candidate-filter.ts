@@ -4,6 +4,7 @@ import { simpleGit } from 'simple-git';
 import type { Candidate } from './types.js';
 
 const SUSPECT_PATTERNS = [
+  // Cloud keys
   'AKIA',
   'ASIA',
   'AIza',
@@ -35,9 +36,73 @@ const SUSPECT_PATTERNS = [
   'xox[baprs]-',
   'sk-',
   'Bearer',
-  'eyJ',            // JWT header
-  'passwor?d\\s*=\\s*[\'"]',  // password= assignment
-  'token\\s*=\\s*[\'"]',      // token= assignment
+  'eyJ',
+  'passwor?d\\s*=\\s*[\'"]',
+  'token\\s*=\\s*[\'"]',
+
+  // SQL injection
+  'SELECT.*FROM.*WHERE.*=.*\\$',
+  'INSERT\\s+INTO.*VALUES.*\\$',
+  'execute\\s*\\(\\s*[\'"].*\\+',
+  '\\.query\\s*\\(\\s*[\'"].*\\+',
+  'PreparedStatement',
+  'createQuery\\s*\\(\\s*[\'"].*\\+',
+  'rawQuery',
+  'db\\.execute\\s*\\(\\s*`.*\\$\\{',
+  'sql\\.format',
+
+  // DB connection exposure
+  'jdbc:',
+  'mongodb://',
+  'mongodb\\+srv://',
+  'redis://',
+  'mysql://',
+  'postgresql://',
+  'postgres://',
+  'sqlite://',
+  'DB_CONNECTION',
+  'DATABASE_URL',
+  'DB_HOST.*=.*[\'"]\\d',
+  'DB_PASSWORD\\s*=\\s*[\'"]',
+  'DB_USER\\s*=\\s*[\'"].*[\'"]',
+  'connectionString',
+
+  // Outdated/ vulnerable versions
+  'OpenSSL\\s+[01]\\.',
+  'openssl-1\\.0',
+  'TLSv1[^.]',
+  'SSLv[23]',
+  'apache2\\.2',
+  'nginx/1\\.[0-9]\\.',
+  'php[ -]5\\.',
+  'php[ -]7\\.[0-3]',
+  'python[ -]2\\.7',
+  'python[ -]3\\.[0-5]',
+  'node[ -]1[0-5]\\.',
+  'mysql[ -]5\\.[0-6]',
+  'postgres[ -]9\\.',
+  'postgres[ -]1[0-1]\\.',
+  'redis[ -][2-5]\\.',
+  'mongodb[ -][2-4]\\.',
+  'Image\\s+FROM\\s+.*:\\d+\\.\\d+[^-]',
+  'wordpress[ -][1-5]\\.',
+  'drupal[ -][7-8]\\.',
+  'joomla[ -][1-3]\\.',
+  'WAF.*disabled',
+  'WAF.*bypass',
+  'firewall.*off',
+  'ssl\\s+off',
+  'verify\\s+false',
+  'insecure\\s*=\\s*true',
+  'allowInsecure',
+  'rejectUnauthorized.*false',
+  'NODE_TLS_REJECT_UNAUTHORIZED\\s*=\\s*0',
+
+  // Hardcoded credentials in DB context
+  'mysql_connect\\s*\\(\\s*[\'"].*[\'"].*[\'"].*[\'"]',
+  'pg_connect\\s*\\(\\s*[\'"].*[\'"]',
+  'mongoClient\\.connect\\s*\\(\\s*[\'"]',
+  'createConnection\\s*\\(\\s*\\{[^}]*password',
 ];
 
 export function buildGrepPattern(): string {

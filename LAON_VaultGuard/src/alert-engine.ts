@@ -21,6 +21,12 @@ export async function sendAlerts(repo: Repository, findings: Finding[]) {
   if (alertCfg.email && config.alerts.email.host && config.alerts.email.user) {
     await sendEmailAlert(repo, criticalHigh, 'realtime');
   }
+  if (alertCfg.teams && config.alerts.teams.webhookUrl) {
+    await sendWebhookAlert(repo, criticalHigh, config.alerts.teams.webhookUrl, 'teams');
+  }
+  if (alertCfg.discord && config.alerts.discord.webhookUrl) {
+    await sendWebhookAlert(repo, criticalHigh, config.alerts.discord.webhookUrl, 'discord');
+  }
 }
 
 // ── Slack ──
@@ -245,4 +251,65 @@ function buildSummaryHtml(findings: Array<Finding & { repoName: string }>, type:
 </tr></thead><tbody>${rows || '<tr><td colspan="5" style="padding:20px;text-align:center;color:#3fb950">✅ No open findings</td></tr>'}</tbody></table>
 <p style="color:#8b949e;margin-top:16px;font-size:12px">Sent by LAON VaultGuard · <a href="http://localhost:3101/dashboard" style="color:#58a6ff">Open Dashboard</a></p>
 </body></html>`;
+}
+
+// Teams / Discord (generic webhook)
+
+async function sendWebhookAlert(
+  repo: Repository,
+  findings: Finding[],
+  webhookUrl: string,
+  channel: 'teams' | 'discord',
+) {
+  const critical = findings.filter(f => f.severity === 'critical').length;
+  const high = findings.filter(f => f.severity === 'high').length;
+
+  const message = channel === 'discord'
+    ? {
+        embeds: [{
+          title: 'LAON VaultGuard — Secret Alert',
+          description: `**Device:** ${config.deviceName}\n**Repo:** ${repo.name}\n**Findings:** ${findings.length} (critical: ${critical}, high: ${high})`,
+          color: critical > 0 ? 0xf85149 : 0xd29922,
+          fields: findings.slice(0, 10).map(f => ({
+            name: `[${f.severity.toUpperCase()}] ${f.provider} — ${f.secretType}`,
+            value: `File: \`${f.filePath}${f.line ? `:${f.line}` : ''}\`\nFingerprint: \`${f.maskedFingerprint}\``,
+          })),
+        }],
+      }
+    : {
+        type: 'message',
+        attachments: [{
+          contentType: 'application/vnd.microsoft.card.adaptive',
+          content: {
+            type: 'AdaptiveCard',
+            version: '1.4',
+            body: [
+              { type: 'TextBlock', text: 'LAON VaultGuard — Secret Alert', weight: 'bolder', size: 'large' },
+              { type: 'FactSet', facts: [
+                { title: 'Device', value: config.deviceName },
+                { title: 'Repo', value: repo.name },
+                { title: 'Critical', value: String(critical) },
+                { title: 'High', value: String(high) },
+              ]},
+              ...findings.slice(0, 5).map(f => ({
+                type: 'TextBlock' as const,
+                text: `[${f.severity.toUpperCase()}] ${f.provider} — ${f.secretType}\n${f.filePath}${f.line ? `:${f.line}` : ''} | ${f.maskedFingerprint}`,
+                wrap: true,
+              })),
+            ],
+          },
+        }],
+      };
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(message),
+    });
+    if (!res.ok) throw new Error(`${channel} API error: ${await res.text()}`);
+    logAudit('alert_sent', 'info', `${channel} alert: ${findings.length} findings`, { repo: repo.name, channel, findingsCount: findings.length });
+  } catch (err) {
+    logAudit('alert_error', 'error', `${channel} alert failed: ${err instanceof Error ? err.message : String(err)}`, { repo: repo.name, channel });
+  }
 }

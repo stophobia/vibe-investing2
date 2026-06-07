@@ -31,9 +31,14 @@ export const config = {
       model: process.env.MIMO_MODEL || '',
     },
     ollama: {
-      apiKey: 'ollama',  // Ollama doesn't require auth locally
+      apiKey: 'ollama',
       baseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434/v1',
       model: process.env.OLLAMA_MODEL || 'llama3.1',
+    },
+    claude: {
+      apiKey: process.env.CLAUDE_API_KEY || process.env.ANTHROPIC_API_KEY || '',
+      baseUrl: process.env.CLAUDE_BASE_URL || 'https://api.anthropic.com/v1',
+      model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
     },
   },
 
@@ -64,6 +69,12 @@ export const config = {
       botToken: process.env.TELEGRAM_BOT_TOKEN || '',
       chatId: process.env.TELEGRAM_CHAT_ID || '',
     },
+    teams: {
+      webhookUrl: process.env.TEAMS_WEBHOOK_URL || '',
+    },
+    discord: {
+      webhookUrl: process.env.DISCORD_WEBHOOK_URL || '',
+    },
     email: {
       host: process.env.EMAIL_HOST || '',
       port: parseInt(process.env.EMAIL_PORT || '587', 10),
@@ -86,9 +97,18 @@ export function validateConfig(): string[] {
   const errors: string[] = [];
   const providers = config.llm.providers;
   const hasKey = providers.some(p => {
+    if (p === 'ollama') return true; // ollama doesn't need API key
+    if (p === 'claude') {
+      const c = config.llm.claude;
+      return !!c.apiKey;
+    }
     const key = config.llm[p as keyof typeof config.llm] as { apiKey: string };
-    return key?.apiKey;
+    return key?.apiKey && !key.apiKey.startsWith('sk-your-');
   });
-  if (!hasKey) errors.push('At least one LLM API key must be provided (OPENAI_API_KEY, DEEPSEEK_API_KEY, etc)');
+  if (!hasKey) errors.push('At least one LLM provider must be configured (CLAUDE_API_KEY, DEEPSEEK_API_KEY, OPENAI_API_KEY, or Ollama)');
+  if (providers.length < 1) errors.push('LLM_PROVIDERS must have at least 1 provider');
+  if (providers.length > 0 && providers.length < 2) {
+    // not an error, just a recommendation
+  }
   return errors;
 }

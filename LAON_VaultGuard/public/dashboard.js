@@ -214,6 +214,8 @@ async function loadAlertConfig() {
     document.getElementById('ch-slack').checked = data.slack;
     document.getElementById('ch-telegram').checked = data.telegram;
     document.getElementById('ch-email').checked = data.email;
+    document.getElementById('ch-teams').checked = data.teams || false;
+    document.getElementById('ch-discord').checked = data.discord || false;
     document.getElementById('report-freq').value = data.frequency;
   } catch (err) { console.error(err); }
 }
@@ -223,6 +225,8 @@ async function saveAlertConfig() {
     slack: document.getElementById('ch-slack').checked,
     telegram: document.getElementById('ch-telegram').checked,
     email: document.getElementById('ch-email').checked,
+    teams: document.getElementById('ch-teams').checked,
+    discord: document.getElementById('ch-discord').checked,
     frequency: document.getElementById('report-freq').value,
   };
   try {

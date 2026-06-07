@@ -193,15 +193,19 @@ interface AlertConfig {
   slack: boolean;
   telegram: boolean;
   email: boolean;
+  teams: boolean;
+  discord: boolean;
   frequency: 'daily' | 'weekly' | 'off';
 }
 
 const ALERT_CFG_FILE = path.join(DATA_DIR, 'alert_config.json');
 
 const DEFAULT_ALERT_CONFIG: AlertConfig = {
-  slack: true,
-  telegram: true,
-  email: true,
+  slack: false,
+  telegram: false,
+  email: false,
+  teams: false,
+  discord: false,
   frequency: config.reportSchedule,
 };
 
