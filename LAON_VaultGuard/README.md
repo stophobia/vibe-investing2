@@ -67,6 +67,21 @@ npm run dev                           # http://localhost:3101/dashboard
 # -> Slack/Telegram/Email/Discord/Teams 알람 연동 가능
 ```
 
+### 테스트 레포 (로컬 전용)
+
+`tests/test-repo/` 는 전체 탐지 카테고리를 커버하는 더미 시크릿 레포입니다.  
+GitHub Push Protection 정책으로 인해 원격 레포에는 포함되지 않으며, 로컬에서만 사용합니다.
+
+```bash
+ls tests/test-repo/        # secrets.py + vulnerabilities.ts (38개 후보)
+npx laon-vaultguard scan tests/test-repo --no-llm
+```
+
+| 파일 | 커버리지 |
+|---|---|
+| `secrets.py` | AWS/Azure/GCP/NCP/KT Cloud 키, DB URL, API 토큰, JWT, SSH 키 |
+| `vulnerabilities.ts` | SQL Injection (5패턴), TLS/SSL 미설정, 구버전 (14종), DB 노출 |
+
 ![대시보드 스크린샷](public/dashboard.png)
 
 ## 빠른 시작
