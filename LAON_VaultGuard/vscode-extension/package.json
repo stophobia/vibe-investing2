@@ -1,0 +1,105 @@
+{
+  "name": "laon-vaultguard",
+  "displayName": "LAON VaultGuard — Secret Scanner",
+  "description": "Real-time secret detection in VS Code. LLM-powered multi-provider cross-validation.",
+  "version": "0.5.0",
+  "publisher": "gameworkerkim",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "secret",
+    "security",
+    "credential",
+    "api-key",
+    "llm",
+    "ollama"
+  ],
+  "activationEvents": [
+    "onCommand:laon-vaultguard.scan",
+    "onCommand:laon-vaultguard.scanFile",
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "laon-vaultguard.scan",
+        "title": "Scan Workspace for Secrets",
+        "category": "LAON VaultGuard"
+      },
+      {
+        "command": "laon-vaultguard.scanFile",
+        "title": "Scan Current File for Secrets",
+        "category": "LAON VaultGuard"
+      },
+      {
+        "command": "laon-vaultguard.clearDiagnostics",
+        "title": "Clear Secret Warnings",
+        "category": "LAON VaultGuard"
+      }
+    ],
+    "configuration": {
+      "title": "LAON VaultGuard",
+      "properties": {
+        "laon-vaultguard.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic secret scanning on file save"
+        },
+        "laon-vaultguard.scanOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Scan file for secrets when saving"
+        },
+        "laon-vaultguard.scanOnOpen": {
+          "type": "boolean",
+          "default": false,
+          "description": "Scan file when opened"
+        },
+        "laon-vaultguard.llmProviders": {
+          "type": "string",
+          "default": "deepseek",
+          "description": "Comma-separated LLM providers (deepseek, claude, openai, ollama)"
+        },
+        "laon-vaultguard.severity": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "all"
+          ],
+          "default": "medium",
+          "description": "Minimum severity level to show as diagnostic"
+        }
+      }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "laon-vaultguard.scanFile",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "@types/vscode": "^1.120.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "^5.9.3"
+  },
+  "icon": ""
+}
