@@ -164,6 +164,18 @@ export function getScanCount(): number {
   } catch { return 0; }
 }
 
+export function getScanHistory(limit = 20): ScanRun[] {
+  ensureDir(SCANS_DIR);
+  try {
+    const files = fs.readdirSync(SCANS_DIR)
+      .filter(f => f.endsWith('.json'))
+      .sort()
+      .reverse()
+      .slice(0, limit);
+    return files.map(f => readJson<ScanRun>(path.join(SCANS_DIR, f), null as unknown as ScanRun)).filter(Boolean);
+  } catch { return []; }
+}
+
 // ── Audit Log ──
 
 const LOG_DIR = path.join(DATA_DIR, 'logs');

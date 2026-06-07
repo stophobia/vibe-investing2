@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import {
   listRepos, addRepo, removeRepo,
   listFindings, getFinding, acknowledgeFinding,
-  countOpenFindings, getLatestScan, getScanCount,
+  countOpenFindings, getLatestScan, getScanCount, getScanHistory,
 } from '../db.js';
 import { getAlertConfig, updateAlertConfig } from '../db.js';
 import { rescheduleReport } from '../scheduler.js';
@@ -218,6 +218,21 @@ apiRouter.put('/api/alerts/config', (req, res) => {
   const cfg = updateAlertConfig(req.body);
   if (req.body.frequency) rescheduleReport(req.body.frequency);
   res.json(cfg);
+});
+
+// ── Scan History ──
+
+apiRouter.get('/api/scans', (_req, res) => {
+  const scans = getScanHistory(30);
+  const repos = listRepos();
+  const repoMap = new Map(repos.map(r => [r.id, r]));
+  const enriched = scans.map(s => ({
+    ...s,
+    repoName: repoMap.get(s.repoId)?.name || 'unknown',
+    repoType: repoMap.get(s.repoId)?.type || 'unknown',
+    repoUrl: repoMap.get(s.repoId)?.pathOrUrl || '',
+  }));
+  res.json({ scans: enriched });
 });
 
 // ── Dashboard ──

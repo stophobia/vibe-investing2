@@ -150,6 +150,7 @@ header h1 { font-size: 20px; color: var(--green); }
     <span id="github-status" style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px"></span>
     <button class="btn" id="github-btn" onclick="toggleGithub()" style="display:none">🔗 GitHub</button>
     <button class="btn" onclick="toggleAlerts()">🔔 알람 설정</button>
+    <button class="btn" onclick="toggleHistory()">Scan Logs</button>
     <button class="btn primary" id="scan-btn" onclick="triggerScan()">🔄 지금 스캔</button>
   </div>
 </header>
@@ -212,6 +213,15 @@ header h1 { font-size: 20px; color: var(--green); }
     <h3>마지막 스캔</h3>
     <div class="value" style="font-size:16px" id="last-scan">-</div>
   </div>
+</div>
+
+
+<div id="history-panel" style="display:none;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:20px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h3 style="font-size:14px">Scan History Logs</h3>
+    <button class="btn" onclick="document.getElementById('history-panel').style.display='none'">Close</button>
+  </div>
+  <div id="scan-history-list" style="max-height:400px;overflow-y:auto;font-size:13px">Loading...</div>
 </div>
 
 <div class="filter-bar">

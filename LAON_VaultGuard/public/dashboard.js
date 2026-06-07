@@ -333,3 +333,43 @@ async function addGithubRepo(fullName, htmlUrl) {
     loadGithubRepos();
   } catch (err) { console.error(err); }
 }
+
+// Scan History
+function toggleHistory() {
+  const panel = document.getElementById('history-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if (panel.style.display === 'block') loadScanHistory();
+}
+
+async function loadScanHistory() {
+  try {
+    const res = await fetch(API + '/api/scans');
+    const data = await res.json();
+    const list = document.getElementById('scan-history-list');
+    if (data.scans.length === 0) {
+      list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">No scan history</div>';
+      return;
+    }
+    list.innerHTML = data.scans.map(s => {
+      const time = new Date(s.startedAt).toLocaleString('ko-KR');
+      const statusColor = s.status === 'completed' ? 'var(--green)' : s.status === 'failed' ? 'var(--red)' : 'var(--high)';
+      const typeLabel = s.repoType === 'github' ? '[GitHub]' : s.repoType === 'gitlab' ? '[GitLab]' : '[Local]';
+      const url = s.repoType !== 'local' ? '<br><span style="font-size:11px;color:var(--muted)">' + s.repoUrl + '</span>' : '';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid var(--border)">' +
+        '<div>' +
+          '<span style="color:' + statusColor + ';font-weight:bold">' + s.status.toUpperCase() + '</span> ' +
+          '<span>' + typeLabel + ' ' + s.repoName + '</span>' +
+          url +
+          '<br><span style="font-size:11px;color:var(--muted)">' +
+            'ID: ' + s.id.slice(0,8) + ' | ' + time +
+            (s.status === 'completed' ? ' | scanned: ' + s.filesScanned + ' files, findings: ' +
+              (s.findingsCritical + s.findingsHigh + s.findingsMedium + s.findingsInfo) +
+              ' (C:' + s.findingsCritical + ' H:' + s.findingsHigh + ' M:' + s.findingsMedium + ' I:' + s.findingsInfo + ')' : '') +
+            (s.errorMessage ? ' | error: ' + s.errorMessage.slice(0,60) : '') +
+          '</span>' +
+        '</div>' +
+        '<span style="font-size:11px;color:var(--muted)">' + (s.llmProvidersUsed || []).join(', ') + '</span>' +
+      '</div>';
+    }).join('');
+  } catch (err) { console.error(err); }
+}
