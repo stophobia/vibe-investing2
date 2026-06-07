@@ -3,7 +3,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Repository, ScanRun, Finding, LlmProvider, Candidate } from './types.js';
 import { saveScanRun, saveFindings, logAudit } from './db.js';
-import { checkGitInstalled } from './git-monitor.js';
+import { checkGitInstalled, cloneGithubRepo, cleanupTempRepo } from './git-monitor.js';
 import { extractCandidates } from './candidate-filter.js';
 import { analyzeCandidates } from './llm-harness.js';
 import { emitSse } from './sse.js';
@@ -37,14 +37,25 @@ export async function scanRepository(repo: Repository, trigger: 'scheduled' | 'm
 
   try {
     // Pre-flight: check git
-    if (repo.type === 'local' && !checkGitInstalled()) {
+    if (!checkGitInstalled()) {
       throw new Error('Git is not installed or not in PATH');
     }
 
     // Phase 1: Extract candidates via git grep
     let candidates: Candidate[] = [];
+    let tempDir: string | null = null;
 
-    candidates = await extractCandidates(repo.pathOrUrl);
+    if (repo.type === 'github' || repo.type === 'gitlab') {
+      // clone to temp dir for scanning
+      const source = repo.type === 'github' ? await cloneGithubRepo(repo) : repo.pathOrUrl;
+      tempDir = source;
+      candidates = await extractCandidates(source);
+    } else {
+      candidates = await extractCandidates(repo.pathOrUrl);
+    }
+
+    // cleanup temp dir after grep
+    if (tempDir) cleanupTempRepo(tempDir);
 
     if (candidates.length > MAX_CANDIDATES) {
       logAudit('scan_truncated', 'warn',

@@ -3,6 +3,9 @@
 import { simpleGit, type SimpleGit } from 'simple-git';
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { Octokit } from '@octokit/rest';
 import type { Repository, RepoType } from './types.js';
 import { config } from './config.js';
@@ -210,4 +213,29 @@ function parseDiff(diffText: string): GitChange[] {
 
   flush();
   return changes;
+}
+
+// ── GitHub clone helper ──
+
+export async function cloneGithubRepo(repo: Repository): Promise<string> {
+  const [owner, name] = parseGithubUrl(repo.pathOrUrl);
+  const token = config.github.token || config.github.oauthToken;
+  if (!token) throw new Error('GitHub token not configured (set GITHUB_TOKEN or connect via OAuth)');
+
+  const tmpDir = mkdtempSync(join(tmpdir(), 'laon-'));
+  const cloneUrl = `https://x-access-token:${token}@github.com/${owner}/${name}.git`;
+
+  try {
+    const git = simpleGit();
+    await git.clone(cloneUrl, tmpDir, ['--depth', '50', '--single-branch', '--branch', repo.branch]);
+    return tmpDir;
+  } catch (err) {
+    // cleanup on failure
+    try { rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+    throw err;
+  }
+}
+
+export function cleanupTempRepo(tmpDir: string) {
+  try { rmSync(tmpDir, { recursive: true, force: true }); } catch {}
 }

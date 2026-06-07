@@ -9,6 +9,11 @@ import {
 } from '../db.js';
 import { scanAllRepos } from '../scheduler.js';
 import { sseClientCount, emitSse } from '../sse.js';
+import { config } from '../config.js';
+import {
+  exchangeCodeForToken, fetchGithubUser, saveOAuthToken,
+  getOAuthState, clearOAuthToken, listGithubRepos, getAuthToken,
+} from '../oauth.js';
 
 export const apiRouter = Router();
 
@@ -142,6 +147,63 @@ apiRouter.put('/api/findings/acknowledge/bulk', (req, res) => {
     }
   }
   res.json({ acknowledged: count });
+});
+
+// ── OAuth ──
+
+apiRouter.get('/api/oauth/github', (_req, res) => {
+  const { clientId, redirectUri } = config.github;
+  if (!clientId) return res.status(500).json({ error: 'GITHUB_CLIENT_ID not configured' });
+  const scope = 'repo,read:user';
+  const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}`;
+  res.redirect(url);
+});
+
+apiRouter.get('/api/oauth/github/callback', async (req, res) => {
+  const { code } = req.query;
+  if (!code || typeof code !== 'string') {
+    return res.status(400).send('<h3>Authorization failed: no code</h3>');
+  }
+  try {
+    const { access_token } = await exchangeCodeForToken(code);
+    const user = await fetchGithubUser(access_token);
+    saveOAuthToken(access_token, user.login);
+    res.send(`
+      <html><body style="font-family:monospace;background:#0d1117;color:#3fb950;text-align:center;padding-top:80px">
+        <h1>✅ GitHub Connected</h1><p>Logged in as <strong>${user.login}</strong></p>
+        <p>You can close this window and return to the dashboard.</p>
+        <script>setTimeout(()=>window.close(),2000)</script>
+      </body></html>
+    `);
+  } catch (err) {
+    res.status(500).send(`<h3>OAuth Error: ${err instanceof Error ? err.message : String(err)}</h3>`);
+  }
+});
+
+apiRouter.get('/api/oauth/status', (_req, res) => {
+  const state = getOAuthState();
+  res.json({
+    connected: !!state.githubToken,
+    user: state.githubUser,
+    connectedAt: state.connectedAt,
+    clientIdConfigured: !!config.github.clientId,
+  });
+});
+
+apiRouter.post('/api/oauth/disconnect', (_req, res) => {
+  clearOAuthToken();
+  res.json({ connected: false });
+});
+
+apiRouter.get('/api/github/repos', async (_req, res) => {
+  const token = getAuthToken();
+  if (!token) return res.status(401).json({ error: 'Not connected to GitHub' });
+  try {
+    const repos = await listGithubRepos(token);
+    res.json({ repos });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
 });
 
 // ── Dashboard ──

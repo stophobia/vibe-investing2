@@ -203,3 +203,94 @@ function shortenPath(filePath) {
 loadStatus();
 loadFindings();
 loadRepos();
+loadOAuthStatus();
+
+// ── GitHub OAuth ──
+async function loadOAuthStatus() {
+  try {
+    const res = await fetch(`${API}/api/oauth/status`);
+    const data = await res.json();
+    const btn = document.getElementById('github-btn');
+    const connectBtn = document.getElementById('github-connect-btn');
+    const disconnectBtn = document.getElementById('github-disconnect-btn');
+    const status = document.getElementById('github-status');
+
+    btn.style.display = 'inline-block';
+    if (data.connected) {
+      status.innerHTML = `<span style="color:var(--green)">✓</span> ${data.user}`;
+      connectBtn.style.display = 'none';
+      disconnectBtn.style.display = 'inline-block';
+    } else {
+      status.textContent = data.clientIdConfigured ? '' : '';
+      connectBtn.style.display = 'inline-block';
+      disconnectBtn.style.display = 'none';
+    }
+  } catch (err) { console.error(err); }
+}
+
+function toggleGithub() {
+  const panel = document.getElementById('github-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if (panel.style.display === 'block') loadGithubRepos();
+}
+
+function connectGithub() {
+  window.open(`${API}/api/oauth/github`, 'github-oauth', 'width=600,height=700');
+  // poll for connection
+  let attempts = 0;
+  const poll = setInterval(async () => {
+    try {
+      const res = await fetch(`${API}/api/oauth/status`);
+      const data = await res.json();
+      if (data.connected) {
+        clearInterval(poll);
+        loadOAuthStatus();
+        loadGithubRepos();
+      }
+      if (++attempts > 60) clearInterval(poll);
+    } catch {}
+  }, 2000);
+}
+
+async function disconnectGithub() {
+  await fetch(`${API}/api/oauth/disconnect`, { method: 'POST' });
+  loadOAuthStatus();
+  document.getElementById('github-repo-list').innerHTML = '';
+}
+
+async function loadGithubRepos() {
+  try {
+    const res = await fetch(`${API}/api/github/repos`);
+    if (!res.ok) {
+      document.getElementById('github-repo-list').innerHTML =
+        '<div style="color:var(--muted);padding:20px;text-align:center">GitHub 연동이 필요합니다</div>';
+      return;
+    }
+    const data = await res.json();
+    const list = document.getElementById('github-repo-list');
+    list.innerHTML = data.repos.map(r => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--border)">
+        <span>${r.private ? '🔒' : '📁'} ${r.full_name}</span>
+        <button class="btn" onclick="addGithubRepo('${r.full_name}','${r.html_url}')">+ 등록</button>
+      </div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+async function addGithubRepo(fullName, htmlUrl) {
+  const [owner, name] = fullName.split('/');
+  try {
+    await fetch(`${API}/api/repos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: fullName,
+        type: 'github',
+        pathOrUrl: htmlUrl,
+        branch: 'main',
+      }),
+    });
+    loadRepos();
+    loadGithubRepos();
+  } catch (err) { console.error(err); }
+}

@@ -9,11 +9,13 @@ import { config } from './config.js';
 
 const DATA_DIR = path.resolve(config.db.path);
 
+export { DATA_DIR };
+
 function ensureDir(dir: string) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
-function readJson<T>(filePath: string, fallback: T): T {
+export function readJson<T>(filePath: string, fallback: T): T {
   try {
     if (fs.existsSync(filePath)) {
       return JSON.parse(fs.readFileSync(filePath, 'utf-8')) as T;
@@ -22,7 +24,7 @@ function readJson<T>(filePath: string, fallback: T): T {
   return fallback;
 }
 
-function writeJson(filePath: string, data: unknown) {
+export function writeJson(filePath: string, data: unknown) {
   ensureDir(path.dirname(filePath));
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
 }
