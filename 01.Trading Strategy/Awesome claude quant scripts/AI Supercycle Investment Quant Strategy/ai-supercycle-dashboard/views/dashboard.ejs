@@ -162,10 +162,6 @@
       <div class="scenario-content" id="scenario-aggressive"><div class="loading"><div class="spinner"></div><span id="tLoadingScenario3">전략 로딩 중...</span></div></div>
       <div class="scenario-content active" id="scenario-destructive"><div class="loading"><div class="spinner"></div><span id="tLoadingScenario4">전략 로딩 중...</span></div></div>
     </div>
-    <!-- Recommended Portfolio Outlook -->
-    <h2 id="hPortfolio">추천 포트폴리오: 1개월 / 3개월 / 12개월 전망</h2>
-    <div id="portfolioPanel"><div class="loading"><div class="spinner"></div><span>포트폴리오 전망 계산 중...</span></div></div>
-
     <footer id="footerText">
       AI Super Cycle Quant Strategy v2.0 · Based on vibe-investing by Dennis Kim (gameworkerkim) · MIT License<br>
       교육/연구 목적의 시뮬레이션입니다. 실제 투자 권유가 아닙니다.
@@ -451,7 +447,6 @@
       document.getElementById('hRankings').textContent = $('hRankings');
       document.getElementById('hCorrelation').textContent = $('hCorrelation');
       document.getElementById('hScenarios').textContent = $('hScenarios');
-      document.getElementById('hPrice').textContent = $('hPrice');
       document.getElementById('hLLM').textContent = $('hLLM');
       document.getElementById('footerText').innerHTML = $('tFooter').replace(/\n/g, '<br>');
 
@@ -624,112 +619,6 @@
         document.getElementById('strategyComparison').innerHTML = html;
       } catch(e) {
         document.getElementById('strategyComparison').innerHTML = '<div class="alert alert-error">' + $('statusError') + e.message + '</div>';
-      }
-    }
-
-    async function loadPriceTargets() {
-      const data = await fetchAPI('/price-targets');
-      document.getElementById('metricReturn').textContent = '+' + data.weightedExpectedReturn + '%';
-      document.getElementById('metricHbmPhase').textContent = data.hbmCyclePhase.toUpperCase();
-
-      let html = '<div class="card"><div class="card-header"><h3>' + $('tPriceTargets') + '</h3></div>';
-      html += '<table><thead><tr><th>' + $('tTableTicker') + '</th><th>' + $('tCurrent') + '</th><th>' + $('tDcfFair') + '</th><th>' + $('tTechnical') + '</th><th>' + $('tCorrAdj') + '</th><th>' + $('tConsensus') + '</th><th>' + $('tUpsideDcf') + '</th><th>' + $('tUpsideTech') + '</th><th>' + $('tUpsideCorr') + '</th></tr></thead><tbody>';
-      data.priceTargets.forEach(p => {
-        const upsideColor = p.upsideDcfPct >= 10 ? '#34d399' : p.upsideDcfPct >= 0 ? '#fbbf24' : '#f87171';
-        html += '<tr>';
-        html += '<td><strong>' + p.ticker + '</strong> <span style="font-size:0.7rem;color:#64748b;">' + p.name + '</span></td>';
-        html += '<td>$' + p.currentPrice.toFixed(2) + '</td>';
-        html += '<td>$' + p.fairValueDcf.toFixed(2) + '</td>';
-        html += '<td>$' + p.technicalTarget.toFixed(2) + '</td>';
-        html += '<td>$' + p.correlationAdjustedTarget.toFixed(2) + '</td>';
-        html += '<td><strong>$' + p.consensusTarget.toFixed(2) + '</strong></td>';
-        html += '<td style="color:' + upsideColor + '">' + (p.upsideDcfPct >= 0 ? '+' : '') + p.upsideDcfPct.toFixed(1) + '%</td>';
-        html += '<td style="color:' + upsideColor + '">' + (p.upsideTechPct >= 0 ? '+' : '') + p.upsideTechPct.toFixed(1) + '%</td>';
-        html += '<td style="color:' + upsideColor + '">' + (p.upsideCorrPct >= 0 ? '+' : '') + p.upsideCorrPct.toFixed(1) + '%</td>';
-        html += '</tr>';
-      });
-      html += '</tbody></table></div>';
-
-      html += '<div class="card" style="margin-top:12px;"><div class="card-header"><h3>' + $('tScenario12m') + '</h3></div>';
-      html += '<table><thead><tr><th>' + $('tScenario') + '</th><th>' + $('tProbability') + '</th><th>' + $('tNasdaqRet') + '</th><th>' + $('tPortfolioRet') + '</th><th>' + $('tTriggers') + '</th></tr></thead><tbody>';
-      const scenarioEmojis = { 'AI Capex Acceleration (Guide-up)': '🟢', 'Base Case (Capex plateau + revenue realization)': '🟡', 'Capex Slowdown (H1 guide-down)': '🟠', 'AI Bubble Burst (Demand cracks)': '🔴' };
-      data.scenarios.forEach(sc => {
-        html += '<tr>';
-        html += '<td><strong>' + (scenarioEmojis[sc.scenario] || '') + ' ' + sc.scenario + '</strong></td>';
-        html += '<td>' + sc.probabilityPct + '%</td>';
-        html += '<td style="color:' + (sc.nasdaqReturnPct >= 0 ? '#34d399' : '#f87171') + '">' + (sc.nasdaqReturnPct >= 0 ? '+' : '') + sc.nasdaqReturnPct + '%</td>';
-        html += '<td style="color:' + (sc.portfolioReturnPct >= 0 ? '#34d399' : '#f87171') + ';font-weight:700;">' + (sc.portfolioReturnPct >= 0 ? '+' : '') + sc.portfolioReturnPct + '%</td>';
-        html += '<td style="font-size:0.7rem;">' + sc.triggerSignals.join(', ') + '</td>';
-        html += '</tr>';
-      });
-      html += '</tbody></table>';
-      html += '<div style="margin-top:10px;padding:10px;background:#1e293b;border-radius:6px;">';
-      html += '<strong>' + $('tPortfolioStats') + ':</strong> ' + $('tExpReturn') + ': ' + data.weightedExpectedReturn + '% | ' + $('tBeta') + ': ' + data.estimatedBeta.toFixed(2);
-      html += ' | ' + $('tSharpe') + ': ' + data.estimatedSharpeRatio.toFixed(2) + ' | ' + $('tMaxDrawdown') + ': ' + data.maxDrawdownEstimate + '%';
-      html += ' | ' + $('tHbmCycle') + ': <span style="color:#60efff;">' + data.hbmCyclePhase.toUpperCase() + '</span>';
-      html += ' | ' + $('tCorrPremium') + ': ' + data.correlationPremium + '%';
-      html += '</div></div>';
-
-      const hbmText = data.hbmCyclePhase === 'expansion' ? $('tHbmExpansion') :
-        data.hbmCyclePhase === 'peak' ? $('tHbmPeak') :
-        data.hbmCyclePhase === 'contraction' ? $('tHbmContraction') : $('tHbmTrough');
-      html += '<div class="alert alert-warning">' + hbmText + '</div>';
-
-      document.getElementById('pricePanel').innerHTML = html;
-    }
-
-    async function loadPortfolioOutlook() {
-      try {
-        const data = await fetchAPI('/price-targets');
-        if (!data.outlooks || data.outlooks.length === 0) {
-          document.getElementById('portfolioPanel').innerHTML = '';
-          return;
-        }
-
-        const timeframeColors = { '1M': '#34d399', '3M': '#60a5fa', '12M': '#a78bfa' };
-        let html = '';
-
-        data.outlooks.forEach(outlook => {
-          const color = timeframeColors[outlook.timeframe] || '#94a3b8';
-          html += '<div class="card" style="margin-bottom:16px;border-left:3px solid ' + color + ';">';
-          html += '<div class="card-header"><h3 style="color:' + color + ';">' + outlook.label + '</h3></div>';
-
-          // Commentary
-          html += '<p style="color:#94a3b8;font-size:0.85rem;margin-bottom:12px;">' + outlook.commentary + '</p>';
-
-          // Mini scenario table
-          html += '<table style="margin-bottom:10px;font-size:0.75rem;"><thead><tr>';
-          html += '<th>' + (LANG === 'ko' ? '시나리오' : 'Scenario') + '</th>';
-          html += '<th>' + (LANG === 'ko' ? '확률' : 'Prob') + '</th>';
-          html += '<th>NASDAQ</th><th>' + (LANG === 'ko' ? '포트폴리오' : 'Portfolio') + '</th></tr></thead><tbody>';
-          outlook.scenarios.forEach(sc => {
-            html += '<tr>';
-            html += '<td>' + sc.scenario + '</td>';
-            html += '<td>' + sc.probabilityPct + '%</td>';
-            html += '<td style="color:' + (sc.nasdaqReturnPct >= 0 ? '#34d399' : '#f87171') + '">' + (sc.nasdaqReturnPct >= 0 ? '+' : '') + sc.nasdaqReturnPct + '%</td>';
-            html += '<td style="color:' + (sc.portfolioReturnPct >= 0 ? '#34d399' : '#f87171') + ';font-weight:700;">' + (sc.portfolioReturnPct >= 0 ? '+' : '') + sc.portfolioReturnPct + '%</td>';
-            html += '</tr>';
-          });
-          html += '</tbody></table>';
-
-          // Top picks
-          if (outlook.topPicks && outlook.topPicks.length > 0) {
-            html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
-            outlook.topPicks.forEach(p => {
-              html += '<span style="padding:6px 12px;border-radius:6px;font-size:0.75rem;background:#1e293b;border:1px solid #334155;">';
-              html += '<strong>' + p.ticker + '</strong> <span style="color:#64748b;">' + p.name + '</span> ';
-              html += '<span style="color:' + color + ';font-weight:700;">' + p.weightPct + '%</span>';
-              html += '</span>';
-            });
-            html += '</div>';
-          }
-
-          html += '</div>';
-        });
-
-        document.getElementById('portfolioPanel').innerHTML = html;
-      } catch(e) {
-        document.getElementById('portfolioPanel').innerHTML = '<div class="alert alert-error">' + $('statusError') + e.message + '</div>';
       }
     }
 
