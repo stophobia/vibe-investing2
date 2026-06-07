@@ -64,6 +64,7 @@ export const config = {
 
   db: {
     path: process.env.DB_PATH || './data',
+    storageEngine: (process.env.STORAGE_ENGINE || 'sqlite') as 'json' | 'sqlite',
   },
 
   alerts: {

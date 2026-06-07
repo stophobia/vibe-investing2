@@ -71,6 +71,22 @@ async function main() {
 
   let lines = readEnvLines(ENV_PATH);
 
+  // ── Storage engine selection ──
+  console.log('Choose storage engine:');
+  console.log('  [1] SQLite (recommended) — ACID transactions, concurrent-safe, WAL mode');
+  console.log('  [2] JSON (legacy)       — Simple file-based, no dependencies\n');
+
+  const engineChoice = await new Promise<string>(resolve => {
+    rl.question('Storage engine [1]: ', answer => {
+      resolve(answer.trim() || '1');
+    });
+  });
+
+  const engineMap: Record<string, string> = { '1': 'sqlite', '2': 'json', 'sqlite': 'sqlite', 'json': 'json' };
+  const engine = engineMap[engineChoice] || 'sqlite';
+  lines = setKey(lines, 'STORAGE_ENGINE', engine);
+  console.log(`  -> Storage: ${engine === 'sqlite' ? 'SQLite (ACID, WAL mode)' : 'JSON (legacy file-based)'}\n`);
+
   console.log('Enter your API keys. Keys are stored in .env and never committed to Git.');
   console.log('Input is masked (***) for security.\n');
   console.log('Get keys at:');
