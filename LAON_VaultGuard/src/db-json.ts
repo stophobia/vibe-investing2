@@ -151,6 +151,25 @@ export function addFindingComment(id: string, comment: string): Finding | undefi
   return f;
 }
 
+export function setFeedback(id: string, feedback: 'accurate' | 'false_positive'): Finding | undefined {
+  const all = readJson<Finding[]>(FINDINGS_FILE, []);
+  const f = all.find(f => f.id === id);
+  if (!f) return undefined;
+  f.feedback = feedback;
+  writeJson(FINDINGS_FILE, all);
+  return f;
+}
+
+export function getFeedbackStats(): { accurate: number; false_positive: number; total: number } {
+  const all = readJson<Finding[]>(FINDINGS_FILE, []);
+  const withFeedback = all.filter(f => f.feedback);
+  return {
+    accurate: withFeedback.filter(f => f.feedback === 'accurate').length,
+    false_positive: withFeedback.filter(f => f.feedback === 'false_positive').length,
+    total: withFeedback.length,
+  };
+}
+
 export function countOpenFindings(): number {
   return readJson<Finding[]>(FINDINGS_FILE, []).filter(f => !f.acknowledged).length;
 }

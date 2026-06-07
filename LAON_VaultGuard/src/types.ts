@@ -60,6 +60,7 @@ export interface Finding {
   acknowledged: boolean;
   acknowledgedAt: string | null;
   acknowledgedNote: string | null;
+  feedback?: 'accurate' | 'false_positive' | null;
   detectedAt: string;
   llmSources: LlmProvider[];
 }

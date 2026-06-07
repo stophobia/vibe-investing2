@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import {
   listRepos, addRepo, removeRepo, getRepo,
   listFindings, getFinding, acknowledgeFinding, unacknowledgeFinding, addFindingComment,
-  countOpenFindings, getLatestScan, getScanCount, getScanHistory,
+  countOpenFindings, getLatestScan, getScanCount, getScanHistory, setFeedback, getFeedbackStats,
 } from '../db.js';
 import { getAlertConfig, updateAlertConfig } from '../db.js';
 import { rescheduleReport } from '../scheduler.js';
@@ -271,6 +271,23 @@ apiRouter.put('/api/findings/:id/comment', (req, res) => {
   const result = addFindingComment(req.params.id, comment);
   if (!result) return res.status(404).json({ error: 'Finding not found' });
   res.json(result);
+});
+
+// ── Feedback loop ──
+
+apiRouter.put('/api/findings/:id/feedback', (req, res) => {
+  const { feedback } = req.body;
+  if (!feedback || !['accurate', 'false_positive'].includes(feedback)) {
+    return res.status(400).json({ error: 'feedback must be accurate or false_positive' });
+  }
+  const result = setFeedback(req.params.id, feedback);
+  if (!result) return res.status(404).json({ error: 'Finding not found' });
+  emitSse('finding:acknowledged', result);
+  res.json(result);
+});
+
+apiRouter.get('/api/findings/feedback/stats', (_req, res) => {
+  res.json(getFeedbackStats());
 });
 
 // ── HTML Report ──

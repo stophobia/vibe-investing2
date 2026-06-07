@@ -21,6 +21,9 @@ db.pragma('busy_timeout = 5000');
 db.pragma('foreign_keys = ON');
 db.pragma('synchronous = NORMAL');
 
+// ── migration: add feedback column if upgrading from v0.5 ──
+try { db.exec('ALTER TABLE findings ADD COLUMN feedback TEXT DEFAULT NULL'); } catch { /* column already exists */ }
+
 // ── schema ──
 db.exec(`
   CREATE TABLE IF NOT EXISTS repositories (
@@ -52,6 +55,7 @@ db.exec(`
     acknowledged INTEGER DEFAULT 0,
     acknowledged_at TEXT,
     acknowledged_note TEXT,
+    feedback TEXT DEFAULT NULL,
     detected_at TEXT NOT NULL,
     llm_sources TEXT,
     FOREIGN KEY (repo_id) REFERENCES repositories(id) ON DELETE CASCADE
@@ -121,6 +125,7 @@ function rowToFinding(r: Record<string, unknown>): Finding {
     acknowledged: Boolean(r.acknowledged),
     acknowledgedAt: (r.acknowledged_at as string) || null,
     acknowledgedNote: (r.acknowledged_note as string) || null,
+    feedback: (r.feedback as Finding['feedback']) || null,
     detectedAt: r.detected_at as string,
     llmSources: (r.llm_sources as string) ? (r.llm_sources as string).split(',').filter(Boolean) as Finding['llmSources'] : [],
   };
@@ -212,8 +217,8 @@ export function saveFindings(findings: Finding[]) {
     (id, scan_id, repo_id, file_path, line, provider, secret_type,
      masked_fingerprint, confidence, severity, is_placeholder,
      evidence_note, remediation, acknowledged, acknowledged_at,
-     acknowledged_note, detected_at, llm_sources)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     acknowledged_note, feedback, detected_at, llm_sources)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   const tx = db.transaction((items: Finding[]) => {
@@ -222,7 +227,7 @@ export function saveFindings(findings: Finding[]) {
         f.id, f.scanId, f.repoId, f.filePath, f.line, f.provider, f.secretType,
         f.maskedFingerprint, f.confidence, f.severity, f.isPlaceholder ? 1 : 0,
         f.evidenceNote, f.remediation, f.acknowledged ? 1 : 0, f.acknowledgedAt,
-        f.acknowledgedNote, f.detectedAt, f.llmSources.join(','),
+        f.acknowledgedNote, f.feedback, f.detectedAt, f.llmSources.join(','),
       );
     }
   });
@@ -247,6 +252,22 @@ export function addFindingComment(id: string, comment: string): Finding | undefi
   const updated = (f.acknowledgedNote ? f.acknowledgedNote + ' | ' : '') + comment;
   db.prepare('UPDATE findings SET acknowledged_note = ? WHERE id = ?').run(updated, id);
   return getFinding(id);
+}
+
+export function setFeedback(id: string, feedback: 'accurate' | 'false_positive'): Finding | undefined {
+  const result = db.prepare('UPDATE findings SET feedback = ? WHERE id = ?').run(feedback, id);
+  return result.changes > 0 ? getFinding(id) : undefined;
+}
+
+export function getFeedbackStats(): { accurate: number; false_positive: number; total: number } {
+  const row = db.prepare(`
+    SELECT
+      COALESCE(SUM(CASE WHEN feedback = 'accurate' THEN 1 ELSE 0 END), 0) as accurate,
+      COALESCE(SUM(CASE WHEN feedback = 'false_positive' THEN 1 ELSE 0 END), 0) as false_positive,
+      COUNT(*) as total
+    FROM findings WHERE feedback IS NOT NULL
+  `).get() as { accurate: number; false_positive: number; total: number };
+  return row;
 }
 
 export function countOpenFindings(): number {

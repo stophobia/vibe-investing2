@@ -40,4 +40,6 @@ export const {
   updateAlertConfig,
   readJson,
   writeJson,
+  setFeedback,
+  getFeedbackStats,
 } = backend;
