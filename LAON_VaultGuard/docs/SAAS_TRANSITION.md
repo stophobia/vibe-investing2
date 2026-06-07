@@ -288,10 +288,55 @@ npm 설치 후 대시보드에 "클라우드 버전 사용해보기" 배너, 제
 | 4 | **Jira 통합** | 2일 | 엔터프라이즈 데모 |
 | 5 | **`.laon/policy.yml` 템플릿** | 0.5일 | 정책 as Code 마케팅 |
 
-**지금 바로**:
-1. npm 다운로드 통계 분석 → 고객 페르소나 정의
-2. GitHub Releases로 v0.5.0 공식 발표
-3. 랜딩 페이지로 '관심 등록' 수요 검증
+### 8b. 🚀 1순위: GitHub Actions Marketplace 출시
+
+TruffleHog도 이 경로로 성장했습니다. Marketplace 등록만으로 수백만 개발자에게 노출됩니다.
+
+| 단계 | 기간 | 작업 |
+|------|------|------|
+| 1 | 2일 | `action.yml` 작성 — 입력: `scan_path`, `llm_provider`, `fail_on_finding` |
+| 2 | 1일 | README에 Action 배지 + 예제 YAML 추가 |
+| 3 | 1일 | [GitHub Marketplace](https://github.com/marketplace) 등록 (승인 1~2일) |
+| 4 | 3일 | v0.5.1 릴리즈 (Action 안정화 + 버그 수정) |
+
+**예상 효과**: 1주 내 10~20명 Action 사용자 유입, 팀 단위 도입 가속.
+
+### 8c. 📣 LinkedIn 출시 캠페인 (3,539 followers)
+
+| 단계 | 기간 | 작업 |
+|------|------|------|
+| 1 | 1일 | 30초 데모 영상 (터미널 → Action 실행 → 대시보드 알람) |
+| 2 | 1일 | 핵심 메시지: "오탐 90% 감소, API 비용 1/3, 오프라인 지원" |
+| 3 | 1일 | 게시물 업로드 + "설치하고 피드백 주세요" CTA |
+
+**예상 효과**: 참여 150~200회, GitHub 스타 10~20개, 초기 사용자 피드백.
+
+### 8d. 🏠 홈페이지 전략 (내 의견)
+
+**GitHub Pages 1페이지 랜딩을 병행**하세요:
+
+- URL: `gameworkerkim.github.io/laon-vaultguard`
+- 비용: $0 (GitHub Pages 무료)
+- 내용: "npx create-laon-vaultguard" + 30초 데모 GIF + 3가지 사용 시나리오
+- 목적: LinkedIn → 랜딩페이지 → GitHub 스타/설치 전환율 측정
+
+> 본격적인 홈페이지(marketing site)는 **사용자 100명 확보 후**에 만들세요. 지금은 GitHub 자체가 가장 강력한 마케팅 채널입니다.
+
+### 8e. 🤖 2순위: 소형 시크릿 탐지 특화 모델 파인튜닝 (병행)
+
+- **목표**: Llama 3.2 1B / Phi-3-mini 등 3B 이하 모델을 시크릿 탐지용으로 튜닝
+- **데이터셋**: LLM API 탐지 결과(시크릿/오탐) 누적. 1,000~2,000개 샘플이면 가능
+- **도구**: Unsloth, Axolotl, HuggingFace TRL
+- **효과**: 오프라인 속도/정확도 향상 + API 비용 절감 → 엔터프라이즈 판매 무기
+
+### 8f. 📅 30일 실행 타임라인
+
+| 주 | 활동 |
+|----|------|
+| **1주** | GitHub Action 리팩토링 + Marketplace 등록. LinkedIn 포스트 드래프트. GitHub Pages 랜딩 생성. |
+| **2주** | LinkedIn 캠페인 실행. GitHub Discussions 오픈 → 초기 피드백 수집. |
+| **3주** | 피드백 기반 파인튜닝 데이터셋 구축 (200~500개 예제). SaaS MVP 아키텍처 문서 작성. |
+| **4주** | 파인튜닝 실험 시작 (로컬/Colab). 1주~2주 데이터로 다음 확장 방향 결정. |
 
 ---
 
