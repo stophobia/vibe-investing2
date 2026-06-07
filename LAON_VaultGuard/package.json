@@ -5,8 +5,8 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "laon-vaultguard": "./bin/cli.cjs",
-    "create-laon-vaultguard": "./bin/setup.cjs"
+    "laon-vaultguard": "./create-laon-vaultguard.cjs",
+    "create-laon-vaultguard": "./create-laon-vaultguard.cjs"
   },
   "scripts": {
     "build": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --format=esm --external:simple-git",
