@@ -39,7 +39,7 @@ apiRouter.get('/api/health', (_req, res) => {
   res.json({
     status: 'ok',
     uptime: Math.floor(process.uptime()),
-    version: '0.3.0',
+    version: '0.4.0',
     platform: process.platform,
   });
 });
