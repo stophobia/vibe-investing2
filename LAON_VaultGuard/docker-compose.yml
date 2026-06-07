@@ -25,17 +25,23 @@ services:
       - DB_PATH=/app/data
       - STORAGE_ENGINE=${STORAGE_ENGINE:-sqlite}
       - DP_ENABLED=${DP_ENABLED:-true}
+      - LLM_PROVIDERS=${LLM_PROVIDERS:-deepseek}
+      - LLM_MODE=${LLM_MODE:-sequential}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
       - CLAUDE_API_KEY=${CLAUDE_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434/v1}
       - OLLAMA_MODEL=${OLLAMA_MODEL:-deepseek-r1:8b}
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - GITLAB_TOKEN=${GITLAB_TOKEN:-}
       - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
       - SCAN_CRON=${SCAN_CRON:-0 */6 * * *}
+      - SCAN_TIMEOUT_MS=${SCAN_TIMEOUT_MS:-60000}
+      - SCAN_CACHE_ENABLED=${SCAN_CACHE_ENABLED:-true}
       - LOG_RETENTION_DAYS=${LOG_RETENTION_DAYS:-30}
+      - DEVICE_NAME=${DEVICE_NAME:-laon-docker}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3101/api/status"]
