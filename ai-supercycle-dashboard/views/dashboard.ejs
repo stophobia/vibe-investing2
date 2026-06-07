@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Supercycle Investment Quant Strategy</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace; background: #0a0e17; color: #e0e6ed; line-height: 1.5; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+    h1 { font-size: 1.6rem; color: #60efff; margin-bottom: 8px; }
+    h2 { font-size: 1.2rem; color: #8ba4d0; margin: 20px 0 12px; border-bottom: 1px solid #1e2a3a; padding-bottom: 6px; }
+    h3 { font-size: 1rem; color: #6db3ff; margin: 10px 0; }
+    .subtitle { color: #6b7f99; font-size: 0.85rem; margin-bottom: 20px; }
+
+    /* Language Toggle */
+    .lang-toggle { display: inline-flex; gap: 2px; border: 1px solid #334155; border-radius: 6px; overflow: hidden; }
+    .lang-btn { padding: 4px 10px; border: none; cursor: pointer; font-size: 0.75rem; font-weight: 600; background: #1e293b; color: #94a3b8; transition: all 0.2s; }
+    .lang-btn:hover { background: #334155; color: #e0e6ed; }
+    .lang-btn.active { background: #2563eb; color: #fff; }
+
+    .controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+    .btn { padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #3b82f6; }
+    .btn-success { background: #059669; color: #fff; }
+    .btn-success:hover { background: #10b981; }
+    .btn-danger { background: #dc2626; color: #fff; }
+    .btn-danger:hover { background: #ef4444; }
+    .btn-warning { background: #d97706; color: #fff; }
+    .btn-warning:hover { background: #f59e0b; }
+    .btn-outline { background: transparent; border: 1px solid #334155; color: #94a3b8; }
+    .btn-outline:hover { background: #1e293b; }
+    .btn-sm { padding: 4px 10px; font-size: 0.75rem; }
+    select { padding: 8px 12px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #e0e6ed; font-size: 0.85rem; }
+    input[type="text"], input[type="password"] { padding: 8px 12px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #e0e6ed; font-size: 0.85rem; width: 250px; }
+    label { font-size: 0.8rem; color: #94a3b8; }
+
+    .card { background: #111827; border: 1px solid #1e2a3a; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .grid { display: grid; gap: 12px; }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    th { background: #1e293b; color: #94a3b8; padding: 8px 10px; text-align: left; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 8px 10px; border-bottom: 1px solid #1e2a3a; }
+    tr:hover td { background: #1a2332; }
+    .table-wrapper { overflow-x: auto; max-height: 500px; overflow-y: auto; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; }
+    .badge-layer1 { background: #7c3aed20; color: #a78bfa; border: 1px solid #7c3aed40; }
+    .badge-layer2 { background: #2563eb20; color: #60a5fa; border: 1px solid #2563eb40; }
+    .badge-layer3 { background: #05966920; color: #34d399; border: 1px solid #05966940; }
+    .badge-layer4 { background: #d9770620; color: #fbbf24; border: 1px solid #d9770640; }
+    .badge-buy { background: #05966920; color: #34d399; }
+    .badge-hold { background: #d9770620; color: #fbbf24; }
+    .badge-sell { background: #dc262620; color: #f87171; }
+    .badge-strong { background: #05966930; color: #6ee7b7; font-weight: bold; }
+    .badge-kr { background: #c2410c20; color: #fb923c; border: 1px solid #c2410c40; }
+    .badge-us { background: #2563eb20; color: #93c5fd; border: 1px solid #2563eb40; }
+
+    .metric { text-align: center; }
+    .metric-value { font-size: 1.4rem; font-weight: 700; color: #60efff; }
+    .metric-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; }
+
+    .scenario-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+    .scenario-tab { padding: 8px 16px; border: 1px solid #334155; border-radius: 6px; cursor: pointer; font-size: 0.8rem; background: #1e293b; color: #94a3b8; transition: all 0.2s; }
+    .scenario-tab:hover { background: #334155; color: #e0e6ed; }
+    .scenario-tab.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+    .scenario-content { display: none; }
+    .scenario-content.active { display: block; }
+
+    .loading { text-align: center; padding: 40px; color: #64748b; }
+    .spinner { border: 3px solid #1e293b; border-top: 3px solid #2563eb; border-radius: 50%; width: 30px; height: 30px; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .alert { padding: 10px 14px; border-radius: 6px; margin-bottom: 10px; font-size: 0.8rem; }
+    .alert-info { background: #2563eb20; color: #93c5fd; border: 1px solid #2563eb40; }
+    .alert-warning { background: #d9770620; color: #fde68a; border: 1px solid #d9770640; }
+    .alert-error { background: #dc262620; color: #fca5a5; border: 1px solid #dc262640; }
+
+    footer { text-align: center; padding: 30px; color: #475569; font-size: 0.75rem; border-top: 1px solid #1e2a3a; margin-top: 40px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .status-online { background: #34d399; }
+    .status-offline { background: #f87171; }
+    .status-pending { background: #fbbf24; }
+    .row-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row-top">
+      <div>
+        <h1 id="titleMain">AI Supercycle Investment Quant Strategy</h1>
+        <div class="subtitle">
+          <span class="status-dot status-pending" id="statusDot"></span>
+          <span id="statusText">초기화 중...</span> &nbsp;|&nbsp;
+          <span id="llmStatusText" style="color:#fbbf24;">LLM 연결 전 (Rule-Based 엔진)</span> &nbsp;|&nbsp;
+          <span id="langTagline">Node.js + TypeScript</span>
+        </div>
+      </div>
+      <div class="lang-toggle" id="langToggle">
+        <button class="lang-btn active" onclick="setLang('ko')">한국어</button>
+        <button class="lang-btn" onclick="setLang('en')">English</button>
+      </div>
+    </div>
+
+    <!-- API Key Notice -->
+    <div class="alert alert-info" id="apiNotice" style="display:none;margin-bottom:12px;"></div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <select id="llmProvider">
+        <option value="rule-based" data-ko="규칙 기반 엔진 (API 키 불필요)" data-en="Rule-Based Engine (No API Key)">규칙 기반 엔진 (API 키 불필요)</option>
+        <option value="claude">Claude (Anthropic)</option>
+        <option value="deepseek">DeepSeek</option>
+      </select>
+      <input type="password" id="apiKey" placeholder="API Key" style="width:300px;flex-shrink:0;" oninput="updateLlmStatus()" autocomplete="off" spellcheck="false">
+      <button class="btn btn-primary" onclick="refreshData()" id="btnRefresh">데이터 갱신</button>
+      <button class="btn btn-warning" onclick="runLLMAnalysis()" id="btnLLM">LLM 분석</button>
+      <button class="btn btn-outline" onclick="loadAll()" id="btnLoad">전체 로드</button>
+    </div>
+
+    <!-- LLM Output -->
+    <div id="llmOutput" style="display:none;">
+      <div class="card">
+        <div class="card-header"><h3 id="hLLM">LLM 분석 결과</h3><button class="btn btn-sm btn-outline" onclick="document.getElementById('llmOutput').style.display='none'">✕</button></div>
+        <div id="llmContent"></div>
+      </div>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="grid grid-4" id="summaryMetrics" style="margin-bottom: 20px;">
+      <div class="card metric"><div class="metric-value" id="metricCount">-</div><div class="metric-label" id="lblCount">추적 종목</div></div>
+      <div class="card metric"><div class="metric-value" id="metricAvgScore">-</div><div class="metric-label" id="lblAvgScore">평균 점수</div></div>
+      <div class="card metric"><div class="metric-value" id="metricReturn">-</div><div class="metric-label" id="lblReturn">예상 수익률 12M</div></div>
+      <div class="card metric"><div class="metric-value" id="metricHbmPhase">-</div><div class="metric-label" id="lblHbmPhase">HBM 사이클</div></div>
+    </div>
+
+    <!-- Scored Stocks Table -->
+    <h2 id="hRankings">AI 슈퍼사이클 종목 랭킹 (4-Layer 모델)</h2>
+    <div class="table-wrapper" id="stocksTable"><div class="loading"><div class="spinner"></div><span id="tLoadingStocks">종목 데이터 로딩 중...</span></div></div>
+
+    <!-- Strategy Comparison: Conservative → Destructive -->
+    <h2 id="hScenarios">투자 패턴 & 종목 구성: 보수 → 파괴</h2>
+    <div id="strategyComparison" style="margin-bottom:20px;"><div class="loading"><div class="spinner"></div><span id="tLoadingCorr">전략 비교 로딩 중...</span></div></div>
+
+    <!-- Investment Scenarios (detail view) -->
+    <h2 id="hScenarioDetail">리스크 프로필별 상세 전략</h2>
+    <div class="scenario-tabs" id="scenarioTabs">
+      <div class="scenario-tab active" onclick="switchScenario('conservative')"><span data-ko="보수 (Conservative)" data-en="Conservative (보수)">보수 (Conservative)</span></div>
+      <div class="scenario-tab" onclick="switchScenario('moderate')"><span data-ko="중도 (Moderate)" data-en="Moderate (중도)">중도 (Moderate)</span></div>
+      <div class="scenario-tab" onclick="switchScenario('aggressive')"><span data-ko="공격 (Aggressive)" data-en="Aggressive (공격)">공격 (Aggressive)</span></div>
+      <div class="scenario-tab" onclick="switchScenario('destructive')"><span data-ko="파괴 (Destructive)" data-en="Destructive (파괴)">파괴 (Destructive)</span></div>
+    </div>
+
+    <div id="scenarioPanels">
+      <div class="scenario-content active" id="scenario-conservative"><div class="loading"><div class="spinner"></div><span id="tLoadingScenario">전략 로딩 중...</span></div></div>
+      <div class="scenario-content" id="scenario-moderate"><div class="loading"><div class="spinner"></div><span id="tLoadingScenario2">전략 로딩 중...</span></div></div>
+      <div class="scenario-content" id="scenario-aggressive"><div class="loading"><div class="spinner"></div><span id="tLoadingScenario3">전략 로딩 중...</span></div></div>
+      <div class="scenario-content" id="scenario-destructive"><div class="loading"><div class="spinner"></div><span id="tLoadingScenario4">전략 로딩 중...</span></div></div>
+    </div>
+
+    <!-- Price Targets -->
+    <h2 id="hPrice">가격 결정 모델 & 시나리오 투영</h2>
+    <div id="pricePanel"><div class="loading"><div class="spinner"></div><span id="tLoadingPrice">가격 타겟 계산 중...</span></div></div>
+
+    <!-- Recommended Portfolio Outlook -->
+    <h2 id="hPortfolio">추천 포트폴리오: 1개월 / 3개월 / 12개월 전망</h2>
+    <div id="portfolioPanel"><div class="loading"><div class="spinner"></div><span>포트폴리오 전망 계산 중...</span></div></div>
+
+    <footer id="footerText">
+      AI Super Cycle Quant Strategy v2.0 · Based on vibe-investing by Dennis Kim (gameworkerkim) · MIT License<br>
+      교육/연구 목적의 시뮬레이션입니다. 실제 투자 권유가 아닙니다.
+    </footer>
+  </div>
+
+  <script>
+    // ============================
+    // i18n Dictionary
+    // ============================
+    const I18N = {
+      ko: {
+        titleMain: 'AI Supercycle Investment Quant Strategy',
+        statusInit: '초기화 중...',
+        statusLoad: '데이터 로딩 중...',
+        statusConnected: '연결됨',
+        statusDisconnected: '연결 해제됨',
+        statusError: '오류: ',
+        llmConnected: 'LLM 연결됨',
+        llmDisconnected: 'LLM 연결 전 (Rule-Based 엔진)',
+        llmChecking: 'LLM 상태 확인 중...',
+        tagline: 'LLM: Claude / DeepSeek  |  Node.js + TypeScript  |  한국 반도체: 삼성전자, SK하이닉스',
+        btnRefresh: '데이터 갱신',
+        btnLLM: 'LLM 분석',
+        btnLoad: '전체 로드',
+        lblCount: '추적 종목',
+        lblAvgScore: '평균 점수',
+        lblReturn: '예상 수익률 12M',
+        lblHbmPhase: 'HBM 사이클',
+        hRankings: 'AI 슈퍼사이클 종목 랭킹 (4-Layer 모델)',
+        hCorrelation: '반도체 상관관계 분석 (삼성전자 · SK하이닉스 · 마이크론 · NVIDIA)',
+        hScenarios: '리스크 프로필별 투자 전략',
+        hPrice: '가격 결정 모델 & 시나리오 투영',
+        hLLM: 'LLM 분석 결과',
+        tLoadingStocks: '종목 데이터 로딩 중...',
+        tLoadingCorr: '상관관계 계산 중...',
+        tLoadingScenario: '전략 로딩 중...',
+        tLoadingPrice: '가격 타겟 계산 중...',
+        tRunningLLM: 'LLM 분석 실행 중...',
+        tLLMProvider: '프로바이더: ',
+        tMarketSummary: '시장 요약',
+        tTopPicks: '추천 종목',
+        tLayerAnalysis: '레이어 분석',
+        tScenarioProjections: '시나리오 투영',
+        tRiskAlerts: '리스크 경고',
+        tHbmDram: 'HBM/DRAM 전망',
+        tPositionSize: '포지션 크기',
+        tStopLoss: '손절',
+        tRebalance: '리밸런싱',
+        tMinScore: '최소 점수',
+        tMaxDD: '최대 손실',
+        tCashReserve: '현금 보유',
+        tLayerAlloc: '레이어 할당:',
+        tCash: '현금:',
+        tStocks: '종목',
+        tTableTicker: '티커',
+        tTableName: '이름',
+        tTableLayer: '레이어',
+        tTableScore: '점수',
+        tTableAction: '액션',
+        tTablePosition: '포지션',
+        tTablePrice: '가격',
+        tTableStopLoss: '손절가',
+        tTableAvgDown: '물타기',
+        tTableThesis: '투자 논리',
+        tCorrPairs: '상관관계 페어',
+        tLeadLag: '리드-래그 분석: 반도체 사이클 주도권',
+        tLeader: '선행',
+        tFollower: '후행',
+        tBestLag: '최적 시차',
+        tPeakCorr: '최대 상관',
+        tInterpretation: '해석',
+        tWeeks: '주',
+        tPriceTargets: '가격 타겟 (DCF + 기술적 + 상관관계 조정)',
+        tCurrent: '현재가',
+        tDcfFair: 'DCF 공정가',
+        tTechnical: '기술적',
+        tCorrAdj: '상관조정',
+        tConsensus: '컨센서스',
+        tUpsideDcf: 'DCF 상승',
+        tUpsideTech: '기술 상승',
+        tUpsideCorr: '상관 상승',
+        tScenario12m: '12개월 시나리오 투영',
+        tScenario: '시나리오',
+        tProbability: '확률',
+        tNasdaqRet: 'NASDAQ 수익률',
+        tPortfolioRet: '포트폴리오 수익률',
+        tTriggers: '트리거 시그널',
+        tPortfolioStats: '포트폴리오 통계',
+        tExpReturn: '기대 수익률',
+        tBeta: '베타',
+        tSharpe: '샤프',
+        tMaxDrawdown: '최대 손실(추정)',
+        tHbmCycle: 'HBM 사이클',
+        tCorrPremium: '상관 프리미엄',
+        tHbmExpansion: 'HBM 익스포져 종목 적극 매수 (MU, SK하이닉스, 삼성전자). 사이클 초기 단계.',
+        tHbmPeak: 'HBM 종목 부분 익절. 손절라인 강화. 사이클 전환 대비.',
+        tHbmContraction: 'HBM 비중 축소. Layer 2(하이퍼스케일러)와 Layer 4(앱)으로 로테이션.',
+        tHbmTrough: 'HBM 리더 분할 매수. 사이클 바닥 = 최대 기회. 2-3년 보유 호라이즌.',
+        tNoStocks: '해당 기준을 충족하는 종목이 없습니다. 더 공격적인 프로필을 고려하세요.',
+        tDisclaimer: '교육/연구 목적의 시뮬레이션입니다. 실제 투자 권유가 아닙니다.',
+        tFooter: 'AI Super Cycle Quant Strategy v2.0 · Based on vibe-investing by Dennis Kim (gameworkerkim) · MIT License\n교육/연구 목적의 시뮬레이션입니다. 실제 투자 권유가 아닙니다.',
+        actSTRONG_BUY: '강력 매수',
+        actBUY: '매수',
+        actHOLD: '보유',
+        actAVG_DOWN: '물타기',
+        actSELL: '매도',
+        actSTRONG_SELL: '강력 매도',
+        tApiNotice: 'DeepSeek/Claude API 키가 필요하면 콘솔(터미널)에서 <code>export DEEPSEEK_API_KEY=sk-xxx</code> 또는 <code>export CLAUDE_API_KEY=sk-ant-xxx</code> 실행 후 서버를 재시작하세요.',
+        tAnalysisFailed: '분석 실패했습니다. Rule-Based 엔진을 사용하세요 (API 키 불필요).',
+        scenario_conservative: '보수적 접근',
+        scenario_moderate: '중도적 접근',
+        scenario_aggressive: '공격적 접근',
+        scenario_destructive: '파괴적 접근 (고위험)',
+      },
+      en: {
+        titleMain: 'AI Supercycle Investment Quant Strategy',
+        statusInit: 'Initializing...',
+        statusLoad: 'Loading data...',
+        statusConnected: 'Connected',
+        statusDisconnected: 'Disconnected',
+        statusError: 'Error: ',
+        llmConnected: 'LLM Connected',
+        llmDisconnected: 'LLM Disconnected (Rule-Based)',
+        llmChecking: 'Checking LLM status...',
+        tagline: 'LLM: Claude / DeepSeek  |  Node.js + TypeScript  |  Korean Semis: Samsung, SK Hynix',
+        btnRefresh: 'Refresh Data',
+        btnLLM: 'LLM Analysis',
+        btnLoad: 'Load All',
+        lblCount: 'Stocks Tracked',
+        lblAvgScore: 'Avg Score',
+        lblReturn: 'Exp. Return 12M',
+        lblHbmPhase: 'HBM Cycle Phase',
+        hRankings: 'AI Supercycle Stock Rankings (4-Layer Model)',
+        hCorrelation: 'Semiconductor Correlation (Samsung · SK Hynix · Micron · NVIDIA)',
+        hScenarios: 'Investment Strategy by Risk Profile',
+        hPrice: 'Price Determination Model & Scenario Projections',
+        hLLM: 'LLM Analysis Results',
+        tLoadingStocks: 'Loading stock data...',
+        tLoadingCorr: 'Computing correlations...',
+        tLoadingScenario: 'Loading strategy...',
+        tLoadingPrice: 'Computing price targets...',
+        tRunningLLM: 'Running LLM analysis...',
+        tLLMProvider: 'Provider: ',
+        tMarketSummary: 'Market Summary',
+        tTopPicks: 'Top Picks',
+        tLayerAnalysis: 'Layer Analysis',
+        tScenarioProjections: 'Scenario Projections',
+        tRiskAlerts: 'Risk Alerts',
+        tHbmDram: 'HBM/DRAM Outlook',
+        tPositionSize: 'Position Size',
+        tStopLoss: 'Stop Loss',
+        tRebalance: 'Rebalance',
+        tMinScore: 'Min Score',
+        tMaxDD: 'Max DD',
+        tCashReserve: 'Cash Reserve',
+        tLayerAlloc: 'Layer Allocation: ',
+        tCash: 'Cash: ',
+        tStocks: 'stocks',
+        tTableTicker: 'Ticker',
+        tTableName: 'Name',
+        tTableLayer: 'Layer',
+        tTableScore: 'Score',
+        tTableAction: 'Action',
+        tTablePosition: 'Position',
+        tTablePrice: 'Price',
+        tTableStopLoss: 'Stop Loss',
+        tTableAvgDown: 'Avg Down',
+        tTableThesis: 'Thesis',
+        tCorrPairs: 'Correlation Pairs',
+        tLeadLag: 'Lead-Lag Analysis: Who drives the semiconductor cycle?',
+        tLeader: 'Leader',
+        tFollower: 'Follower',
+        tBestLag: 'Best Lag',
+        tPeakCorr: 'Peak Corr',
+        tInterpretation: 'Interpretation',
+        tWeeks: 'weeks',
+        tPriceTargets: 'Price Targets (DCF + Technical + Correlation-Adjusted)',
+        tCurrent: 'Current',
+        tDcfFair: 'DCF Fair',
+        tTechnical: 'Technical',
+        tCorrAdj: 'Corr-Adj',
+        tConsensus: 'Consensus',
+        tUpsideDcf: 'Upside DCF',
+        tUpsideTech: 'Upside Tech',
+        tUpsideCorr: 'Upside Corr',
+        tScenario12m: '12-Month Scenario Projections',
+        tScenario: 'Scenario',
+        tProbability: 'Probability',
+        tNasdaqRet: 'NASDAQ Return',
+        tPortfolioRet: 'Portfolio Return',
+        tTriggers: 'Trigger Signals',
+        tPortfolioStats: 'Portfolio Stats',
+        tExpReturn: 'Expected Return',
+        tBeta: 'Beta',
+        tSharpe: 'Sharpe',
+        tMaxDrawdown: 'Max Drawdown (est)',
+        tHbmCycle: 'HBM Cycle',
+        tCorrPremium: 'Correlation Premium',
+        tHbmExpansion: 'Aggressively accumulate HBM-exposed names (MU, SK Hynix, Samsung). Cycle early stage.',
+        tHbmPeak: 'Take partial profits on HBM names. Tighten stops. Prepare for cycle turn.',
+        tHbmContraction: 'Reduce HBM exposure. Rotate to Layer 2 (hyperscalers) and Layer 4 (applications).',
+        tHbmTrough: 'Double-down on HBM leaders. Cycle trough = maximum opportunity. 2-3 year hold horizon.',
+        tNoStocks: 'No stocks meet the criteria. Consider a more aggressive profile.',
+        tDisclaimer: 'Educational/research simulation only. Not investment advice.',
+        tFooter: 'AI Super Cycle Quant Strategy v2.0 · Based on vibe-investing by Dennis Kim (gameworkerkim) · MIT License\nEducational/research simulation only. Not investment advice.',
+        actSTRONG_BUY: 'STRONG BUY',
+        actBUY: 'BUY',
+        actHOLD: 'HOLD',
+        actAVG_DOWN: 'AVG DOWN',
+        actSELL: 'SELL',
+        actSTRONG_SELL: 'STRONG SELL',
+        tApiNotice: 'To use DeepSeek/Claude API: run <code>export DEEPSEEK_API_KEY=sk-xxx</code> or <code>export CLAUDE_API_KEY=sk-ant-xxx</code> in terminal and restart the server.',
+        tAnalysisFailed: 'Analysis failed. Try Rule-Based Engine (no API key needed).',
+        scenario_conservative: 'Conservative',
+        scenario_moderate: 'Moderate',
+        scenario_aggressive: 'Aggressive',
+        scenario_destructive: 'Destructive',
+      }
+    };
+
+    let LANG = (localStorage.getItem('aiDashLang') === 'en') ? 'en' : 'ko';
+    const $ = (key) => I18N[LANG][key] || I18N['ko'][key] || key;
+    const actLabel = (signal) => $('act' + (signal || '').replace(/ /g, '_').toUpperCase()) || signal;
+    let llmConnected = false;
+
+    async function checkLlmStatus() {
+      try {
+        const resp = await fetch('/api/config');
+        const cfg = await resp.json();
+        llmConnected = cfg.hasClaudeApiKey || cfg.hasDeepSeekApiKey || cfg.hasRuntimeApiKey;
+        const el = document.getElementById('llmStatusText');
+        if (el) {
+          el.textContent = llmConnected ? $('llmConnected') : $('llmDisconnected');
+          el.style.color = llmConnected ? '#34d399' : '#fbbf24';
+        }
+        const btn = document.getElementById('btnLLM');
+        if (btn) btn.style.opacity = llmConnected ? '1' : '0.5';
+      } catch { llmConnected = false; }
+    }
+
+    function updateLlmStatus() {
+      const key = document.getElementById('apiKey').value;
+      llmConnected = !!key;
+      const el = document.getElementById('llmStatusText');
+      if (el) {
+        el.textContent = llmConnected ? $('llmConnected') : $('llmDisconnected');
+        el.style.color = llmConnected ? '#34d399' : '#fbbf24';
+      }
+      const btn = document.getElementById('btnLLM');
+      if (btn) btn.style.opacity = llmConnected ? '1' : '0.5';
+    }
+
+    let currentScenario = 'conservative';
+    let allStocksData = null;
+
+    // ---- Language Toggle ----
+    function setLang(lang) {
+      LANG = lang;
+      localStorage.setItem('aiDashLang', lang);
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`)?.classList.add('active');
+      document.documentElement.lang = lang;
+      applyLanguage();
+    }
+
+    function applyLanguage() {
+      document.getElementById('titleMain').textContent = $('titleMain');
+      document.getElementById('langTagline').textContent = $('tagline');
+      // Update LLM status text
+      const llmEl = document.getElementById('llmStatusText');
+      if (llmEl) {
+        llmEl.textContent = llmConnected ? $('llmConnected') : $('llmDisconnected');
+        llmEl.style.color = llmConnected ? '#34d399' : '#fbbf24';
+      }
+      document.getElementById('btnRefresh').textContent = $('btnRefresh');
+      document.getElementById('btnLLM').textContent = $('btnLLM');
+      document.getElementById('btnLoad').textContent = $('btnLoad');
+      document.getElementById('lblCount').textContent = $('lblCount');
+      document.getElementById('lblAvgScore').textContent = $('lblAvgScore');
+      document.getElementById('lblReturn').textContent = $('lblReturn');
+      document.getElementById('lblHbmPhase').textContent = $('lblHbmPhase');
+      document.getElementById('hRankings').textContent = $('hRankings');
+      document.getElementById('hCorrelation').textContent = $('hCorrelation');
+      document.getElementById('hScenarios').textContent = $('hScenarios');
+      document.getElementById('hPrice').textContent = $('hPrice');
+      document.getElementById('hLLM').textContent = $('hLLM');
+      document.getElementById('footerText').innerHTML = $('tFooter').replace(/\n/g, '<br>');
+
+      // Scenario tab labels
+      document.querySelectorAll('.scenario-tab span').forEach(el => {
+        el.textContent = el.getAttribute('data-' + LANG) || el.textContent;
+      });
+
+      // LLM provider option
+      const ruleOption = document.querySelector('#llmProvider option[value="rule-based"]');
+      if (ruleOption) ruleOption.textContent = ruleOption.getAttribute('data-' + LANG) || ruleOption.textContent;
+
+      // API notice
+      const notice = document.getElementById('apiNotice');
+      if (notice.style.display !== 'none') {
+        notice.innerHTML = $('tApiNotice');
+      }
+
+      // Re-render sections if data loaded
+      if (allStocksData) {
+        renderStocks(allStocksData);
+      }
+    }
+
+    // Show API notice
+    document.getElementById('apiNotice').style.display = 'block';
+    document.getElementById('apiNotice').innerHTML = $('tApiNotice');
+
+    function setStatus(online) {
+      const dot = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      dot.className = 'status-dot ' + (online ? 'status-online' : 'status-offline');
+      text.textContent = online ? $('statusConnected') : $('statusDisconnected');
+    }
+
+    async function fetchAPI(path, method, body) {
+      const opts = { method: method || 'GET', headers: {} };
+      if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+      const resp = await fetch(API_BASE + path, opts);
+      if (!resp.ok) throw new Error(await resp.text());
+      return resp.json();
+    }
+
+    const API_BASE = '/api';
+
+    async function loadAll() {
+      await checkLlmStatus();
+      setStatus(false);
+      document.getElementById('statusText').textContent = llmConnected ? $('statusLoad') : $('llmDisconnected');
+      try {
+        await Promise.all([loadStocks(), loadStrategyComparison(), loadPriceTargets(), loadPortfolioOutlook(), loadStrategy(currentScenario)]);
+        setStatus(true);
+        if (!llmConnected) {
+          document.getElementById('statusText').textContent = $('llmDisconnected');
+        }
+      } catch(e) {
+        setStatus(false);
+        document.getElementById('statusText').textContent = $('statusError') + e.message;
+      }
+    }
+
+    async function loadStocks() {
+      const data = await fetchAPI('/stocks');
+      allStocksData = data.stocks;
+      document.getElementById('metricCount').textContent = data.count;
+      const avgScore = data.stocks.reduce((s, x) => s + x.totalScore, 0) / data.stocks.length;
+      document.getElementById('metricAvgScore').textContent = avgScore.toFixed(1);
+      renderStocks(data.stocks);
+    }
+
+    function renderStocks(stocks) {
+      const scoreColors = { STRONG_BUY: '#6ee7b7', BUY: '#34d399', HOLD: '#fbbf24', AVG_DOWN: '#fb923c', SELL: '#f87171', STRONG_SELL: '#ef4444' };
+      const layerBadges = { 1: 'badge-layer1', 2: 'badge-layer2', 3: 'badge-layer3', 4: 'badge-layer4' };
+      const marketBadges = { US: 'badge-us', KR: 'badge-kr' };
+
+      let html = '<table><thead><tr>';
+      html += '<th>#</th><th>' + $('tTableTicker') + '</th><th>' + $('tTableName') + '</th>';
+      html += '<th>' + $('tTableLayer') + '</th><th>Mkt</th><th>AI%</th><th>' + $('tTableScore') + '</th>';
+      html += '<th>' + $('tTablePrice') + '</th><th>MCap(B)</th><th>RevGr%</th><th>FCF%</th>';
+      html += '<th>FwdPE</th><th>6M%</th><th>52wHi%</th><th>' + $('tTableAction') + '</th><th>' + $('tTableThesis') + '</th>';
+      html += '</tr></thead><tbody>';
+      stocks.forEach((s, i) => {
+        html += '<tr>';
+        html += '<td>' + (i+1) + '</td>';
+        html += '<td><strong>' + s.ticker + '</strong></td>';
+        html += '<td>' + (LANG === 'ko' ? (s.name || s.ticker) + (s.nameKr && s.nameKr !== s.name ? ' / ' + s.nameKr : '') : (s.name || s.ticker)) + '</td>';
+        html += '<td><span class="badge ' + (layerBadges[s.layer] || '') + '">Layer ' + s.layer + '</span></td>';
+        html += '<td><span class="badge ' + (marketBadges[s.market] || '') + '">' + s.market + '</span></td>';
+        html += '<td>' + s.aiExposurePct + '%</td>';
+        html += '<td><strong>' + s.totalScore + '</strong></td>';
+        html += '<td>$' + (s.price || 0).toFixed(2) + '</td>';
+        html += '<td>' + (s.marketCapB || 0).toFixed(1) + '</td>';
+        html += '<td>' + (s.revenueGrowthPct || 0).toFixed(1) + '%</td>';
+        html += '<td>' + (s.fcfMarginPct || 0).toFixed(1) + '%</td>';
+        html += '<td>' + (s.forwardPE || 0).toFixed(1) + '</td>';
+        html += '<td>' + (s.price6mPct || 0).toFixed(1) + '%</td>';
+        html += '<td>' + (s.pctFrom52wHigh || 0).toFixed(1) + '%</td>';
+        html += '<td><span style="color:' + (scoreColors[s.actionSignal] || '#94a3b8') + ';font-weight:700;">' + actLabel(s.actionSignal) + '</span></td>';
+        html += '<td style="font-size:0.7rem;max-width:200px;">' + (s.investmentThesis || '') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      document.getElementById('stocksTable').innerHTML = html;
+    }
+
+    async function loadStrategyComparison() {
+      const profiles = ['conservative', 'moderate', 'aggressive', 'destructive'];
+      try {
+        const results = await Promise.all(profiles.map(p => fetchAPI('/strategy/' + p).catch(() => null)));
+
+        let html = '<div class="card"><div class="card-header"><h3>' + (LANG === 'ko' ? '보수 → 파괴: 투자 패턴 변화' : 'Conservative → Destructive: Investment Pattern Shift') + '</h3></div>';
+
+        // Summary matrix table
+        html += '<table style="margin-bottom:12px;"><thead><tr>';
+        html += '<th>' + (LANG === 'ko' ? '프로필' : 'Profile') + '</th>';
+        html += '<th>' + (LANG === 'ko' ? '최소 점수' : 'Min Score') + '</th>';
+        html += '<th>' + (LANG === 'ko' ? '포지션' : 'Position') + '</th>';
+        html += '<th>' + (LANG === 'ko' ? '손절' : 'Stop Loss') + '</th>';
+        html += '<th>' + (LANG === 'ko' ? '현금' : 'Cash') + '</th>';
+        html += '<th>' + (LANG === 'ko' ? '레이어 구성' : 'Layer Composition') + '</th>';
+        html += '<th>' + (LANG === 'ko' ? '핵심 종목' : 'Key Tickers') + '</th>';
+        html += '</tr></thead><tbody>';
+
+        profiles.forEach((profile, idx) => {
+          const r = results[idx];
+          if (!r || !r.signals) return;
+          const cfg = r.profile;
+          const layers = [];
+          for (const [l, info] of Object.entries(r.layerAllocation || {})) {
+            layers.push('L' + l + ':' + info.weightPct.toFixed(0) + '%');
+          }
+          const topTickers = (r.signals || []).slice(0, 4).map(s => s.ticker).join(', ');
+          const topNames = (r.signals || []).slice(0, 4).map(s => s.ticker + (s.name ? ' ' + s.name.substring(0,12) : '')).join(', ');
+          const names = ['conservative', 'moderate', 'aggressive', 'destructive'];
+          const style = idx === 0 ? 'background:#05966910;' : idx === 3 ? 'background:#dc262610;' : '';
+
+          html += '<tr style="' + style + '">';
+          html += '<td><strong>' + $(('scenario_' + names[idx])) + '</strong></td>';
+          html += '<td>≥' + cfg.minScoreThreshold + '</td>';
+          html += '<td>' + cfg.positionSizePct + '%</td>';
+          html += '<td style="color:#f87171;">' + cfg.stopLossPct + '%</td>';
+          html += '<td>' + cfg.cashReservePct + '%</td>';
+          html += '<td style="font-size:0.75rem;">' + layers.join(' ') + '</td>';
+          html += '<td style="font-size:0.75rem;max-width:250px;">' + topNames + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+
+        // Per-profile stock breakdown
+        profiles.forEach((profile, idx) => {
+          const r = results[idx];
+          if (!r || !r.signals || r.signals.length === 0) return;
+          const names = ['conservative', 'moderate', 'aggressive', 'destructive'];
+          const cfg = r.profile;
+          const actionColors = { STRONG_BUY: '#6ee7b7', BUY: '#34d399', HOLD: '#fbbf24', AVG_DOWN: '#fb923c', SELL: '#f87171', STRONG_SELL: '#ef4444' };
+          html += '<div style="margin-top:12px;"><strong>' + $(('scenario_' + names[idx])) + '</strong>: ';
+          html += '<span style="font-size:0.8rem;color:#94a3b8;">' + cfg.description + '</span></div>';
+          html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">';
+          r.signals.forEach(s => {
+            html += '<span style="padding:4px 10px;border-radius:4px;font-size:0.75rem;background:#1e293b;border:1px solid #334155;">';
+            html += '<strong>' + s.ticker + '</strong> ' + (s.name || '');
+            html += ' <span style="color:' + (actionColors[s.action] || '#94a3b8') + '">' + actLabel(s.action) + '</span> ';
+            html += s.positionSizePct + '%';
+            html += '</span>';
+          });
+          html += '</div>';
+        });
+
+        html += '</div>';
+        document.getElementById('strategyComparison').innerHTML = html;
+      } catch(e) {
+        document.getElementById('strategyComparison').innerHTML = '<div class="alert alert-error">' + $('statusError') + e.message + '</div>';
+      }
+    }
+
+    async function loadPriceTargets() {
+      const data = await fetchAPI('/price-targets');
+      document.getElementById('metricReturn').textContent = '+' + data.weightedExpectedReturn + '%';
+      document.getElementById('metricHbmPhase').textContent = data.hbmCyclePhase.toUpperCase();
+
+      let html = '<div class="card"><div class="card-header"><h3>' + $('tPriceTargets') + '</h3></div>';
+      html += '<table><thead><tr><th>' + $('tTableTicker') + '</th><th>' + $('tCurrent') + '</th><th>' + $('tDcfFair') + '</th><th>' + $('tTechnical') + '</th><th>' + $('tCorrAdj') + '</th><th>' + $('tConsensus') + '</th><th>' + $('tUpsideDcf') + '</th><th>' + $('tUpsideTech') + '</th><th>' + $('tUpsideCorr') + '</th></tr></thead><tbody>';
+      data.priceTargets.forEach(p => {
+        const upsideColor = p.upsideDcfPct >= 10 ? '#34d399' : p.upsideDcfPct >= 0 ? '#fbbf24' : '#f87171';
+        html += '<tr>';
+        html += '<td><strong>' + p.ticker + '</strong> <span style="font-size:0.7rem;color:#64748b;">' + p.name + '</span></td>';
+        html += '<td>$' + p.currentPrice.toFixed(2) + '</td>';
+        html += '<td>$' + p.fairValueDcf.toFixed(2) + '</td>';
+        html += '<td>$' + p.technicalTarget.toFixed(2) + '</td>';
+        html += '<td>$' + p.correlationAdjustedTarget.toFixed(2) + '</td>';
+        html += '<td><strong>$' + p.consensusTarget.toFixed(2) + '</strong></td>';
+        html += '<td style="color:' + upsideColor + '">' + (p.upsideDcfPct >= 0 ? '+' : '') + p.upsideDcfPct.toFixed(1) + '%</td>';
+        html += '<td style="color:' + upsideColor + '">' + (p.upsideTechPct >= 0 ? '+' : '') + p.upsideTechPct.toFixed(1) + '%</td>';
+        html += '<td style="color:' + upsideColor + '">' + (p.upsideCorrPct >= 0 ? '+' : '') + p.upsideCorrPct.toFixed(1) + '%</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table></div>';
+
+      html += '<div class="card" style="margin-top:12px;"><div class="card-header"><h3>' + $('tScenario12m') + '</h3></div>';
+      html += '<table><thead><tr><th>' + $('tScenario') + '</th><th>' + $('tProbability') + '</th><th>' + $('tNasdaqRet') + '</th><th>' + $('tPortfolioRet') + '</th><th>' + $('tTriggers') + '</th></tr></thead><tbody>';
+      const scenarioEmojis = { 'AI Capex Acceleration (Guide-up)': '🟢', 'Base Case (Capex plateau + revenue realization)': '🟡', 'Capex Slowdown (H1 guide-down)': '🟠', 'AI Bubble Burst (Demand cracks)': '🔴' };
+      data.scenarios.forEach(sc => {
+        html += '<tr>';
+        html += '<td><strong>' + (scenarioEmojis[sc.scenario] || '') + ' ' + sc.scenario + '</strong></td>';
+        html += '<td>' + sc.probabilityPct + '%</td>';
+        html += '<td style="color:' + (sc.nasdaqReturnPct >= 0 ? '#34d399' : '#f87171') + '">' + (sc.nasdaqReturnPct >= 0 ? '+' : '') + sc.nasdaqReturnPct + '%</td>';
+        html += '<td style="color:' + (sc.portfolioReturnPct >= 0 ? '#34d399' : '#f87171') + ';font-weight:700;">' + (sc.portfolioReturnPct >= 0 ? '+' : '') + sc.portfolioReturnPct + '%</td>';
+        html += '<td style="font-size:0.7rem;">' + sc.triggerSignals.join(', ') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      html += '<div style="margin-top:10px;padding:10px;background:#1e293b;border-radius:6px;">';
+      html += '<strong>' + $('tPortfolioStats') + ':</strong> ' + $('tExpReturn') + ': ' + data.weightedExpectedReturn + '% | ' + $('tBeta') + ': ' + data.estimatedBeta.toFixed(2);
+      html += ' | ' + $('tSharpe') + ': ' + data.estimatedSharpeRatio.toFixed(2) + ' | ' + $('tMaxDrawdown') + ': ' + data.maxDrawdownEstimate + '%';
+      html += ' | ' + $('tHbmCycle') + ': <span style="color:#60efff;">' + data.hbmCyclePhase.toUpperCase() + '</span>';
+      html += ' | ' + $('tCorrPremium') + ': ' + data.correlationPremium + '%';
+      html += '</div></div>';
+
+      const hbmText = data.hbmCyclePhase === 'expansion' ? $('tHbmExpansion') :
+        data.hbmCyclePhase === 'peak' ? $('tHbmPeak') :
+        data.hbmCyclePhase === 'contraction' ? $('tHbmContraction') : $('tHbmTrough');
+      html += '<div class="alert alert-warning">' + hbmText + '</div>';
+
+      document.getElementById('pricePanel').innerHTML = html;
+    }
+
+    async function loadPortfolioOutlook() {
+      try {
+        const data = await fetchAPI('/price-targets');
+        if (!data.outlooks || data.outlooks.length === 0) {
+          document.getElementById('portfolioPanel').innerHTML = '';
+          return;
+        }
+
+        const timeframeColors = { '1M': '#34d399', '3M': '#60a5fa', '12M': '#a78bfa' };
+        let html = '';
+
+        data.outlooks.forEach(outlook => {
+          const color = timeframeColors[outlook.timeframe] || '#94a3b8';
+          html += '<div class="card" style="margin-bottom:16px;border-left:3px solid ' + color + ';">';
+          html += '<div class="card-header"><h3 style="color:' + color + ';">' + outlook.label + '</h3></div>';
+
+          // Commentary
+          html += '<p style="color:#94a3b8;font-size:0.85rem;margin-bottom:12px;">' + outlook.commentary + '</p>';
+
+          // Mini scenario table
+          html += '<table style="margin-bottom:10px;font-size:0.75rem;"><thead><tr>';
+          html += '<th>' + (LANG === 'ko' ? '시나리오' : 'Scenario') + '</th>';
+          html += '<th>' + (LANG === 'ko' ? '확률' : 'Prob') + '</th>';
+          html += '<th>NASDAQ</th><th>' + (LANG === 'ko' ? '포트폴리오' : 'Portfolio') + '</th></tr></thead><tbody>';
+          outlook.scenarios.forEach(sc => {
+            html += '<tr>';
+            html += '<td>' + sc.scenario + '</td>';
+            html += '<td>' + sc.probabilityPct + '%</td>';
+            html += '<td style="color:' + (sc.nasdaqReturnPct >= 0 ? '#34d399' : '#f87171') + '">' + (sc.nasdaqReturnPct >= 0 ? '+' : '') + sc.nasdaqReturnPct + '%</td>';
+            html += '<td style="color:' + (sc.portfolioReturnPct >= 0 ? '#34d399' : '#f87171') + ';font-weight:700;">' + (sc.portfolioReturnPct >= 0 ? '+' : '') + sc.portfolioReturnPct + '%</td>';
+            html += '</tr>';
+          });
+          html += '</tbody></table>';
+
+          // Top picks
+          if (outlook.topPicks && outlook.topPicks.length > 0) {
+            html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+            outlook.topPicks.forEach(p => {
+              html += '<span style="padding:6px 12px;border-radius:6px;font-size:0.75rem;background:#1e293b;border:1px solid #334155;">';
+              html += '<strong>' + p.ticker + '</strong> <span style="color:#64748b;">' + p.name + '</span> ';
+              html += '<span style="color:' + color + ';font-weight:700;">' + p.weightPct + '%</span>';
+              html += '</span>';
+            });
+            html += '</div>';
+          }
+
+          html += '</div>';
+        });
+
+        document.getElementById('portfolioPanel').innerHTML = html;
+      } catch(e) {
+        document.getElementById('portfolioPanel').innerHTML = '<div class="alert alert-error">' + $('statusError') + e.message + '</div>';
+      }
+    }
+
+    async function loadStrategy(profile) {
+      const container = document.getElementById('scenario-' + profile);
+      container.innerHTML = '<div class="loading"><div class="spinner"></div>' + $('tLoadingScenario') + '</div>';
+
+      try {
+        const data = await fetchAPI('/strategy/' + profile);
+        const config = data.profile;
+
+        let html = '<div class="card"><div class="card-header"><h3>' + $(('scenario_' + profile)) + '</h3></div>';
+        html += '<p style="color:#94a3b8;font-size:0.85rem;margin-bottom:12px;">' + config.description + '</p>';
+
+        html += '<div class="grid grid-3" style="margin-bottom:12px;">';
+        html += '<div class="card metric"><div class="metric-value" style="font-size:1rem;">' + config.positionSizePct + '%</div><div class="metric-label">' + $('tPositionSize') + '</div></div>';
+        html += '<div class="card metric"><div class="metric-value" style="font-size:1rem;color:#f87171;">' + config.stopLossPct + '%</div><div class="metric-label">' + $('tStopLoss') + '</div></div>';
+        html += '<div class="card metric"><div class="metric-value" style="font-size:1rem;">' + config.rebalanceFreqDays + 'd</div><div class="metric-label">' + $('tRebalance') + '</div></div>';
+        html += '<div class="card metric"><div class="metric-value" style="font-size:1rem;">' + config.minScoreThreshold + '</div><div class="metric-label">' + $('tMinScore') + '</div></div>';
+        html += '<div class="card metric"><div class="metric-value" style="font-size:1rem;">' + config.maxDrawdownPct + '%</div><div class="metric-label">' + $('tMaxDD') + '</div></div>';
+        html += '<div class="card metric"><div class="metric-value" style="font-size:1rem;">' + config.cashReservePct + '%</div><div class="metric-label">' + $('tCashReserve') + '</div></div>';
+        html += '</div>';
+
+        html += '<div style="margin-bottom:12px;"><strong>' + $('tLayerAlloc') + '</strong> ';
+        for (const [layer, info] of Object.entries(data.layerAllocation || {})) {
+          html += '<span class="badge ' + ({1:'badge-layer1',2:'badge-layer2',3:'badge-layer3',4:'badge-layer4'})[layer] + '">Layer ' + layer + ': ' + info.weightPct.toFixed(0) + '% (' + info.stocks + ' ' + $('tStocks') + ')</span> ';
+        }
+        html += '<span class="badge badge-hold">' + $('tCash') + ' ' + data.cashReservePct + '%</span></div>';
+
+        html += '<table><thead><tr>';
+        html += '<th>' + $('tTableTicker') + '</th><th>' + $('tTableName') + '</th><th>' + $('tTableLayer') + '</th><th>' + $('tTableScore') + '</th><th>' + $('tTableAction') + '</th>';
+        html += '<th>' + $('tTablePosition') + '</th><th>' + $('tTablePrice') + '</th><th>' + $('tTableStopLoss') + '</th><th>' + $('tTableAvgDown') + '</th><th>' + $('tTableThesis') + '</th>';
+        html += '</tr></thead><tbody>';
+        const actionColors = { STRONG_BUY: '#6ee7b7', BUY: '#34d399', HOLD: '#fbbf24', AVG_DOWN: '#fb923c', SELL: '#f87171', STRONG_SELL: '#ef4444' };
+        data.signals.forEach(s => {
+          html += '<tr>';
+          html += '<td><strong>' + s.ticker + '</strong></td>';
+          html += '<td>' + s.name + (LANG === 'ko' && s.nameKr && s.nameKr !== s.name ? ' / ' + s.nameKr : '') + '</td>';
+          html += '<td>Layer ' + s.layer + '</td>';
+          html += '<td>' + s.score + '</td>';
+          html += '<td><span style="color:' + (actionColors[s.action] || '#94a3b8') + ';font-weight:700;">' + actLabel(s.action) + '</span></td>';
+          html += '<td>' + s.positionSizePct + '%</td>';
+          html += '<td>$' + (s.currentPrice || 0).toFixed(2) + '</td>';
+          html += '<td style="color:#f87171;">$' + (s.stopLoss || 0).toFixed(2) + '</td>';
+          html += '<td style="color:#fb923c;">$' + (s.avgDownPrice || 0).toFixed(2) + '</td>';
+          html += '<td style="font-size:0.7rem;">' + (s.thesis || '') + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+
+        if (data.signals.length === 0) {
+          html += '<div class="alert alert-info">' + $('tNoStocks') + '</div>';
+        }
+
+        html += '<div class="alert alert-info" style="margin-top:10px;">' + $('tDisclaimer') + '</div>';
+        html += '</div>';
+
+        container.innerHTML = html;
+      } catch(e) {
+        container.innerHTML = '<div class="alert alert-error">' + $('statusError') + e.message + '</div>';
+      }
+    }
+
+    function switchScenario(profile) {
+      currentScenario = profile;
+      document.querySelectorAll('.scenario-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.scenario-content').forEach(c => c.classList.remove('active'));
+      document.querySelector('[onclick="switchScenario(\'' + profile + '\')"]')?.classList.add('active');
+      document.getElementById('scenario-' + profile)?.classList.add('active');
+      loadStrategy(profile);
+    }
+
+    async function runLLMAnalysis() {
+      const output = document.getElementById('llmOutput');
+      const content = document.getElementById('llmContent');
+      output.style.display = 'block';
+      content.innerHTML = '<div class="loading"><div class="spinner"></div>' + $('tRunningLLM') + '</div>';
+
+      const provider = document.getElementById('llmProvider').value;
+      const apiKey = document.getElementById('apiKey').value;
+
+      try {
+        const data = await fetchAPI('/llm/analyze', 'POST', { provider, apiKey: apiKey || undefined, language: LANG });
+        const analysis = data.analysis;
+
+        let html = '<div class="alert alert-info">' + $('tLLMProvider') + ' <strong>' + data.provider + '</strong></div>';
+        html += '<h3>' + $('tMarketSummary') + '</h3><p>' + (analysis.marketSummary || 'N/A') + '</p>';
+
+        if (analysis.topPicks?.length > 0) {
+          html += '<h3>' + $('tTopPicks') + '</h3><table><thead><tr><th>' + $('tTableTicker') + '</th><th>' + $('tTableAction') + '</th><th>Confidence</th><th>Rationale</th></tr></thead><tbody>';
+          analysis.topPicks.forEach(p => {
+            html += '<tr><td><strong>' + p.ticker + '</strong></td><td style="color:#34d399;">' + p.action + '</td><td>' + p.confidence + '%</td><td>' + p.rationale + '</td></tr>';
+          });
+          html += '</tbody></table>';
+        }
+
+        if (analysis.layerAnalysis) {
+          html += '<h3>' + $('tLayerAnalysis') + '</h3>';
+          for (const [layer, info] of Object.entries(analysis.layerAnalysis)) {
+            const l = layer.replace('layer', '');
+            html += '<div style="margin:6px 0;"><span class="badge ' + ({1:'badge-layer1',2:'badge-layer2',3:'badge-layer3',4:'badge-layer4'})[l] + '">Layer ' + l + '</span> ';
+            html += '<strong>' + info.sentiment.toUpperCase() + '</strong>: ' + info.outlook + '</div>';
+          }
+        }
+
+        if (analysis.scenarioProjections) {
+          html += '<h3>' + $('tScenarioProjections') + '</h3>';
+          ['conservative', 'moderate', 'aggressive', 'destructive'].forEach(rp => {
+            if (analysis.scenarioProjections[rp]) {
+              html += '<div style="margin:4px 0;"><strong>' + $(('scenario_' + rp)) + '</strong>: ' + analysis.scenarioProjections[rp].action + '</div>';
+            }
+          });
+        }
+
+        if (analysis.riskAlerts?.length > 0) {
+          html += '<h3>' + $('tRiskAlerts') + '</h3>';
+          analysis.riskAlerts.forEach(a => { html += '<div class="alert alert-warning">' + a + '</div>'; });
+        }
+
+        if (analysis.hbmDramOutlook) {
+          html += '<h3>' + $('tHbmDram') + '</h3><p>' + analysis.hbmDramOutlook + '</p>';
+        }
+
+        content.innerHTML = html || '<pre>' + JSON.stringify(analysis, null, 2) + '</pre>';
+      } catch(e) {
+        content.innerHTML = '<div class="alert alert-error">' + $('tAnalysisFailed') + '<br>' + e.message + '</div>';
+      }
+    }
+
+    async function refreshData() {
+      await fetchAPI('/stocks/refresh', 'POST');
+      await loadAll();
+    }
+
+    // Init
+    applyLanguage();
+    loadAll();
+  </script>
+</body>
+</html>
