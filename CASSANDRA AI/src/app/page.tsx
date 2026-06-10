@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from "react";
 import { Search, Loader2, Building2, User, Landmark, AlertTriangle, TrendingDown, ShieldAlert, ExternalLink, X, Pin } from "lucide-react";
 import dynamic from "next/dynamic";
 import TrendingSearches from "@/components/TrendingSearches";
+import PersonSearchRank from "@/components/PersonSearchRank";
 import PinboardPanel from "@/components/PinboardPanel";
 import VoteWidget from "@/components/VoteWidget";
+import ChatPanel from "@/components/ChatPanel";
 import { usePinboardStore } from "@/lib/pinboard-store";
 import type { NodeDetail } from "@/components/EntityGraph";
 
@@ -22,19 +24,43 @@ export default function HomePage() {
   const [query, setQuery] = useState("");
   const [graphData, setGraphData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [cacheAge, setCacheAge] = useState<number | null>(null);
+  const [cacheStale, setCacheStale] = useState(false);
+  const [disclosureSummary, setDisclosureSummary] = useState<any[] | null>(null);
+  const [personResults, setPersonResults] = useState<any[] | null>(null);
   const [selectedNode, setSelectedNode] = useState<NodeDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [knowledgePopup, setKnowledgePopup] = useState<any>(null);
 
-  const doSearch = useCallback(async (q: string) => {
+  const doSearch = useCallback(async (q: string, force = false) => {
     if (!q.trim()) {
       setGraphData(null);
       setSelectedNode(null);
+      setPersonResults(null);
+      setDisclosureSummary(null);
+      setCacheAge(null);
+      setCacheStale(false);
       return;
     }
     setLoading(true);
     setSelectedNode(null);
-    const graphRes = await fetch(`/api/graph?q=${encodeURIComponent(q)}`).then((r) => r.json());
+    const params = new URLSearchParams({ q });
+    if (force) params.set("refresh", "1");
+    const graphRes = await fetch(`/api/graph?${params}`).then((r) => r.json());
     setGraphData(graphRes);
+    if (graphRes.filings) setDisclosureSummary(graphRes.filings);
+    else setDisclosureSummary(null);
+
+    // 인물 검색 결과
+    const searchRes = await fetch(`/api/search?q=${encodeURIComponent(q)}`).then((r) => r.json());
+    if (searchRes.persons?.length > 0) setPersonResults(searchRes.persons);
+    else setPersonResults(null);
+    if (searchRes.knowledge?.length > 0) setKnowledgePopup(searchRes.knowledge[0]);
+
+    if (graphRes.cached) {
+      setCacheAge(graphRes.cacheAge || 0);
+      setCacheStale(graphRes.cacheStale || false);
+    } else { setCacheAge(null); setCacheStale(false); }
     setLoading(false);
   }, []);
 
@@ -101,6 +127,17 @@ export default function HomePage() {
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           검색
         </button>
+        {cacheStale && (
+          <button
+            onClick={() => doSearch(query, true)}
+            className="h-14 px-4 rounded-xl bg-[var(--warning)]/20 border border-[var(--warning)]/30 text-[var(--warning)] text-xs hover:bg-[var(--warning)]/30 transition-colors shrink-0"
+          >
+             72시간 경과<br />추가 검색?
+          </button>
+        )}
+        {cacheAge !== null && !cacheStale && (
+          <span className="text-[10px] text-[var(--text-muted)] self-center">{cacheAge}분 전 캐시</span>
+        )}
       </div>
 
       {/* 실시간 검색어 + 메인 콘텐츠 */}
@@ -108,6 +145,7 @@ export default function HomePage() {
         {/* 왼쪽 사이드바: 실검 랭킹 + 핀보드 */}
         <div className="lg:col-span-1 space-y-4">
           <TrendingSearches onSelect={(q) => { setQuery(q); doSearch(q); }} />
+          <PersonSearchRank onSelect={(q) => { setQuery(q); doSearch(q); }} />
           <PinboardPanel />
         </div>
 
@@ -139,17 +177,95 @@ export default function HomePage() {
             <NodeDetailPanel node={selectedNode} onClose={() => setSelectedNode(null)} />
           )}
         </div>
-      </div>
+          </div>
+
+          {/* 인물 검색 결과 */}
+          {personResults && personResults.length > 0 && (
+            <div className="rounded-xl bg-[var(--surface)] border border-[var(--border)] overflow-hidden">
+              <div className="px-4 py-2 border-b border-[var(--border)] text-xs font-semibold">
+                👤 인물 검색 결과 ({personResults.length}명)
+              </div>
+              <div className="grid gap-2 p-3 md:grid-cols-2">
+                {personResults.map((p: any, i: number) => (
+                  <a key={i} href={`/person/${p.personUid}`} className="p-2.5 rounded-lg bg-[var(--bg)] border border-[var(--border)] hover:border-[var(--accent)] transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{p.name}</span>
+                      {p.flags?.includes('stock_celebrity') && <span className="px-1.5 py-0.5 rounded text-[9px] bg-[var(--danger)]/10 text-[var(--danger-glow)]">주식셀럽</span>}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 text-[10px] text-[var(--text-muted)]">
+                      <span>{p._count?.corpRelations || 0}개 회사</span>
+                      {p.birthDate && <span>· {p.birthDate}</span>}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 공시 분석 */}
+          {disclosureSummary && disclosureSummary.length > 0 && (
+            <DisclosureAnalysis filings={disclosureSummary} />
+          )}
+
+      {/* 챗봇 */}
+      <ChatPanel />
 
       {/* 법적 고지 */}
       <LegalDisclaimer />
+
+      {/* 지식베이스 팝업 */}
+      {knowledgePopup && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setKnowledgePopup(null)}>
+          <div className="w-full max-w-lg rounded-xl bg-[var(--bg)] border border-[var(--border)] p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[var(--danger-glow)]" />
+                <h3 className="text-lg font-bold">{knowledgePopup.name}</h3>
+              </div>
+              <button onClick={() => setKnowledgePopup(null)} className="p-1 rounded hover:bg-[var(--border)] text-[var(--text-muted)]">✕</button>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {knowledgePopup.flags?.map((f: string) => (
+                <span key={f} className="px-2 py-0.5 rounded text-[10px] bg-[var(--danger)]/10 text-[var(--danger-glow)] border border-[var(--danger)]/20">{f}</span>
+              ))}
+            </div>
+
+            <p className="text-sm text-[var(--text)] leading-relaxed">{knowledgePopup.context}</p>
+
+            {knowledgePopup.news?.length > 0 && (
+              <div className="space-y-1.5">
+                <h4 className="text-[10px] text-[var(--text-muted)] uppercase">관련 뉴스</h4>
+                {knowledgePopup.news.map((n: any, i: number) => (
+                  <a
+                    key={i}
+                    href={n.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-2.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)] transition-colors text-sm text-[var(--accent-glow)] hover:underline"
+                  >
+                    📰 {n.title}
+                  </a>
+                ))}
+              </div>
+            )}
+
+            <button
+              onClick={() => setKnowledgePopup(null)}
+              className="w-full py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 function NodeDetailPanel({ node, onClose }: { node: NodeDetail; onClose: () => void }) {
   const isPerson = node.type === "person";
-  const isBlacklisted = node.flags?.includes("blacklist");
+  const isBlacklisted = node.flags?.includes("stock_celebrity");
   const { addItem, removeItem, hasItem } = usePinboardStore();
   const nodeId = `${node.type}-${node.label}`;
   const isPinned = hasItem(nodeId);
@@ -213,7 +329,7 @@ function NodeDetailPanel({ node, onClose }: { node: NodeDetail; onClose: () => v
         <div className="flex flex-wrap gap-2 mb-4">
           {node.flags?.map((f: string) => (
             <span key={f} className={`px-2 py-0.5 rounded text-[10px] font-medium ${
-              f === "blacklist" ? "bg-[var(--danger)]/20 text-[var(--danger-glow)]" :
+              f === "stock_celebrity" ? "bg-[var(--danger)]/20 text-[var(--danger-glow)]" :
               f === "manipulation_suspect" || f === "delisting_related" ? "bg-[var(--warning)]/20 text-[var(--warning)]" :
               "bg-[var(--border)] text-[var(--text-muted)]"
             }`}>{f}</span>
@@ -302,6 +418,72 @@ function NodeDetailPanel({ node, onClose }: { node: NodeDetail; onClose: () => v
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function DisclosureAnalysis({ filings }: { filings: any[] }) {
+  const cats: Record<string, { count: number; items: any[] }> = {};
+  const risks: string[] = [];
+
+  filings.forEach((f: any) => {
+    const t = f.title;
+    let cat = '기타';
+    if (/소송|판결|가처분|회생/.test(t)) { cat = '⚖️ 소송/분쟁'; if (!risks.includes('경영권 분쟁')) risks.push('경영권 분쟁'); }
+    else if (/합병/.test(t)) { cat = '🔄 합병'; if (!risks.includes('합병/구조조정')) risks.push('합병/구조조정'); }
+    else if (/주주총회|주주명부|의결권/.test(t)) { cat = '📋 주주총회'; if (!risks.includes('주주총회 빈번')) risks.push('주주총회 빈번'); }
+    else if (/증자|감자|병합/.test(t)) { cat = '💰 자본변동'; if (!risks.includes('자본변동')) risks.push('자본변동'); }
+    else if (/대량보유|주요주주|소유/.test(t)) { cat = '📊 지분공시'; if (!risks.includes('주요주주 변동')) risks.push('주요주주 변동'); }
+    else if (/사채|CB|차입/.test(t)) { cat = '💳 자금조달'; }
+    else if (/매매.*정지/.test(t)) { cat = '🛑 매매정지'; if (!risks.includes('매매정지')) risks.push('매매정지'); }
+    if (!cats[cat]) cats[cat] = { count: 0, items: [] };
+    cats[cat].count++;
+    cats[cat].items.push(f);
+  });
+
+  const sorted = Object.entries(cats).sort((a, b) => b[1].count - a[1].count);
+  const riskLevel = risks.length >= 3 ? 'HIGH' : risks.length >= 1 ? 'MEDIUM' : 'LOW';
+
+  return (
+    <div className="rounded-xl bg-[var(--surface)] border border-[var(--border)] overflow-hidden">
+      <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
+        <span className="text-sm font-bold">📋 공시 분석 ({filings.length}건)</span>
+        <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+          riskLevel === 'HIGH' ? 'bg-[var(--danger)]/20 text-[var(--danger-glow)]' :
+          riskLevel === 'MEDIUM' ? 'bg-[var(--warning)]/20 text-[var(--warning)]' :
+          'bg-[var(--accent)]/10 text-[var(--accent-glow)]'
+        }`}>위험도: {riskLevel}</span>
+      </div>
+
+      {/* 위험 신호 */}
+      {risks.length > 0 && (
+        <div className="px-4 py-3 border-b border-[var(--border)]">
+          <div className="flex flex-wrap gap-1.5">
+            {risks.map((r, i) => (
+              <span key={i} className="px-2 py-0.5 rounded text-[10px] bg-[var(--danger)]/10 text-[var(--danger-glow)] border border-[var(--danger)]/20">
+                ⚠ {r}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 카테고리 + 타임라인 */}
+      <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[var(--border)]">
+        {sorted.slice(0, 2).map(([cat, data]) => (
+          <div key={cat} className="p-3">
+            <h5 className="text-xs font-semibold mb-2">{cat} ({data.count}건)</h5>
+            <div className="space-y-1 max-h-[150px] overflow-y-auto">
+              {data.items.slice(0, 8).map((f: any, i: number) => (
+                <div key={i} className="text-[10px] flex gap-2">
+                  <span className="text-[var(--text-muted)] shrink-0">{f.date.slice(5)}</span>
+                  <span className="truncate">{f.title}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

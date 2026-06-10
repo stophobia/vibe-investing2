@@ -241,3 +241,62 @@ model MarketSnapshot {
   @@index([category, createdAt])
   @@index([createdAt])
 }
+
+// ─── 사용자 계정 ───
+model AppUser {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String   @default("")
+  role         String   @default("user") // user | admin
+  createdAt    DateTime @default(now())
+  lastLoginAt  DateTime?
+
+  loginHistory LoginHistory[]
+}
+
+// ─── 로그인 이력 ───
+model LoginHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  email     String
+  ip        String?
+  userAgent String?
+  success   Boolean
+  createdAt DateTime @default(now())
+  user      AppUser? @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([email])
+}
+
+// ─── 페이지 방문자 통계 ───
+model PageView {
+  id        String   @id @default(uuid())
+  path      String   // 방문 경로
+  ip        String?
+  userAgent String?
+  userId    String?  // 로그인 사용자
+  createdAt DateTime @default(now())
+
+  @@index([path, createdAt])
+  @@index([createdAt])
+}
+
+// ─── 검색 캐시 인덱스 (GitHub ↔ DB 동기화) ───
+model SearchCache {
+  id          String   @id @default(uuid())
+  type        String   // "person" | "company" | "keyword"
+  query       String   // 검색어
+  githubPath  String   // Dart_Data/person-results/{name}.json
+  resultCount Int      // 결과 건수
+  searchCount Int      @default(1) // 누적 검색 횟수
+  period      Int      @default(12) // 검색 기간(개월)
+  lastSearched DateTime @default(now())
+  expiresAt   DateTime // 캐시 만료일
+  createdAt   DateTime @default(now())
+
+  @@unique([type, query, period])
+  @@index([type, query])
+  @@index([lastSearched])
+}
