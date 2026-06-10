@@ -4,6 +4,13 @@
 >
 > 코스닥 시장의 소음 속에서 이상 징후 신호를 찾아내고, LLM이 관계망을 분석하여 하나의 흐름으로 재구성하는 공익 목적의 분석 시스템입니다.
 
+> [!IMPORTANT]
+> **이 프로젝트는 [vibe-investing](https://github.com/gameworkerkim/vibe-investing) 모노레포의 일부입니다.**
+> 더 많은 퀀트 전략 · 칼럼 · 논문 · 보안 도구(LAON VaultGuard) · 투자 대시보드를 보려면 메인 레포를 방문하세요.
+>
+> **This project is part of the [vibe-investing](https://github.com/gameworkerkim/vibe-investing) monorepo.**
+> Visit the main repo for more quant strategies, columns, papers, security tools (LAON VaultGuard), and investment dashboards.
+
 ---
 
 ## 개요
