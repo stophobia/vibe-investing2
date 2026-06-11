@@ -38,7 +38,7 @@ OpenRouter 설명: "designed for advanced reasoning, coding, and long-horizon ag
 
 ### 판정
 
-**Fable 5가 코딩에서 확실히 앞선다.** 이유:
+**Fable 5가 코딩에서 확실히 앞선다.** 이유
 - 실제 5,000만 줄 코드베이스 마이그레이션 검증 완료
 - FrontierCode 1위
 - GitHub/Cursor/Replit 등 주요 개발 도구사들이 Fable 5를 "세대를 뛰어넘는 도약"으로 평가
@@ -65,7 +65,7 @@ OpenRouter 설명: "designed for advanced reasoning, coding, and long-horizon ag
 
 ### 판정
 
-**Fable 5가 기획/전략에서도 앞선다.** 이유:
+**Fable 5가 기획/전략에서도 앞선다.** 이유
 - Factorio, Slay the Spire 등 실제 복잡한 멀티스텝 게임 완주
 - 1주일 이상 자율 연구 수행 검증
 - 자기 교정 능력("killing its incorrect beliefs")이 명시적으로 확인됨
@@ -88,7 +88,7 @@ OpenRouter 설명: "designed for advanced reasoning, coding, and long-horizon ag
 
 ### 판정
 
-**Fable 5가 금융 추론에서도 앞선다.** 이유:
+**Fable 5가 금융 추론에서도 앞선다.** 이유
 - Hebbia Finance Benchmark 1위
 - IMC 트레이딩 분석 전 영역 통과
 - 90%+ 벤치마크 돌파 (이전 모델 대비 10포인트 상승)
