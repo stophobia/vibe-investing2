@@ -1,0 +1,6 @@
+# Claude Sonnet 4 System Prompt
+
+원본: https://raw.githubusercontent.com/elder-plinius/CL4R1T4S/main/ANTHROPIC/Claude_4.txt
+
+Key: Claude Sonnet 4, model string: claude-sonnet-4-20250514, knowledge cutoff: January 2025.
+First version with Memory System, Anthropic API in Artifacts, lists_and_bullets section, and "never start with praise" directive.

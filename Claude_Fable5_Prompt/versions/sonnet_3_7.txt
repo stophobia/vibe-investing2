@@ -1,0 +1,8 @@
+# Claude Sonnet 3.7 System Prompt
+
+원본: https://raw.githubusercontent.com/elder-plinius/CL4R1T4S/main/ANTHROPIC/Claude_Sonnet_3.7_New.txt
+
+Key: Claude 3.7 Sonnet (reasoning model).
+Updated artifact rules with extensive library support (MathJS, lodash, d3, Plotly, Chart.js, Tone, Three.js, mammoth, tensorflow, Papaparse, SheetJS).
+Tailwind strict rules (no arbitrary values), CSV handling, REPL/analysis tool.
+User-selectable styles: Explanatory, Formal, Concise.

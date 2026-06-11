@@ -1,0 +1,7 @@
+# Claude 4.1 (Opus 4.1) System Prompt
+
+원본: https://raw.githubusercontent.com/elder-plinius/CL4R1T4S/main/ANTHROPIC/Claude-4.1.txt
+
+Key: Claude Opus 4.1, model string: claude-opus-4-1-20250805, knowledge cutoff: January 2025.
+This version introduced detailed drug-use guidance refusal policies.
+First version with explicit voice_note block prohibition.

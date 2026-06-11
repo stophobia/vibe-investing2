@@ -1,0 +1,8 @@
+# Claude Sonnet 4.5 System Prompt
+
+원본: https://raw.githubusercontent.com/elder-plinius/CL4R1T4S/main/ANTHROPIC/Claude_Sonnet-4.5_Sep-29-2025.txt
+
+Key: Claude Sonnet 4.5, knowledge cutoff: January 2025, date: September 29, 2025.
+First version with Past Chats Tools (conversation_search, recent_chats).
+Citation rules strengthened: claims must be in own words, never exact quoted text.
+Claude Completions in Artifacts introduced.
