@@ -1,4 +1,4 @@
-# DeepSeek V4 Pro vs Claude Fable 5 -- 능력 비교 분석
+# DeepSeek V4 Pro vs Claude Fable 5 - 성능 비교 분석
 
 > 분석일: 2026-06-11
 > 출처: Anthropic 공식 발표, OpenRouter, DeepSeek Docs
