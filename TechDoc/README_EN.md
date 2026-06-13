@@ -92,6 +92,12 @@ Documents added or significantly revised recently, ordered by commit date (newes
 | 2026-06-09 | [Vercel Analysis](vercel/vercel_analysis.md) | Revised |
 | 2026-06-06 | [Secret Scanning LLM Harness Prompt](LLM_Security/Secret%20scanning%20llm%20harness%20prompt.md) | New document |
 | 2026-06-04 | [MiniMax Coding Guide + VS C# LLM Guide](MiniMax%20Coding%20Guide/) | New documents |
+| 2026-06-07 | [Ollama Install Guide](Local_LLM/Ollama_Install_Guilde.md) | Refactor headings and formatting |
+| 2026-06-07 | [Agent-Friendly Website Guide](agent-friendly-website-guide/) | Restored repo + added AI Supercycle Dashboard |
+| 2026-05-30 | [AWS Cost Reduction for CEO](AWS/Aws%20cost%20reduction%20for%20ceo.md) | New document |
+| 2026-05-27 | [Bigfive Getting Started](Bigfive/Bigfive%20getting%20started.md) | Updated |
+| 2026-05-12 | [Cloudflare Free Tier Guide](CloudFlare/Cloudflare%20free%20tier%20guide.md) | Revised for clarity |
+| 2026-05-09 | [Oracle Cloud Free Tier Guide](OracleCloud/02.%20Oracle%20Cloud%20Free%20Tier%20Guide.md) | Minor text fix |
 
 ---
 
