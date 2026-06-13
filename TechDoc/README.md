@@ -29,7 +29,7 @@
 | [Turso 가이드](SQLite_%20Turso/Turso_guide.md) | 엣지 분산 SQLite Turso 가이드 -- 셋업, 복제, 활용 사례, 무료 티어. | 2026-06-09 |
 | [Upstash 가이드](Serverless_Redis/upstash_guide.md) | 서버리스 Redis/Kafka Upstash 평가 및 비교 -- 요청 단위 과금, 무료 티어 분석. | 2026-06-09 |
 | [Vercel 분석](vercel/vercel_analysis.md) | Vercel 플랫폼 심층 분석: 가격 체계, 엣지 함수, 제한 사항, 워크로드별 비용 효율. | 2026-06-09 |
-| [Headroom 완전 가이드](Headroom/Headroom%20complete%20guide.md) | 서버리스 컴퓨트 플랫폼 Headroom 프로젝트 설정, 구성, 배포 완전 가이드. | 2026-06-12 |
+| [Headroom 완전 가이드](Headroom/Headroom%20complete%20guide.md) | LLM 토큰 절감을 위한 솔루션. | 2026-06-12 |
 | [글로벌 무료 CDN 가이드](github_cdn/Global%20free%20cdn%20guide.md) | jsDelivr, GitHub raw CDN 등 글로벌 무료 CDN을 활용한 정적 에셋 전송 가이드. | 2026-06-12 |
 | [GitHub CDN](github_cdn/github_cdn.md) | GitHub 저장소를 jsDelivr와 연동해 무료 CDN으로 활용하는 기술 심층 가이드. | 2026-06-10 |
 
