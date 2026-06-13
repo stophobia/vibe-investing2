@@ -1,6 +1,8 @@
 # TechDoc
 
-> Technical documents curated by [Dennis Kim (@gameworkerkim)](https://github.com/gameworkerkim) -- covering serverless, cloud cost optimization, AI/LLM, and developer infrastructure.
+> Technical documents evaluating and curating recently trending technologies by [Dennis Kim (@gameworkerkim)](https://github.com/gameworkerkim) -- covering serverless, cloud cost optimization, AI/LLM, and developer infrastructure.
+>
+> Korean version: [README.md](README.md)
 
 ---
 
@@ -81,23 +83,23 @@ Documents added or significantly revised recently, ordered by commit date (newes
 
 | Date | Document | Action |
 |---|---|---|
-| 2026-06-13 | [Caveman RTK Token Optimization](LLM/Caveman%20rtk%20token%20optimization.md) | Formatting fixes |
-| 2026-06-13 | [Quivr Guide](LLM/Quivr_guide.md) | Minor text fixes |
+| 2026-06-13 | [Caveman RTK Token Optimization](LLM/Caveman%20rtk%20token%20optimization.md) | LLM token savings |
+| 2026-06-13 | [Quivr Guide](LLM/Quivr_guide.md) | AI as your personal assistant |
 | 2026-06-12 | [Headroom Complete Guide](Headroom/Headroom%20complete%20guide.md) | LLM token compression tool |
 | 2026-06-12 | [Global Free CDN Guide](github_cdn/Global%20free%20cdn%20guide.md) | Free CDN guide |
 | 2026-06-10 | [GitHub CDN](github_cdn/github_cdn.md) | Updated with jsDelivr |
-| 2026-06-09 | [Upstash Guide](Serverless_Redis/upstash_guide.md) | New document |
-| 2026-06-09 | [Turso Guide](SQLite_%20Turso/Turso_guide.md) | New document |
-| 2026-06-09 | [Neon Review](Neon/Neon_review.md) | New document |
-| 2026-06-09 | [Vercel Analysis](vercel/vercel_analysis.md) | Revised |
-| 2026-06-07 | [Ollama Install Guide](Local_LLM/Ollama_Install_Guilde.md) | Refactor headings and formatting |
+| 2026-06-09 | [Upstash Guide](Serverless_Redis/upstash_guide.md) | Free Redis SaaS |
+| 2026-06-09 | [Turso Guide](SQLite_%20Turso/Turso_guide.md) | SQLite edge computing |
+| 2026-06-09 | [Neon Review](Neon/Neon_review.md) | SaaS DB free tier |
+| 2026-06-09 | [Vercel Analysis](vercel/vercel_analysis.md) | Free SaaS web server |
+| 2026-06-07 | [Ollama Install Guide](Local_LLM/Ollama_Install_Guilde.md) | Local LLM install guide |
 | 2026-06-07 | [Agent-Friendly Website Guide](agent-friendly-website-guide/) | AI agent-friendly web guide |
-| 2026-06-06 | [Secret Scanning LLM Harness Prompt](LLM_Security/Secret%20scanning%20llm%20harness%20prompt.md) | New document |
-| 2026-06-04 | [MiniMax Coding Guide + VS C# LLM Guide](MiniMax%20Coding%20Guide/) | New documents |
-| 2026-05-30 | [AWS Cost Reduction for CEO](AWS/Aws%20cost%20reduction%20for%20ceo.md) | New document |
-| 2026-05-27 | [Bigfive Getting Started](Bigfive/Bigfive%20getting%20started.md) | Updated |
-| 2026-05-12 | [Cloudflare Free Tier Guide](CloudFlare/Cloudflare%20free%20tier%20guide.md) | Revised for clarity |
-| 2026-05-09 | [Oracle Cloud Free Tier Guide](OracleCloud/02.%20Oracle%20Cloud%20Free%20Tier%20Guide.md) | Minor text fix |
+| 2026-06-06 | [Secret Scanning LLM Harness Prompt](LLM_Security/Secret%20scanning%20llm%20harness%20prompt.md) | LLM security |
+| 2026-06-04 | [MiniMax Coding Guide + VS C# LLM Guide](MiniMax%20Coding%20Guide/) | AI coding assistant comparison |
+| 2026-05-30 | [AWS Cost Reduction for CEO](AWS/Aws%20cost%20reduction%20for%20ceo.md) | Cost reduction |
+| 2026-05-27 | [Bigfive Getting Started](Bigfive/Bigfive%20getting%20started.md) | Bigfive guide |
+| 2026-05-12 | [Cloudflare Free Tier Guide](CloudFlare/Cloudflare%20free%20tier%20guide.md) | Cloudflare free tier usage |
+| 2026-05-09 | [Oracle Cloud Free Tier Guide](OracleCloud/02.%20Oracle%20Cloud%20Free%20Tier%20Guide.md) | Oracle Cloud free tier usage |
 
 ---
 
