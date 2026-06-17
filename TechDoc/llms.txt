@@ -41,6 +41,7 @@
 ### LLM (General)
 - [Caveman RTK Token Optimization](LLM/Caveman%20rtk%20token%20optimization.md) | Token optimization for LLM interactions: prompt engineering, context management.
 - [Quivr Guide](LLM/Quivr_guide.md) | Open-source second brain / knowledge management with LLMs.
+- [Open Code Review Guide](LLM/Open%20code%20review%20guide.md) | AI coding CLI tool review: DeepSeek V4 Pro integration, command reference, tool comparison.
 
 ### LLM Security
 - [Secret Scanning LLM Harness Prompt](LLM_Security/Secret%20scanning%20llm%20harness%20prompt.md) | LLM-based secret scanning prompt harness design.
@@ -60,6 +61,9 @@
 - [VS C# LLM Guide (EN)](MiniMax%20Coding%20Guide/visual-studio-csharp-llm-guide.en.md) | C# AI assistants for VS, DeepSeek/multi-LLM setup.
 - [VS C# LLM Guide (KO)](MiniMax%20Coding%20Guide/visual-studio-csharp-llm-guide.ko.md) | Korean version.
 
+### AI Coding Workflow
+- [AI Coding Workflow Guide](effective_LLM/AI%20coding%20workflow%20claude%20code%20cursor%20chatgpt.md) | Strategies for Claude Code, Cursor, ChatGPT: tool selection, parallel usage, context management, cost optimization.
+
 ## AI Agent & Website Standards
 
 ### Agent-Friendly Website Guide
@@ -75,6 +79,8 @@
 
 ## Recent Updates (newest first)
 
+- 2026-06-16: AI Coding Workflow Guide (new)
+- 2026-06-15: Open Code Review Guide (new)
 - 2026-06-14: Supabase Complete Guide (new)
 - 2026-06-14: Free Email Guide (new)
 - 2026-06-13: Caveman RTK Token Optimization (fixes)
