@@ -5,11 +5,13 @@
 > 대만 ETF를 타이밍한 전략은 단순 보유를 이기지 못했다. TSMC의 진짜 강점은
 > '선행'이 아니라 '적시성(고빈도 동행지표)'이다.
 
+이건 한국도 마찬가지 아닌가라는 말이 있겠지만 한국보다 대만이 자본시장이 개방되어 있고 미국 나스닥에 올라가 있기 때문에 더 깨끗하게 노이즈 없이 투자 커플링을 만들 수 있다.
+
 분석 구간: **2020-01 ~ 2026-05** · 관점: **퀀트(매크로 + 시스템 트레이딩)**
 
 ---
 
-## 📁 폴더 구조
+## 폴더 구조
 
 ```
 TSMC_Taiwan_LeadLag_EWT/
@@ -31,7 +33,7 @@ TSMC_Taiwan_LeadLag_EWT/
     └── TSMC_Taiwan_Column_KR.md   ← 한국어 심층 칼럼
 ```
 
-## ▶️ 실행
+## 실행
 
 ```bash
 pip install -r requirements.txt
@@ -44,7 +46,7 @@ cd src && python run_all.py
 
 ---
 
-## 📊 핵심 결과 (data_source = reconstructed 기준 예시)
+## 핵심 결과 (data_source = reconstructed 기준 예시)
 
 ### 1) 선행지표 검증 — 통념을 반증
 
