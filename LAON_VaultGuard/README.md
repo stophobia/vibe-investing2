@@ -160,12 +160,21 @@ VS Code에서:
 
 ## Pre-commit Hook
 
-커밋 전에 변경된 파일에서 시크릿을 자동 검사합니다.
+커밋 전에 변경된 파일에서 시크릿과 개인정보(CI/DI)를 자동 검사합니다.
 
 ```bash
 npx laon-vaultguard hook install     # 현재 레포에 설치
 npx laon-vaultguard hook uninstall   # 제거
+npx laon-vaultguard audit-history    # git 히스토리 전체 감사
 ```
+
+**CIChecker 내장** — 시크릿 + CI(개인식별정보) + DI(데이터식별정보) 동시 탐지:
+
+| 카테고리 | 탐지 항목 |
+|----------|-----------|
+| 🔑 Private Key | PEM 키, API 키 (sk-, ghp_, AKIA), 클라우드 액세스 키 |
+| 👤 CI (개인정보) | 주민등록번호, 휴대전화, 이메일, 신용카드, 여권번호 |
+| 📊 DI (데이터) | DB 연결 문자열, 계좌번호, 사업자등록번호, 내부 IP |
 
 **동작 방식**:
 - `git commit` 실행 시 `pre-commit` 훅이 자동 발동

@@ -50,6 +50,12 @@ async function main() {
     return;
   }
 
+  if (command === 'audit-history') {
+    const { auditHistoryCli } = await import('./cichecker.js');
+    auditHistoryCli(args.slice(1));
+    return;
+  }
+
   if (command === 'scan') {
     let repoPath = '';
     let mode: ScanMode = 'all';
@@ -265,6 +271,7 @@ LAON VaultGuard CLI — LLM-based Security Scanner
 Usage:
   npx laon-vaultguard scan <path> [options]
   npx laon-vaultguard hook <install|uninstall> [--force]
+  npx laon-vaultguard audit-history [path]
   npx laon-vaultguard version
   npx laon-vaultguard help
 

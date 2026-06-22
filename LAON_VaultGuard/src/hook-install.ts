@@ -8,8 +8,8 @@ import { execSync } from 'node:child_process';
 const HOOK_NAME = 'pre-commit';
 
 const HOOK_SCRIPT = `#!/bin/bash
-# LAON VaultGuard pre-commit hook
-# Scans staged files for secrets before commit.
+# LAON VaultGuard + CIChecker pre-commit hook
+# Checks staged files for: secrets, CI(Personal Info), DI(Data), Private Keys
 # Bypass: git commit --no-verify
 
 STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
@@ -17,43 +17,66 @@ if [ -z "$STAGED_FILES" ]; then
   exit 0
 fi
 
-echo "🔍 LAON VaultGuard: scanning staged files..."
-echo "$STAGED_FILES" | head -10
-if [ $(echo "$STAGED_FILES" | wc -l) -gt 10 ]; then
-  echo "  ... and $(($(echo "$STAGED_FILES" | wc -l) - 10)) more files"
-fi
+echo "🔍 LAON VaultGuard + CIChecker: scanning staged files..."
 
-# temp list for quick regex scan
+# ── CIChecker: CI/DI + Private Key patterns ──
 TMPDIR=$(mktemp -d)
 echo "$STAGED_FILES" > "$TMPDIR/staged.txt"
+FOUND_CI=0
 
-# Run fast regex scan on staged content
-FOUND=0
 while IFS= read -r file; do
   [ -z "$file" ] && continue
   content=$(git show ":$file" 2>/dev/null)
   if [ -z "$content" ]; then continue; fi
 
-  # Quick regex for critical patterns
-  if echo "$content" | grep -qE '(AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36,}|sk-[A-Za-z0-9]{32,}|-----BEGIN.*PRIVATE KEY-----|AIza[0-9A-Za-z_-]{35})'; then
-    echo ""
-    echo "⚠️  SECRET DETECTED in $file"
-    echo "   Run: npx laon-vaultguard scan for detailed analysis"
-    echo "   Bypass: git commit --no-verify"
-    FOUND=1
+  # CI: 주민등록번호 (Korean SSN)
+  if echo "$content" | grep -qE '\b[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])-?[1-8][0-9]{6}\b'; then
+    echo "  👤 [CI] 주민등록번호 detected in $file"
+    FOUND_CI=1
+  fi
+
+  # CI: Phone numbers
+  if echo "$content" | grep -qE '\b01[016789]-[0-9]{3,4}-[0-9]{4}\b'; then
+    echo "  👤 [CI] 휴대전화번호 detected in $file"
+    FOUND_CI=1
+  fi
+
+  # CI: Credit card
+  if echo "$content" | grep -qE '\b(?:[0-9][ -]*?){13,19}\b'; then
+    echo "  👤 [CI] 신용카드 번호 의심 패턴 in $file"
+    FOUND_CI=1
+  fi
+
+  # DI: DB connection string
+  if echo "$content" | grep -qiE '\b(?:mongodb|mysql|postgres|redis)://[^@]+@'; then
+    echo "  📊 [DI] DB 연결 문자열 (인증정보 포함) in $file"
+    FOUND_CI=1
+  fi
+
+  # DI: Bank account
+  if echo "$content" | grep -qE '\b[0-9]{2,4}-[0-9]{2,4}-[0-9]{4,7}\b'; then
+    echo "  📊 [DI] 계좌번호 의심 패턴 in $file"
+    FOUND_CI=1
+  fi
+
+  # 🔑 Private Key
+  if echo "$content" | grep -qE '(-----BEGIN.*PRIVATE KEY-----|sk-[A-Za-z0-9]{32,}|ghp_[A-Za-z0-9]{36,}|AIza[0-9A-Za-z_-]{35}|AKIA[0-9A-Z]{16})'; then
+    echo "  🔑 [SECRET] Private Key / API Key in $file"
+    FOUND_CI=1
   fi
 done < "$TMPDIR/staged.txt"
 
 rm -rf "$TMPDIR"
 
-if [ $FOUND -eq 1 ]; then
+if [ $FOUND_CI -eq 1 ]; then
   echo ""
-  echo "🚫 Commit blocked by LAON VaultGuard."
-  echo "   Review the warnings above or use --no-verify to bypass."
+  echo "🚫 Commit blocked by LAON VaultGuard + CIChecker."
+  echo "   CI(Personal Info), DI(Data), or Private Keys detected."
+  echo "   Review warnings above or use --no-verify to bypass."
   exit 1
 fi
 
-echo "✅ No secrets detected in staged files."
+echo "✅ No secrets or CI/DI detected in staged files."
 exit 0
 `;
 
