@@ -194,9 +194,15 @@ def run_backtest(prices: pd.DataFrame, cfg: Config, exit_mode: str) -> dict:
                               cfg.tqqq_expense, cfg.financing_spread, cfg.trading_days)
     sgov_ret = (prices['rf'] - cfg.sgov_expense) / cfg.trading_days
 
-    qld_px = (1.0 + qld_ret).cumprod()
-    tqqq_px = (1.0 + tqqq_ret).cumprod()
-    qqq_px = (1.0 + prices['idx_ret']).cumprod()      # 트리거 판정용(비레버리지)
+    # numpy 배열로 추출 (일별 루프에서 .iloc 스칼라 조회는 매우 느림 -> MC 가속)
+    qld_px = np.asarray((1.0 + qld_ret).cumprod(), dtype=float)
+    tqqq_px = np.asarray((1.0 + tqqq_ret).cumprod(), dtype=float)
+    qqq_px = np.asarray((1.0 + prices['idx_ret']).cumprod(), dtype=float)  # 트리거 판정용
+    sgov_a = np.asarray(sgov_ret, dtype=float)
+    idx = prices.index
+    years = idx.year.to_numpy()
+    months = idx.month.to_numpy()
+    n = len(idx)
 
     qld = Position()
     tqqq = Position()
@@ -205,66 +211,67 @@ def run_backtest(prices: pd.DataFrame, cfg: Config, exit_mode: str) -> dict:
     tax_paid = 0.0
     realized_ytd = 0.0               # 올해 실현이익 누적
 
-    peak = qqq_px.iloc[0]
+    peak = qqq_px[0]
     triggers_fired = [False] * len(cfg.triggers)
-    equity_curve = []
+    equity_curve = np.empty(n, dtype=float)
     cashflows: list[tuple[pd.Timestamp, float]] = []   # (date, amount) for IRR
     current_month = None
-    current_year = prices.index[0].year
+    current_year = years[0]
+    is_partial = (exit_mode == 'partial')
 
-    for i, dt in enumerate(prices.index):
+    for i in range(n):
+        qpx, tpx, gpx = qld_px[i], tqqq_px[i], qqq_px[i]
+
         # --- SGOV 현금풀 일일 증식 ---
         if i > 0:
-            cash *= (1.0 + sgov_ret.iloc[i])
+            cash *= (1.0 + sgov_a[i])
 
         # --- 월초 적립 (월이 바뀌는 첫 거래일) ---
-        ym = (dt.year, dt.month)
+        ym = (years[i], months[i])
         if ym != current_month:
             current_month = ym
             contrib = cfg.monthly_contribution
             invested += contrib
-            cashflows.append((dt, -contrib))
-            qld.buy((contrib * cfg.qld_weight) / qld_px.iloc[i], qld_px.iloc[i])
+            cashflows.append((idx[i], -contrib))
+            qld.buy((contrib * cfg.qld_weight) / qpx, qpx)
             cash += contrib * cfg.cash_weight
 
         # --- 전고점/낙폭 & 트리거 ---
-        px = qqq_px.iloc[i]
-        if px > peak:
-            peak = px
+        if gpx > peak:
+            peak = gpx
             triggers_fired = [False] * len(cfg.triggers)   # 신고가 시 리셋
-        dd = px / peak - 1.0
+        dd = gpx / peak - 1.0
         for k, (level, deploy) in enumerate(cfg.triggers):
             if not triggers_fired[k] and dd <= level:
                 amount = cash * deploy
                 if amount > 0:
-                    tqqq.buy(amount / tqqq_px.iloc[i], tqqq_px.iloc[i])
+                    tqqq.buy(amount / tpx, tpx)
                     cash -= amount
                 triggers_fired[k] = True
 
         # --- 분할 매도 (exit_mode == 'partial') ---
-        if exit_mode == 'partial':
-            proceeds, realized = tqqq.sell_lots_at_gain(tqqq_px.iloc[i], cfg.partial_sell_gain)
+        if is_partial:
+            proceeds, realized = tqqq.sell_lots_at_gain(tpx, cfg.partial_sell_gain)
             if proceeds > 0:
                 cash += proceeds            # 매도대금 전액을 현금풀로 환수 -> 재투자 탄약
                 realized_ytd += realized    # 실현이익만 과세 대상으로 누적
 
         # --- 연말 과세 정산 ---
-        if dt.year != current_year:
+        if years[i] != current_year:
             taxable = max(0.0, realized_ytd - cfg.annual_deduction)
             t = taxable * cfg.cap_gains_tax
             tax_paid += t
             cash = max(0.0, cash - t)            # 세금은 현금에서 납부
             realized_ytd = 0.0
-            current_year = dt.year
+            current_year = years[i]
 
-        equity = qld.value(qld_px.iloc[i]) + tqqq.value(tqqq_px.iloc[i]) + cash
-        equity_curve.append(equity)
+        equity_curve[i] = qld.value(qpx) + tqqq.value(tpx) + cash
 
-    eq = pd.Series(equity_curve, index=prices.index)
+    eq = pd.Series(equity_curve, index=idx)
 
     # 종료 시점 미실현이익에 대한 청산세(hold 전략의 '과세이연'을 정직하게 비교)
-    unrealized = (qld.value(qld_px.iloc[-1]) - sum(l.cost for l in qld.lots)) \
-                 + (tqqq.value(tqqq_px.iloc[-1]) - sum(l.cost for l in tqqq.lots))
+    unrealized = (qld.value(qld_px[-1]) - sum(l.cost for l in qld.lots)) \
+                 + (tqqq.value(tqqq_px[-1]) - sum(l.cost for l in tqqq.lots))
     liquidation_tax = max(0.0, unrealized - cfg.annual_deduction) * cfg.cap_gains_tax
 
     final_gross = eq.iloc[-1]

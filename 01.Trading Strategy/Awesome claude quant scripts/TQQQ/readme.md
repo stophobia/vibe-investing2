@@ -94,6 +94,10 @@ pip install -r requirements.txt
 python script/tqqq_rebalancing_backtest.py --source yfinance --start 2005-01-01
 # 일본식 장기횡보 스트레스 테스트
 python script/tqqq_rebalancing_backtest.py --source synthetic --regime sideways
+
+# 몬테카를로 / 블록 부트스트랩 — "HOLD 우위 유지 확률" 정량화 (§5.1)
+python script/monte_carlo_bootstrap.py --source yfinance --start 2005-01-01 --n 1000 --block 21
+python script/monte_carlo_bootstrap.py --source synthetic --regime sideways --n 500
 ```
 
 > **데이터 출처에 관한 정직한 고지**: 본 문서의 §3 헤드라인 수치(107억/151억/MDD −67.4%/세금 7,190만원)는 **원본 20년 백테스트 소스**에서 인용한 것이다. 동봉한 엔진은 동일한 방법론을 코드로 구현해 누구나 실데이터로 재검증할 수 있게 한 것이며, 합성경로(synthetic) 옵션은 메커니즘 검증·스트레스 테스트용이다(실제 결론 아님).
@@ -168,6 +172,27 @@ $$ (3-1)\times(4\% + 0.5\%) + 0.84\% \approx \mathbf{9.8\%} $$
 
 **종합 판단**: HOLD의 과세이연·복리 보존 효과는 **진짜 우위**다. 다만 그 우위는 **"우상향 가정이 성립하고, 투자자가 −60%대 MDD를 끝까지 견딘다"**는 두 조건의 곱이다. 둘 중 하나라도 깨지면 결론은 무너진다.
 
+### 5.1 몬테카를로 검증 — "HOLD 우위"는 몇 %의 미래에서만 참인가
+
+§5의 N=1 비판을 정량화하기 위해, 동일 규칙을 **수백~수천 개의 재표집/재생성 경로**에 적용했다(`script/monte_carlo_bootstrap.py`). 핵심 질문: *"HOLD가 PARTIAL을 이길 확률은 얼마인가?"*
+
+아래는 GBM 스트레스 테스트(각 300경로) 예시다.
+
+| 지표 | Bull regime | Sideways(일본식) regime |
+|---|---:|---:|
+| **P(HOLD > PARTIAL \| 세후)** | **36.7%** | **2.3%** |
+| P(원금 손실, MOIC<1.0) — HOLD | 24.3% | 86.3% |
+| P(반토막, MOIC<0.5) — HOLD | 8.0% | 59.0% |
+| MOIC 중앙값(p50) — HOLD | 2.20x | 0.45x |
+| IRR 중앙값(p50) — HOLD | +6.4% | −9.4% |
+| MDD 중앙값(p50) — HOLD | −71.6% | −65.9% |
+
+**해석.**
+- **우상향(Bull) 가정에서조차 P(HOLD>PARTIAL)는 36.7%에 불과**했다. 즉 "끝까지 보유가 더 낫다"는 명제는 보편 법칙이 아니라 *유리한 꼬리(favorable tail)에서만* 참이다. 역사적 결과(151억>107억)는 바로 그 꼬리에 위치한 단일 실현이었을 가능성이 높다. → **§5의 "사후 최적화" 비판이 수치로 확인된다.**
+- **횡보(Sideways)에서는 P(손실) 86%, P(반토막) 59%**. 레버리지 잠식이 자산을 구조적으로 파괴한다.
+
+> **중요한 단서 (정직한 한계)**: 위 수치는 IID에 가까운 **GBM**이라 **추세 지속성(momentum)**을 거의 담지 못한다. 그런데 "하락에 사서 안 판다"는 전략의 진짜 수익원이 바로 그 **지속적 상승 추세**다. 따라서 GBM은 HOLD에 **불리하게(보수적으로)** 기울어진 테스트다. 자기상관·변동성 군집을 보존하는 **실데이터 블록 부트스트랩**(`--source yfinance --block 21`)으로 돌리면 P(HOLD>PARTIAL)가 더 높게 나올 수 있다. **결론을 단정하지 말고, Dennis 환경에서 실데이터로 재실행해 확률을 직접 확인할 것** — *LLM은 엑셀이지 오라클이 아니다.*
+
 ---
 
 ## 6. 세금 분석 — 끝까지 보유의 진짜 장점
@@ -205,8 +230,12 @@ TQQQ/
 ├── requirements.txt                       # 의존성
 ├── prompts/
 │   └── cross_llm_review_prompt.md         # 4-LLM 교차검증 프롬프트
+├── data/
+│   ├── mc_bull.csv                        # 몬테카를로 per-path 결과 (예시)
+│   └── mc_sideways.csv
 └── script/
-    └── tqqq_rebalancing_backtest.py       # 재현 가능한 백테스트 엔진
+    ├── tqqq_rebalancing_backtest.py       # 재현 가능한 백테스트 엔진
+    └── monte_carlo_bootstrap.py           # 몬테카를로/블록 부트스트랩 (§5.1)
 ```
 
 ---
