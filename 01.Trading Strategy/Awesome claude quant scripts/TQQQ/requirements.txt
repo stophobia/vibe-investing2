@@ -1,0 +1,3 @@
+numpy>=1.24
+pandas>=2.0
+yfinance>=0.2.40    # --source yfinance 실행 시 필요 (실제 QQQ/^IRX 데이터)
