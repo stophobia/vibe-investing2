@@ -793,6 +793,37 @@ LLM 트레이딩 봇 중 상당수는 **하나의 LLM 호출 결과를 그대로
 - LLM 신호 + 전통적 기술적 지표의 AND 조건 적용
 - "LLM이 판단을 보류할 수 있는" null hypothesis 설계 (매매하지 않는 것을 기본값으로)
 
+**참고: "교차검증"을 별도 서비스로 구현한 예 — invinoveritas**
+
+위 "최소 2개 이상 LLM의 교차검증" 완화책을 트레이딩 봇이 아니라 **독립된 검증 레이어**로 구현한 사례가 있습니다: [invinoveritas](https://api.babyblueviper.com) `/review` 엔드포인트.
+
+트레이딩 봇이 아니고, 시그널을 생성하지도 않습니다. 봇이 만든 제안(진입 방향, 레버리지, 포지션 크기)을 입력으로 받아 **approve / approve_with_concerns / reject** 판정과 서명된 증명(proof)을 반환하는 역할만 합니다. 다루는 범위도 Red Flag 8·9가 겨냥하는 지점(레버리지/포지션 사이징 리스크, 단일 LLM 과신)으로 좁게 한정됩니다.
+
+Red Flag 8의 "실제 위험 시나리오" (LLM 90% confidence Long 신호 → 사용자 10x 레버리지 진입 → 5% 역방향 변동으로 청산)를 그대로 재현해 실제로 호출한 결과입니다:
+
+```json
+{
+  "verdict": "reject",
+  "confidence": 0.95,
+  "summary": "The proposed trade is excessively risky due to high leverage and
+              position size relative to account equity, posing a significant
+              threat to the account's capital.",
+  "issues": [
+    {"severity": "blocker", "category": "position_sizing",
+     "description": "10x leverage on a $2000 position (20% of $10000 account)
+                     is excessively risky.",
+     "suggested_fix": "Reduce leverage to 2x-3x and/or decrease position size
+                       to 5-10% of account equity."},
+    {"severity": "high", "category": "drawdown_risk",
+     "description": "A 10% adverse move could result in a 100% loss of the
+                     position due to 10x leverage, potentially leading to a
+                     margin call or account liquidation."}
+  ]
+}
+```
+
+**정직하게 밝히는 한계**: 응답에는 서명된 증명(`proof`)이 함께 오며, 누구나 `/verify-proof` (무료, 인증 불필요)로 서명을 직접 검증할 수 있습니다 — "믿지 말고 검증하라"는 이 문서의 기조와 같은 방향입니다. 다만 이 증명은 "이 호출이 실제로 일어났고 판정 내용이 변조되지 않았다"만 증명하지, **"이 판정이 그 거래 이전에 실제로 사용되었는지"까지는 증명하지 못합니다** (`vantage_limitation` 필드에 명시된 대로) — 되돌릴 수 없는 실거래 의사결정의 유일한 근거로 삼기보다는, 위 완화책(다중 LLM 교차검증, AND 조건)과 나란히 두는 보조 장치로 보는 것이 정확합니다. 유료 서비스(reject 판정 1회 200 sats ≈ $0.15)이며, invinoveritas 팀이 직접 작성한 항목입니다.
+
 ### Red Flag 10: 온체인/DeFi 통합 시 추가 위험
 
 LLM 트레이딩 봇이 DEX, DeFi Protocol과 연동될 때 발생하는 추가 리스크.
