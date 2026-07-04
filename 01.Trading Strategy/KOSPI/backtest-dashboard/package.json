@@ -1,0 +1,22 @@
+{
+  "name": "kospi-quant-backtest",
+  "version": "1.0.0",
+  "description": "Backtesting engine and dashboard for the KOSPI blue-chip multi-factor quant strategy (Quality + Value + LowVol + Momentum)",
+  "type": "module",
+  "scripts": {
+    "gen-data": "tsx src/data/generate.ts",
+    "backtest": "tsx src/run.ts",
+    "dashboard": "tsx src/server.ts",
+    "start": "npm run gen-data && npm run backtest && npm run dashboard",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}
