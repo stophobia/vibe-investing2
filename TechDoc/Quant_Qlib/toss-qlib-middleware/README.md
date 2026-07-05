@@ -4,10 +4,10 @@
 >
 > English version: [README_EN.md](README_EN.md)
 
-전체 설계 배경, 아키텍처, Redis 캐싱 전략은 상위 문서를 함께 참고할 것:
+전체 설계 배경, 아키텍처, Redis 캐싱 전략은 상위 문서를 함께 참고할 것
 [`../Qlib-getting-started-KR.md`](../Qlib-getting-started-KR.md) 7.4절.
 
-토스 Open API 자체에 대한 더 깊은 분석(엔드포인트 20개 전체 목록, 활용 시나리오, 설계 제약)은 저장소의 [`Toss/`](../../../Toss) 프로젝트를 참고했다:
+토스 Open API 자체에 대한 더 깊은 분석(엔드포인트 20개 전체 목록, 활용 시나리오, 설계 제약)은 저장소의 [`Toss/`](../../../Toss) 프로젝트를 참고했다
 
 - [`Toss/GUIDE.md`](../../../Toss/GUIDE.md) — 실제 동작하는 토스 Open API 연동 대시보드의 설치·연동 가이드
 - [`Toss/src/toss.js`](../../../Toss/src/toss.js) — 인증·시세 클라이언트 실 구현 (이 미들웨어의 엔드포인트 경로·필드 파싱 방식의 근거)
@@ -17,7 +17,7 @@
 
 ---
 
-## 왜 필요한가
+## 왜 필요한가?
 
 Qlib는 Python 프레임워크지만 Qlib가 실제로 요구하는 것은 "정해진 CSV 형식의 데이터"뿐이다. 이 미들웨어는 토스증권 Open API에서 시세를 받아와 Qlib의 CSV 관례(`date,open,high,low,close,volume,symbol,factor`)로 정규화하고 `dump_bin.py`에 바로 넘길 수 있게 한다.
 
@@ -27,7 +27,7 @@ TOSS Open API  --OAuth2-->  [Node.js/TS 미들웨어]  --CSV(csv_kr/*.csv)-->  s
                                  Redis (토큰 캐시 + 시세 캐시)
 ```
 
-## 인증 (확인된 사양)
+## 인증
 
 | 항목 | 내용 |
 | :--- | :--- |
@@ -80,13 +80,13 @@ chmod 600 .env
 | GET | `/api/prices?symbols=005930,000660` | 현재가 배치 조회 (콤마 구분, 최대 200개씩 청크) |
 | POST | `/api/export/qlib` `{symbols, start, end, outDir?}` | 여러 종목을 조회해 `csv_kr/{symbol}.csv` 생성 |
 
-서버 없이 바로 CSV만 뽑고 싶으면:
+서버 없이 바로 CSV만 뽑고 싶으면 다음을 실행한다.
 
 ```bash
 npm run export:qlib -- --symbols 005930,000660 --start 2020-01-01 --end 2026-07-01
 ```
 
-생성된 CSV는 Qlib 가이드 7.2절의 변환 명령으로 그대로 넘긴다:
+생성된 CSV는 Qlib 가이드 7.2절의 변환 명령으로 그대로 넘긴다.
 
 ```bash
 python scripts/dump_bin.py dump_all \
@@ -96,9 +96,11 @@ python scripts/dump_bin.py dump_all \
     --date_field_name date --symbol_field_name symbol
 ```
 
-## 트레이딩(주문 실행)은 왜 포함하지 않았는가
+## 트레이딩(주문 실행)은 왜 포함하지 않았는가?
 
-인증과 시세 조회는 누구에게나 거의 동일하게 필요한 공통 기반이라 미들웨어로 만들 가치가 있다. 반면 주문 로직(상태 관리, 재시도 시 중복 주문 방지, 리스크 한도, 체결 확인)은 각자의 전략·리스크 허용도에 따라 완전히 달라지므로 범용으로 만드는 것 자체가 위험하다고 판단했다. 확장 방법은 [`src/trading/README.md`](src/trading/README.md) 참고.
+인증과 시세 조회는 누구에게나 거의 동일하게 필요한 공통 기반이라 미들웨어로 만들 가치가 있다. 반면 주문 로직(상태 관리, 재시도 시 중복 주문 방지, 리스크 한도, 체결 확인)은 각자의 전략·리스크 허용도에 따라 완전히 달라지므로 범용으로 만드는 것 자체가 위험하다고 판단했다. 그리고 지금 TOSS Open API는 Rest API로 WebSocket이 아니다. 고빈도, 초단타 매매에는 적합하지 않으며 단타 거래는 개인이 승률이 낮다고 필자는 생각하고 있다. 확장하려고 하면 확장해도 되지만, 지금 개미들 앞에는 자본과 미친 과학자들로 무장한 헤지펀드가 있다는 것을 잊지 말아야 한다. 인공지능으로 인해 퀀트의 격차가 줄었지만, 그들은 더 세밀하고 디테일하며 시장의 노이즈에서 신호를 증류할 수 있다.
+
+확장 방법은 [`src/trading/README.md`](src/trading/README.md) 참고.
 
 ## 프로젝트 구조
 
