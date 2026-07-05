@@ -2,7 +2,7 @@
 
 **Dennis Kim | Betalabs CEO · 前 Cyworld CEO**
 
-2026. 7. 5.
+2026.07.05
 
 ## 언론중재위원회가 도착하기 전에 게임은 끝난다
 
