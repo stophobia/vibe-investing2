@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KOSPI 우량주 멀티팩터 퀀트 백테스트</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --panel2: #1c2330; --border: #2a3240;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #4a9eff; --bench: #f0883e;
+    --green: #3fb950; --red: #f85149; --grid: #222b38;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", Roboto, sans-serif; }
+  header { padding: 20px 28px; border-bottom: 1px solid var(--border); display:flex; align-items:baseline; gap:16px; flex-wrap:wrap;}
+  header h1 { font-size: 18px; margin: 0; font-weight: 650; }
+  header .sub { color: var(--muted); font-size: 13px; }
+  .wrap { padding: 20px 28px; max-width: 1400px; margin: 0 auto; }
+  .grid { display: grid; gap: 16px; }
+  .cards { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 20px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .card .label { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+  .card .val { font-size: 22px; font-weight: 650; }
+  .card .cmp { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .pos { color: var(--green); } .neg { color: var(--red); }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .panel h2 { font-size: 14px; margin: 0 0 12px; font-weight: 600; }
+  .row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px){ .row, .row3 { grid-template-columns: 1fr; } }
+  canvas { width: 100%; display: block; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--grid); }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 500; position: sticky; top: 0; background: var(--panel); }
+  .scroll { max-height: 340px; overflow: auto; }
+  .legend { display:flex; gap:16px; font-size:12px; color:var(--muted); margin-bottom:8px; align-items:center;}
+  .legend .k { display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:5px; vertical-align:-1px;}
+  .controls { display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end; }
+  .ctl { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--muted);}
+  .ctl input[type=range]{ width:150px; }
+  .ctl .num { color: var(--fg); font-weight:600; font-size:13px;}
+  button { background: var(--accent); color:#fff; border:none; padding:9px 16px; border-radius:8px; font-size:13px; cursor:pointer; font-weight:600;}
+  button.ghost { background: var(--panel2); color: var(--fg); border:1px solid var(--border); }
+  button:disabled { opacity:.5; cursor:default; }
+  .tag { font-size:11px; padding:2px 8px; border-radius:20px; background:var(--panel2); border:1px solid var(--border); color:var(--muted);}
+  .mb { margin-bottom: 16px; }
+  .note { font-size:11.5px; color:var(--muted); margin-top:8px; line-height:1.5;}
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>KOSPI 우량주 멀티팩터 퀀트 백테스트</h1>
+  <span class="sub">퀄리티 · 밸류 · 저변동성 · 모멘텀 복합 팩터 · 월간 리밸런싱 · 롱온리 · 2012–2024</span>
+  <span class="tag" id="status">로딩중…</span>
+</header>
+
+<div class="wrap">
+  <div class="panel mb">
+    <h2>파라미터 (실시간 재실행)</h2>
+    <div class="controls">
+      <div class="ctl">종목 수 <span class="num" id="nhVal">20</span>
+        <input type="range" id="nh" min="10" max="30" step="1" value="20"></div>
+      <div class="ctl">퀄리티 가중치 <span class="num" id="wqVal">40%</span>
+        <input type="range" id="wq" min="0" max="100" step="5" value="40"></div>
+      <div class="ctl">밸류 <span class="num" id="wvVal">25%</span>
+        <input type="range" id="wv" min="0" max="100" step="5" value="25"></div>
+      <div class="ctl">저변동성 <span class="num" id="wlVal">20%</span>
+        <input type="range" id="wl" min="0" max="100" step="5" value="20"></div>
+      <div class="ctl">모멘텀 <span class="num" id="wmVal">15%</span>
+        <input type="range" id="wm" min="0" max="100" step="5" value="15"></div>
+      <div class="ctl">위기 필터
+        <select id="crisis" style="background:var(--panel2);color:var(--fg);border:1px solid var(--border);border-radius:6px;padding:6px;">
+          <option value="on">사용</option><option value="off">해제</option></select></div>
+      <button id="runBtn">재실행</button>
+      <button id="resetBtn" class="ghost">기본값</button>
+    </div>
+    <div class="note">가중치는 자동 정규화됩니다. 재실행은 서버에서 포인트인타임 백테스트를 다시 수행합니다(약 2초).</div>
+  </div>
+
+  <div class="grid cards" id="cards"></div>
+
+  <div class="panel mb">
+    <h2>누적 수익률 (전략 vs 코스피200 TR)</h2>
+    <div class="legend">
+      <span><span class="k" style="background:var(--accent)"></span>전략</span>
+      <span><span class="k" style="background:var(--bench)"></span>벤치마크</span>
+      <span style="margin-left:auto"><label><input type="checkbox" id="logScale"> 로그 스케일</label></span>
+    </div>
+    <canvas id="equity" height="300"></canvas>
+  </div>
+
+  <div class="panel mb">
+    <h2>낙폭 (Drawdown)</h2>
+    <div class="legend">
+      <span><span class="k" style="background:var(--accent)"></span>전략</span>
+      <span><span class="k" style="background:var(--bench)"></span>벤치마크</span>
+    </div>
+    <canvas id="drawdown" height="200"></canvas>
+  </div>
+
+  <div class="row mb">
+    <div class="panel">
+      <h2>연도별 수익률</h2>
+      <div class="legend">
+        <span><span class="k" style="background:var(--accent)"></span>전략</span>
+        <span><span class="k" style="background:var(--bench)"></span>벤치마크</span>
+      </div>
+      <canvas id="yearly" height="240"></canvas>
+    </div>
+    <div class="panel">
+      <h2>연도별 상세</h2>
+      <div class="scroll"><table id="yearlyTable"></table></div>
+    </div>
+  </div>
+
+  <div class="row3 mb">
+    <div class="panel">
+      <h2>팩터별 평균 RankIC</h2>
+      <canvas id="icBar" height="240"></canvas>
+      <div class="note">양(+)의 IC = 팩터 점수가 익월 수익률을 잘 예측. t-통계량 2 이상이면 통계적으로 유효.</div>
+    </div>
+    <div class="panel">
+      <h2>팩터 IC 분석표</h2>
+      <div class="scroll"><table id="icTable"></table></div>
+    </div>
+  </div>
+
+  <div class="panel mb">
+    <h2>포트폴리오 팩터 노출도 (월별 z-score 평균)</h2>
+    <div class="legend">
+      <span><span class="k" style="background:#4a9eff"></span>퀄리티</span>
+      <span><span class="k" style="background:#3fb950"></span>밸류</span>
+      <span><span class="k" style="background:#f0883e"></span>저변동성</span>
+      <span><span class="k" style="background:#d2a8ff"></span>모멘텀</span>
+    </div>
+    <canvas id="exposure" height="220"></canvas>
+  </div>
+
+  <div class="row3 mb">
+    <div class="panel">
+      <h2>파라미터 민감도</h2>
+      <div class="scroll"><table id="sensTable"></table></div>
+      <div class="note" id="sensNote"></div>
+    </div>
+    <div class="panel">
+      <h2>최근 포트폴리오 구성</h2>
+      <div class="scroll"><table id="holdTable"></table></div>
+    </div>
+  </div>
+
+  <div class="note" style="padding-bottom:40px">
+    ⚠️ 데이터는 전략 검증용 합성(synthetic) 데이터입니다. 실제 시장 데이터가 아니며 미래 수익을 보장하지 않습니다.
+    전략 정의 출처: BuyKorea.md (코스피 우량주 퀀트 트레이딩 전략).
+  </div>
+</div>
+
+<script>
+const fmtPct = (x, d=2) => (x*100).toFixed(d) + "%";
+const fmtNum = (x, d=2) => x.toFixed(d);
+const cssv = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const COL = { accent: cssv('--accent'), bench: cssv('--bench'), muted: cssv('--muted'),
+  fg: cssv('--fg'), grid: cssv('--grid'), green: cssv('--green'), red: cssv('--red') };
+
+function setupCanvas(canvas, height) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth || canvas.parentElement.clientWidth;
+  canvas.width = w * dpr; canvas.height = height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h: height };
+}
+
+// Generic line chart. series: [{data:[{x,y}], color}], x is index; labels for axis.
+function lineChart(canvas, series, opts={}) {
+  const { ctx, w, h } = setupCanvas(canvas, opts.height || 300);
+  const pad = { l: 54, r: 12, t: 10, b: 24 };
+  const iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+  ctx.clearRect(0,0,w,h);
+  const all = series.flatMap(s => s.data.map(p => p.y));
+  let min = Math.min(...all), max = Math.max(...all);
+  if (opts.log) { min = Math.log10(Math.max(min, 1e-6)); max = Math.log10(max); }
+  if (opts.zeroLine && min > 0) min = 0;
+  const range = max - min || 1;
+  const n = Math.max(...series.map(s => s.data.length));
+  const X = i => pad.l + (n<=1?0:(i/(n-1))*iw);
+  const Y = v => { const t = opts.log ? Math.log10(Math.max(v,1e-6)) : v; return pad.t + ih - ((t-min)/range)*ih; };
+  // gridlines + y labels
+  ctx.strokeStyle = COL.grid; ctx.fillStyle = COL.muted; ctx.font = "11px sans-serif"; ctx.textAlign="right";
+  const ticks = 5;
+  for (let k=0;k<=ticks;k++){
+    const v = min + (range*k/ticks);
+    const yy = pad.t + ih - (k/ticks)*ih;
+    ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(w-pad.r, yy); ctx.stroke();
+    const label = opts.log ? Math.pow(10,v).toFixed(0) : (opts.pct ? (v*100).toFixed(0)+'%' : v.toFixed(opts.dp??0));
+    ctx.fillText(label, pad.l-6, yy+3);
+  }
+  // x labels
+  ctx.textAlign="center";
+  if (opts.labels) {
+    const step = Math.ceil(n/8);
+    for (let i=0;i<n;i+=step){ ctx.fillText(opts.labels[i]||'', X(i), h-6); }
+  }
+  // zero line
+  if (min < 0 && max > 0) { const zy=Y(0); ctx.strokeStyle=COL.muted; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(pad.l,zy); ctx.lineTo(w-pad.r,zy); ctx.stroke(); ctx.setLineDash([]); }
+  // series
+  for (const s of series) {
+    ctx.strokeStyle = s.color; ctx.lineWidth = s.width || 1.6; ctx.beginPath();
+    s.data.forEach((p,i)=>{ const xx=X(i), yy=Y(p.y); i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy); });
+    ctx.stroke();
+    if (s.fill) { ctx.lineTo(X(s.data.length-1), Y(0)); ctx.lineTo(X(0), Y(0)); ctx.closePath();
+      ctx.fillStyle = s.fill; ctx.fill(); }
+  }
+}
+
+// Grouped/simple bar chart. groups:[{label, values:[{v,color}]}]
+function barChart(canvas, groups, opts={}) {
+  const { ctx, w, h } = setupCanvas(canvas, opts.height || 240);
+  const pad = { l: 46, r: 10, t: 10, b: 40 };
+  const iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+  ctx.clearRect(0,0,w,h);
+  const all = groups.flatMap(g => g.values.map(v=>v.v));
+  let min = Math.min(0, ...all), max = Math.max(0, ...all);
+  const range = max - min || 1;
+  const Y = v => pad.t + ih - ((v-min)/range)*ih;
+  ctx.strokeStyle = COL.grid; ctx.fillStyle = COL.muted; ctx.font="11px sans-serif";
+  for (let k=0;k<=4;k++){ const yy=pad.t+ih-(k/4)*ih; ctx.beginPath(); ctx.moveTo(pad.l,yy); ctx.lineTo(w-pad.r,yy); ctx.stroke();
+    ctx.textAlign="right"; ctx.fillText((opts.pct?((min+range*k/4)*100).toFixed(0)+'%':(min+range*k/4).toFixed(opts.dp??2)), pad.l-6, yy+3); }
+  const gw = iw/groups.length;
+  groups.forEach((g,gi)=>{
+    const nb = g.values.length; const bw = Math.min(gw*0.8/nb, 26);
+    const gx = pad.l + gi*gw + gw/2;
+    g.values.forEach((val,vi)=>{
+      const x = gx - (nb*bw)/2 + vi*bw;
+      const y0 = Y(0), y1 = Y(val.v);
+      ctx.fillStyle = val.color;
+      ctx.fillRect(x, Math.min(y0,y1), bw-2, Math.abs(y1-y0));
+    });
+    ctx.fillStyle = COL.muted; ctx.textAlign="center"; ctx.save();
+    ctx.translate(gx, h-6);
+    if (opts.rotate){ ctx.rotate(-Math.PI/4); ctx.textAlign="right"; }
+    ctx.fillText(g.label, 0, 0); ctx.restore();
+  });
+}
+
+function table(el, cols, rows, fmt) {
+  let html = "<thead><tr>" + cols.map(c=>`<th>${c.h}</th>`).join("") + "</tr></thead><tbody>";
+  for (const r of rows) html += "<tr>" + cols.map(c=>`<td>${fmt(c.k, r[c.k], r)}</td>`).join("") + "</tr>";
+  el.innerHTML = html + "</tbody>";
+}
+
+function statCard(label, val, cmp, cmpClass) {
+  return `<div class="card"><div class="label">${label}</div><div class="val">${val}</div>
+    <div class="cmp ${cmpClass||''}">${cmp||''}</div></div>`;
+}
+
+function renderCards(r) {
+  const s = r.stats, b = r.statsBenchmark, g = r.statsGross;
+  const cmp = (sv, bv, pct=true) => {
+    const d = sv - bv; const cls = d>=0?'pos':'neg';
+    return `<span class="${cls}">${d>=0?'+':''}${pct?fmtPct(d):fmtNum(d)} vs 벤치</span>`;
+  };
+  document.getElementById('cards').innerHTML =
+    statCard('CAGR (순)', fmtPct(s.cagr), cmp(s.cagr,b.cagr)) +
+    statCard('연율 변동성', fmtPct(s.vol), cmp(s.vol,b.vol)) +
+    statCard('샤프 비율', fmtNum(s.sharpe), cmp(s.sharpe,b.sharpe,false)) +
+    statCard('최대 낙폭(MDD)', fmtPct(s.mdd), cmp(s.mdd,b.mdd)) +
+    statCard('정보 비율(IR)', fmtNum(s.informationRatio), '') +
+    statCard('월평균 턴오버', fmtPct(s.avgTurnover), '') +
+    statCard('월간 승률', fmtPct(s.winRateMonthly), '') +
+    statCard('MDD 회복', s.mddRecoveryMonths==null?'미회복':s.mddRecoveryMonths+'개월','') +
+    statCard('총수익 (순)', fmtPct(s.totalReturn), '거래비용 후') +
+    statCard('벤치 CAGR', fmtPct(b.cagr), '코스피200 TR');
+}
+
+function render(r) {
+  renderCards(r);
+  const labels = r.equityCurve.map(p=>p.date.slice(0,7));
+  const log = document.getElementById('logScale').checked;
+  lineChart(document.getElementById('equity'), [
+    { data: r.equityCurve.map(p=>({y:p.strategy})), color: COL.accent, width:1.8 },
+    { data: r.equityCurve.map(p=>({y:p.benchmark})), color: COL.bench, width:1.6 },
+  ], { labels, log, dp:0 });
+
+  lineChart(document.getElementById('drawdown'), [
+    { data: r.drawdown.map(p=>({y:p.strategy})), color: COL.accent, width:1.4, fill:'rgba(74,158,255,.15)' },
+    { data: r.drawdown.map(p=>({y:p.benchmark})), color: COL.bench, width:1.4 },
+  ], { labels, height:200, pct:true, dp:0 });
+
+  barChart(document.getElementById('yearly'), r.yearly.map(y=>({
+    label: String(y.year),
+    values: [{v:y.strategy,color:COL.accent},{v:y.benchmark,color:COL.bench}]
+  })), { pct:true, rotate:true });
+
+  table(document.getElementById('yearlyTable'),
+    [{h:'연도',k:'year'},{h:'전략',k:'strategy'},{h:'벤치',k:'benchmark'},{h:'초과',k:'excess'}],
+    r.yearly, (k,v)=> k==='year'? v : `<span class="${v>=0?'pos':'neg'}">${fmtPct(v)}</span>`);
+
+  barChart(document.getElementById('icBar'), r.icSummary.map(f=>({
+    label: f.factor, values:[{v:f.meanIC, color: f.meanIC>=0?COL.green:COL.red}]
+  })), { dp:2, rotate:true });
+
+  table(document.getElementById('icTable'),
+    [{h:'팩터',k:'factor'},{h:'평균IC',k:'meanIC'},{h:'IC_IR',k:'icIR'},{h:'t-stat',k:'tStat'},{h:'승률',k:'hitRate'}],
+    r.icSummary, (k,v)=> {
+      if(k==='factor') return v;
+      if(k==='hitRate') return fmtPct(v,0);
+      if(k==='meanIC') return `<span class="${v>=0?'pos':'neg'}">${fmtNum(v,3)}</span>`;
+      if(k==='tStat') return `<span class="${Math.abs(v)>=2?'pos':''}">${fmtNum(v,2)}</span>`;
+      return fmtNum(v,2);
+    });
+
+  const ex = r.factorExposure;
+  lineChart(document.getElementById('exposure'), [
+    { data: ex.map(p=>({y:p.quality})), color:'#4a9eff', width:1.3 },
+    { data: ex.map(p=>({y:p.value})), color:'#3fb950', width:1.3 },
+    { data: ex.map(p=>({y:p.lowVol})), color:'#f0883e', width:1.3 },
+    { data: ex.map(p=>({y:p.momentum})), color:'#d2a8ff', width:1.3 },
+  ], { labels: ex.map(p=>p.date.slice(0,7)), height:220, dp:1 });
+
+  if (r.sensitivity && r.sensitivity.length) {
+    table(document.getElementById('sensTable'),
+      [{h:'설정',k:'label'},{h:'CAGR',k:'cagr'},{h:'Sharpe',k:'sharpe'},{h:'MDD',k:'mdd'}],
+      r.sensitivity, (k,v)=> k==='label'?v : (k==='sharpe'?fmtNum(v,2):fmtPct(v)));
+    document.getElementById('sensNote').textContent = '';
+  } else {
+    document.getElementById('sensTable').innerHTML = '';
+    document.getElementById('sensNote').textContent = '민감도 분석은 기본값 실행(/api/result)에서만 계산됩니다.';
+  }
+
+  const last = r.rebalances[r.rebalances.length-1];
+  if (last) {
+    const rows = [...last.holdings].sort((a,b)=>b.weight-a.weight);
+    document.querySelector('#holdTable').setAttribute('data-date', last.date);
+    table(document.getElementById('holdTable'),
+      [{h:'종목',k:'code'},{h:'섹터',k:'sector'},{h:'비중',k:'weight'}],
+      rows, (k,v)=> k==='weight'? fmtPct(v) : v);
+  }
+  document.getElementById('status').textContent =
+    `${r.rebalances.length}회 리밸런싱 · 위기필터 ${r.rebalances.filter(x=>x.riskOff).length}개월 발동`;
+}
+
+let CURRENT = null;
+async function load(url, withStatus=true) {
+  if (withStatus) document.getElementById('status').textContent = '계산중…';
+  const res = await fetch(url);
+  const r = await res.json();
+  CURRENT = r; render(r);
+}
+
+// Controls
+const ids = ['nh','wq','wv','wl','wm'];
+const syncLabels = () => {
+  nhVal.textContent = nh.value;
+  wqVal.textContent = wq.value+'%'; wvVal.textContent = wv.value+'%';
+  wlVal.textContent = wl.value+'%'; wmVal.textContent = wm.value+'%';
+};
+ids.forEach(id => document.getElementById(id).addEventListener('input', syncLabels));
+document.getElementById('runBtn').addEventListener('click', async () => {
+  const q = new URLSearchParams({ numHoldings: nh.value, quality: wq.value, value: wv.value,
+    lowVol: wl.value, momentum: wm.value, crisis: document.getElementById('crisis').value });
+  document.getElementById('runBtn').disabled = true;
+  await load('/api/run?'+q.toString());
+  document.getElementById('runBtn').disabled = false;
+});
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  nh.value=20; wq.value=40; wv.value=25; wl.value=20; wm.value=15;
+  document.getElementById('crisis').value='on'; syncLabels();
+  await load('/api/result');
+});
+document.getElementById('logScale').addEventListener('change', ()=> CURRENT && render(CURRENT));
+window.addEventListener('resize', ()=> CURRENT && render(CURRENT));
+
+syncLabels();
+load('/api/result');
+</script>
+</body>
+</html>
