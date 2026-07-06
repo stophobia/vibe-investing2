@@ -33,7 +33,7 @@
 | [Claude code column — Fable 5 리턴](#claude-code-column) | 14,057 | 0.97% | Top 50 평균 참여율(0.84%)을 웃도는 소수 편 중 하나 |
 | [SK하이닉스 나스닥 입성](#ai_revolution) | 10,933 | 0.24% | 실시간 이벤트 대응 콘텐츠 중 최고 노출 |
 | [Voce Phishing — 김미영 팀장](#voce-phishing) | 10,814 | 0.28% | 전 국민이 아는 소재 + CTI 전문성 결합 |
-| [Cyber wrecker — 카라큘라 채널 종료](#cyber-wrecker) | 7,514 | 0.60% | 사회 이슈 서사형 포맷의 안정적 참여율 |
+| [Cyber wrecker — 카라큘라 채널 종료](#cyber-wrecker) | 7,514 | 0.60% | 싸이버 레카 이슈를 다른 글 |
 
 > 데이터 출처: LinkedIn 계정 애널리틱스, 2026-04-08~2026-07-06. Top 50 게시물 평균 참여율 0.84% 기준.
 
