@@ -9,15 +9,33 @@
 
 ## 독자 페르소나별 추천 (Where to Start)
 
-처음 오셨다면, 본인에게 맞는 진입점부터 읽어보세요. (적합도는 해당 독자층 기준입니다.)
+처음 오셨다면, 본인에게 맞는 진입점부터 읽어보세요. (적합도는 해당 독자층 기준이며,
+[실측] 표시는 LinkedIn 90일 데이터 기준 노출·참여 검증을 마친 편입니다.)
 
 | 추천 독자 | 추천 진입점 | 적합도 |
 | --- | --- | --- |
+| **처음 오신 분 / 어디서 시작할지 모르겠다면** | [Elon Musk(SpaceX·미래에셋)](#elon-musk) [실측: 노출 77,766] → [Bouble(새롬기술)](#bouble) → [Voce Phishing(김미영 팀장)](#voce-phishing) [실측: 노출 10,814] | ★★★★★ |
 | 퀀트 트레이더 | [BNB_ETH Relationship](#bnb_eth-relationship) → [AI_Trading](#ai_trading) → [Marvell Momentum](#marvell-momentum) | ★★★★★ |
 | 기관 리서처 | [China EV Industry Restructuring](#china-ev-industry-restructuring) → [US Treasury bonds](#us-treasury-bonds) → [World_Bank](#world_bank) | ★★★★☆ |
 | 한국 개인투자자 | [Korea Discount](#korea-discount) → [Bouble(새롬기술)](#bouble) → [money_game(프리즘투자자문)](#money_game) → [MSCI](#msci) | ★★★★★ |
 | 글로벌 개인투자자 | [Insider trading](#insider-trading) → [BitCoin](#bitcoin) → [AI_Trading](#ai_trading) | ★★★☆☆ |
-| 일반 대중 / 인문 독자 | [기레기](#기레기) → [518](#518) → [Voce Phishing](#voce-phishing) → [Brain](#brain) | ★★★★☆ |
+| 일반 대중 / 인문 독자 | [Brain(침묵의 카르텔)](#brain) → [기레기](#기레기) → [518](#518) → [Voce Phishing](#voce-phishing) [실측: 노출 10,814] | ★★★★★ |
+| AI·테크 뉴스 팔로워 | [Claude code column(Fable 5)](#claude-code-column) [실측: 참여율 0.97%] → [AI_Revolution(GPU 컴퓨트)](#ai_revolution) → [DeepSeek V4](#deepseek-v4) [실측: 노출 6,468] | ★★★★☆ |
+
+---
+
+### 지금까지 가장 반응이 좋았던 글 (Proven Hits — LinkedIn 90일 실측)
+
+| 글 | 노출수 | 참여율 | 왜 반응이 좋았나 |
+| --- | ---: | ---: | --- |
+| [Elon Musk — 미래에셋, 왜 스페이스X 배정 주식을 취소당했나](#elon-musk) | 77,766 | 0.31% | 90일 전체 노출의 8.3%를 단독으로 차지한 이 레포 최고 성과작 |
+| [Elon Musk — 베이징 국빈만찬](#elon-musk) | 17,658 | 0.31% | 실존 인물의 서사 + 지정학·자본 논리 결합 포맷의 반복 성공 |
+| [Claude code column — Fable 5 리턴](#claude-code-column) | 14,057 | 0.97% | Top 50 평균 참여율(0.84%)을 웃도는 소수 편 중 하나 |
+| [SK하이닉스 나스닥 입성](#ai_revolution) | 10,933 | 0.24% | 실시간 이벤트 대응 콘텐츠 중 최고 노출 |
+| [Voce Phishing — 김미영 팀장](#voce-phishing) | 10,814 | 0.28% | 전 국민이 아는 소재 + CTI 전문성 결합 |
+| [Cyber wrecker — 카라큘라 채널 종료](#cyber-wrecker) | 7,514 | 0.60% | 사회 이슈 서사형 포맷의 안정적 참여율 |
+
+> 데이터 출처: LinkedIn 계정 애널리틱스, 2026-04-08~2026-07-06. Top 50 게시물 평균 참여율 0.84% 기준.
 
 ---
 
