@@ -20,6 +20,8 @@ License / 라이선스: MIT (code), CC-BY-4.0 (paper preprints). Cite as "HoKwan
 
 ## Latest updates / 최신 업데이트
 
+- [Strategy — Bitcoin DAT "danse macabre"](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Strategy/Strategy_danse_macabre_column.md): WSJ (2026-07-06) mNAV flaw — Strategy uses face value not market value for debt/preferreds; snowball model stalls as mNAV drops below 1 (stock -75% YoY). Reframes from mNAV distortion to cash-flow risk. / Strategy mNAV 결함(WSJ) — DAT 플라이휠 정지, 현금흐름 리스크로 재정의.
+
 - [AI_Trading — Why AI trades aggressively in drawdowns](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/AI_Trading/AI_Trading.md): Nof1.ai Alpha Arena (6 LLMs, real capital on Hyperliquid) — winner Qwen3 Max (31.8% win rate), loser GPT-5; risk management > prediction, with a mathematical proof of structural failure. / 알파 아레나 6개 LLM 실전매매 — 하락장 급진매매의 구조적 필연을 수학적으로 증명.
 
 - [MSCI — Kicking away the ladder](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/MSCI/MSCIMSCI%E2%80%99s_Kicking_Away_the_Ladder.md): Why MSCI still keeps Korea in Emerging Markets while FTSE/S&P classify it Developed — index-business incentives + financial sovereignty. / MSCI가 한국을 계속 이머징에 두는 구조적 이유와 금융 주권.
@@ -116,7 +118,7 @@ License / 라이선스: MIT (code), CC-BY-4.0 (paper preprints). Cite as "HoKwan
 
 ## Columns / 칼럼 (02.Investment Idea Column/)
 
-- [Column index](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Readme.MD): 59 empirical columns — AI infra/semiconductors, crypto/Web3, defense/geopolitics, luxury/consumer trends, Korea market/governance, macro/FX, market forensics, and more. Quick-find + per-column summaries + thematic index. / 실증 칼럼 59편 통합 인덱스 — AI 인프라·반도체, 크립토·Web3, 방산·지정학, 럭셔리·소비 트렌드, 한국 시장·거버넌스, 거시·환율, 시장 포렌식 등. 빠른검색·칼럼별 요약·주제별 분류 포함.
+- [Column index](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Readme.MD): 64 empirical columns — AI infra/semiconductors, crypto/Web3/DAT, defense/geopolitics, luxury/consumer trends, Korea market/governance, macro/FX (incl. Japan), market forensics/bubbles, and more. Quick-find + per-column summaries + thematic index. / 실증 칼럼 64편 통합 인덱스 — AI 인프라·반도체, 크립토·Web3·DAT, 방산·지정학, 럭셔리·소비 트렌드, 한국 시장·거버넌스, 거시·환율(일본 포함), 시장 포렌식·버블 등. 빠른검색·칼럼별 요약·주제별 분류 포함.
 
 - [Reading the model — lessons from LTCM](https://github.com/gameworkerkim/vibe-investing/blob/main/Vibe%20Investing%20Risk%20Management.MD): 1998 LTCM collapse applied to 2026 AI vibe investing. / LTCM 사태와 2026 AI 바이브 투자 리스크.
 
