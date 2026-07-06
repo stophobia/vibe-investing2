@@ -14,13 +14,13 @@
 
 | 추천 독자 | 추천 진입점 | 적합도 |
 | --- | --- | --- |
-| **처음 오신 분 / 어디서 시작할지 모르겠다면** | [Elon Musk(SpaceX·미래에셋)](#elon-musk) [실측: 노출 77,766] → [Bouble(새롬기술)](#bouble) → [Voce Phishing(김미영 팀장)](#voce-phishing) [실측: 노출 10,814] | ★★★★★ |
+| **처음 오신 분 / 어디서 시작할지 모르겠다면** | [Elon Musk(SpaceX·미래에셋)](#elon-musk) [77,766 뷰] → [Bouble(새롬기술)](#bouble) → [Voce Phishing(김미영 팀장)](#voce-phishing) [10,814뷰] | ★★★★★ |
 | 퀀트 트레이더 | [BNB_ETH Relationship](#bnb_eth-relationship) → [AI_Trading](#ai_trading) → [Marvell Momentum](#marvell-momentum) | ★★★★★ |
 | 기관 리서처 | [China EV Industry Restructuring](#china-ev-industry-restructuring) → [US Treasury bonds](#us-treasury-bonds) → [World_Bank](#world_bank) | ★★★★☆ |
 | 한국 개인투자자 | [Korea Discount](#korea-discount) → [Bouble(새롬기술)](#bouble) → [money_game(프리즘투자자문)](#money_game) → [MSCI](#msci) | ★★★★★ |
 | 글로벌 개인투자자 | [Insider trading](#insider-trading) → [BitCoin](#bitcoin) → [AI_Trading](#ai_trading) | ★★★☆☆ |
-| 일반 대중 / 인문 독자 | [Brain(침묵의 카르텔)](#brain) → [기레기](#기레기) → [518](#518) → [Voce Phishing](#voce-phishing) [실측: 노출 10,814] | ★★★★★ |
-| AI·테크 뉴스 팔로워 | [Claude code column(Fable 5)](#claude-code-column) [실측: 참여율 0.97%] → [AI_Revolution(GPU 컴퓨트)](#ai_revolution) → [DeepSeek V4](#deepseek-v4) [실측: 노출 6,468] | ★★★★☆ |
+| 일반 대중 / 인문 독자 | [Brain(침묵의 카르텔)](#brain) → [기레기](#기레기) → [518](#518) → [Voce Phishing](#voce-phishing) [10,814뷰] | ★★★★★ |
+| AI·테크 뉴스 팔로워 | [Claude code column(Fable 5)](#claude-code-column) [참여율 0.97%] → [AI_Revolution(GPU 컴퓨트)](#ai_revolution) → [DeepSeek V4](#deepseek-v4) [실측: 노출 6,468] | ★★★★☆ |
 
 ---
 
