@@ -20,6 +20,12 @@ License / 라이선스: MIT (code), CC-BY-4.0 (paper preprints). Cite as "HoKwan
 
 ## Latest updates / 최신 업데이트
 
+- [AI_Trading — Why AI trades aggressively in drawdowns](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/AI_Trading/AI_Trading.md): Nof1.ai Alpha Arena (6 LLMs, real capital on Hyperliquid) — winner Qwen3 Max (31.8% win rate), loser GPT-5; risk management > prediction, with a mathematical proof of structural failure. / 알파 아레나 6개 LLM 실전매매 — 하락장 급진매매의 구조적 필연을 수학적으로 증명.
+
+- [MSCI — Kicking away the ladder](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/MSCI/MSCIMSCI%E2%80%99s_Kicking_Away_the_Ladder.md): Why MSCI still keeps Korea in Emerging Markets while FTSE/S&P classify it Developed — index-business incentives + financial sovereignty. / MSCI가 한국을 계속 이머징에 두는 구조적 이유와 금융 주권.
+
+- [trump — Trade war + US-Iran peace market analysis](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/trump/Trade_War.md): USMCA renewal refusal, tariff escalation, Coupang Section 301 buildup + "Let the oil flow" Hormuz reopening market analysis. / USMCA 통상전쟁·301조 압박 + 미·이란 종전 유가 시장분석.
+
 - [Claude Fable 5 System Prompt Leak Analysis](https://github.com/gameworkerkim/vibe-investing/blob/main/Claude_Fable5_Prompt/README.md): Full internal system prompt extraction from Claude Fable 5 — 12 Claude versions evolution, copyright/safety patterns, prompt engineering techniques. / Claude Fable 5 시스템 프롬프트 유출 분석 — 12개 버전 프롬프트 진화·저작권 방어·프롬프트 엔지니어링 패턴.
 
 - [caveman + rtk Token Optimization Guide](https://github.com/gameworkerkim/vibe-investing/blob/main/TechDoc/LLM/Caveman%20rtk%20token%20optimization.md): 80-95% token reduction — caveman (output compression 65-75%) + rtk (input compression 60-90%) combined. 71k+ GitHub stars combined. / caveman + rtk 토큰 최적화 — 출력 65~75% + 입력 60~90% 압축, 조합 시 최대 95% 절감.
@@ -110,7 +116,7 @@ License / 라이선스: MIT (code), CC-BY-4.0 (paper preprints). Cite as "HoKwan
 
 ## Columns / 칼럼 (02.Investment Idea Column/)
 
-- [Column index](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Readme.MD): 7 empirical columns. / 실증 칼럼 7편 통합 인덱스.
+- [Column index](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Readme.MD): 59 empirical columns — AI infra/semiconductors, crypto/Web3, defense/geopolitics, luxury/consumer trends, Korea market/governance, macro/FX, market forensics, and more. Quick-find + per-column summaries + thematic index. / 실증 칼럼 59편 통합 인덱스 — AI 인프라·반도체, 크립토·Web3, 방산·지정학, 럭셔리·소비 트렌드, 한국 시장·거버넌스, 거시·환율, 시장 포렌식 등. 빠른검색·칼럼별 요약·주제별 분류 포함.
 
 - [Reading the model — lessons from LTCM](https://github.com/gameworkerkim/vibe-investing/blob/main/Vibe%20Investing%20Risk%20Management.MD): 1998 LTCM collapse applied to 2026 AI vibe investing. / LTCM 사태와 2026 AI 바이브 투자 리스크.
 
