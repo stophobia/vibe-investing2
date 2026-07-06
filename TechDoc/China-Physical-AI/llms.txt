@@ -1,0 +1,31 @@
+# China Physical AI & Embodied AI Open-Source Ecosystem
+
+> A 2026 landscape map of Chinese Physical AI (Physical AI) and Embodied AI open-source releases from internet platform giants, robotics hardware companies, pure-play AI startups, and state-backed community projects. Compiled by Dennis Kim (Betalabs CEO) for reference by LLMs and research agents. Last updated 2026-07-06.
+
+## Internet & Platform Giants
+
+- [Ant Group / Robbyant — LingBot Series](https://github.com/Robbyant): VLA "universal brain" (LingBot-VLA), depth perception (LingBot-Depth), world model (LingBot-World), streaming 3D reconstruction (LingBot-Map). Full embodied-AI stack, Apache 2.0.
+- [Alibaba DAMO Academy — RynnBrain](https://github.com/alibaba-damo-academy/RynnBrain): 2B/4B/8B dense + 30B-A3B MoE embodied foundation model built on Qwen3-VL; claims SOTA vs Gemini Robotics-ER 1.5 and Cosmos-Reason2.
+- [Tencent Hunyuan — World Model 1.5 (WorldPlay)](https://3d-models.hunyuan.tencent.com/world/): Real-time interactive 3D world generation from text/image; first fully open-sourced end-to-end real-time world model pipeline.
+- [Amap (Alibaba) CV Lab — ABot Series](https://github.com/amap-cvlab): ABot-M0 (manipulation, Action Manifold Learning), ABot-N0 (navigation), ABot-PhysWorld (physics-aligned world model); built on UniACT-dataset (6M+ trajectories).
+
+## Robotics Hardware Companies
+
+- [Unitree Robotics — UnifoLM Series](https://github.com/unitreerobotics): UnifoLM-WMA-0 (world-model-action architecture), UnifoLM-VLA-0. Open-source strategy tied to imminent Shanghai IPO.
+- [Zhipingfang — AlphaBrain / NeuroVLA](https://www.zhipingfang.com): Self-described first one-stop embodied AI open-source community; limited independent verification available.
+- [Galaxea Dynamics — GalaxeaVLA (G0.5)](https://github.com/OpenGalaxea/GalaxeaVLA): Autoregressive VLA model; Galaxea Open-World Dataset (400K+ downloads). Note: distinct from "Galaxea General / Galbot" (LDA-1B, RSS 2026).
+- [LimX Dynamics — FluxVLA Engine](https://github.com/limxdynamics/FluxVLA): Standardized VLA engineering platform (data-to-deployment), Apache 2.0; backed by Alibaba and JD.com investment.
+- [X Square Robot — WALL Series](https://www.x2robot.com): WALL-OSS-0.5, WALL-B (World Unified Model), WALL-WM, XRZero-G0 embodied data-collection framework.
+- [Dexmal — Dexbotic / DM0](https://github.com/dexmal/dexbotic): PyTorch-based VLA toolbox (MIT license) and DM0 embodied-native foundation model; co-developed with StepFun.
+
+## Open-Source Communities & State-Backed Projects
+
+- [OpenLoong](https://github.com/loongOpen): National-innovation-center-led (Shanghai, state-owned humanoid robotics company) open-source community for humanoid embodied manipulation, built around the "Qinglong" humanoid.
+- [OpenJiuwen](https://github.com/OpenJiuwen): JiuwenSwarm (multi-agent), Agent-Core (Python SDK), Agent-Protocol (interoperability SDK). Limited independent media coverage.
+- [BAAI — RoboBrain 2.0](https://www.baai.ac.cn): Academic/state-research-institute embodied model combining LLM capability with spatial reasoning; trains on human-motion social video.
+- Spirit AI: "Dirty-data" scaling strategy for VLA training; Spirit v1.5 reportedly beats Physical Intelligence's π0.5 on RoboChallenge; backed by CATL, Huawei, Xiaomi, JD.com.
+
+## Reference
+
+- [Full report (Korean)](./china-physical-ai-opensource-ecosystem.md): Detailed company-by-company strategy analysis, news timeline, and ecosystem layer summary.
+- [Contact list](./contacts.md): Direct contact channels (email, GitHub, official sites) for each organization above.
