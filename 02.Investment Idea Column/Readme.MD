@@ -20,7 +20,7 @@
 | 한국 개인투자자 | [Korea Discount](#korea-discount) → [Bouble(새롬기술)](#bouble) → [money_game(프리즘투자자문)](#money_game) → [MSCI](#msci) | ★★★★★ |
 | 글로벌 개인투자자 | [Insider trading](#insider-trading) → [BitCoin](#bitcoin) → [AI_Trading](#ai_trading) | ★★★☆☆ |
 | 일반 대중 / 인문 독자 | [Brain(침묵의 카르텔)](#brain) → [기레기](#기레기) → [518](#518) → [Voce Phishing](#voce-phishing) [10,814뷰] | ★★★★★ |
-| AI·테크 뉴스 팔로워 | [Claude code column(Fable 5)](#claude-code-column) [참여율 0.97%] → [AI_Revolution(GPU 컴퓨트)](#ai_revolution) → [DeepSeek V4](#deepseek-v4) [실측: 노출 6,468] | ★★★★☆ |
+| AI·테크 뉴스 팔로워 | [Claude code column(Fable 5)](#claude-code-column) [참여율 0.97%] → [AI_Revolution(GPU 컴퓨트)](#ai_revolution) → [DeepSeek V4](#deepseek-v4) [6,468뷰] | ★★★★☆ |
 
 ---
 
