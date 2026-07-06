@@ -18,7 +18,7 @@
 | 2026-07-05 | [공정보다 공격이 먼저인 사회 (똘레랑스)](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/518/tolerance.md) | 518 |
 | 2026-07-05 | [기사를 지우는 가장 확실한 방법 — '손해배상'](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/%EA%B8%B0%EB%A0%88%EA%B8%B0/News_Cyber_%E2%80%8B%E2%80%8BWrecker.md) | 기레기 |
 | 2026-07-05 | [일본 경제 30년 정체 속의 힘](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Japan/last_30years.md) | Japan |
-| 2026-07-05 | [LLM 광고·토넨 이코노미 (신규 분석 추가)](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/AI_Revolution/LLM_AD.md) | AI_Revolution |
+| 2026-07-05 | [LLM 광고·토큰 이코노미 (신규 분석 추가)](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/AI_Revolution/LLM_AD.md) | AI_Revolution |
 | 2026-07-04 | [통상 전쟁 — USMCA·쿠팡 보고서](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/trump/Trade_War.md) | trump |
 | 2026-07-04 | [AI는 왜 하락장에서 급진 매매를 하는가](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/AI_Trading/AI_Trading.md) | AI_Trading |
 | 2026-07-03 | [메모리 반도체 저장 전쟁 (0703)](https://github.com/gameworkerkim/vibe-investing/blob/main/02.Investment%20Idea%20Column/Storage%20War/Memory%20semiconductor%20column%202026-0703.md) | Storage War |
